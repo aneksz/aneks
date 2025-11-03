@@ -1,0 +1,2 @@
+# aneks
+My Hyprland configs
