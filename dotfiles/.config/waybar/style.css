@@ -1,0 +1,298 @@
+/* =========================
+   Catppuccin Mocha palette
+   ========================= */
+@define-color base      #1e1e2e;
+@define-color mantle    #181825;
+@define-color crust     #11111b;
+
+@define-color text      #cdd6f4;
+@define-color subtext0  #a6adc8;
+@define-color subtext1  #bac2de;
+
+@define-color surface0  #313244;
+@define-color surface1  #45475a;
+@define-color surface2  #585b70;
+
+@define-color overlay0  #6c7086;
+@define-color overlay1  #7f849c;
+@define-color overlay2  #9399b2;
+
+@define-color blue      #89b4fa;
+@define-color lavender  #b4befe;
+@define-color sapphire  #74c7ec;
+@define-color sky       #89dceb;
+@define-color teal      #94e2d5;
+@define-color green     #a6e3a1;
+@define-color yellow    #f9e2af;
+@define-color peach     #fab387;
+@define-color maroon    #eba0ac;
+@define-color red       #f38ba8;
+@define-color mauve     #cba6f7;
+@define-color pink      #f5c2e7;
+@define-color flamingo  #f2cdcd;
+@define-color rosewater #f5e0dc;
+
+/* =========================
+   Global bar styling
+   ========================= */
+* {
+  border: none;
+  border-radius: 0;
+  font-family: 'JetBrainsMono Nerd Font Propo';
+  font-size: 14px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+window#waybar {
+  background: transparent;
+  border: none;
+  color: @text;
+  
+}
+
+/* =========================
+   LEFT MODULES
+   ========================= */
+.modules-left {
+  border-radius: 16px;
+  padding: 4px 10px; /* vertical and horizontal padding */
+  margin: 2px 6px 2px 0px; /* top, right, bottom, left */
+}
+
+/* Widgets inside left modules */
+.modules-left > widget {
+  padding: 0;
+  margin: 0 4px; /* spacing between widgets */
+  border-radius: 8px;
+}
+
+/* =========================
+   CENTER MODULES
+   ========================= */
+.modules-center {
+  font-size: 18px;
+  border-radius: 16px;
+  padding: 4px 10px;
+  margin: 2px 0px 2px 0px;
+}
+
+.modules-center > widget {
+  padding: 0;       /* no extra vertical space */
+  margin: 0 4px;    /* horizontal spacing */
+  border-radius: 8px;
+}
+
+
+/* =========================
+   RIGHT MODULES
+   ========================= */
+.modules-right {
+  border-radius: 12px;
+  padding: 4px 10px;
+  margin: 2px 0px 2px 6px;
+}
+
+/* Widgets inside right modules */
+.modules-right > widget {
+  padding: 0 6px;  /* horizontal breathing room for icons */
+  margin: 0 8px;   /* spacing between widgets */
+  border-radius: 8px;
+}
+
+
+/* =========================
+   Workspaces
+   ========================= */
+#workspaces {
+  padding: 0 4px;
+  background: @mantle;
+  margin-left: 6px;
+  border-radius: 20px 8px 20px 8px;
+}
+
+#workspaces button {
+  padding: 4px;
+  background: transparent;
+  color: @rosewater;
+  border-radius: 50%;
+  margin: 0 4px;
+}
+
+#workspaces button.active {
+  background: transparent;
+  color: @mauve;
+}
+
+#workspaces button:hover {
+  background: transparent;
+  color: @text;
+}
+
+/* =========================
+   Modules styling (colors + spacing)
+   ========================= */
+#clock,
+#custom-weather {
+  background: @mantle;
+  color: @sapphire;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: 6px;
+  border-radius: 20px 8px 20px 8px;
+}
+
+#memory {
+background: @mantle;
+color: @sapphire;
+padding-left: 10px;
+padding-right: 10px;
+border-radius: 20px 8px 20px 8px;
+margin-left: 6px;
+}
+
+#custom-vpn {
+padding-right: 10px; 
+padding-left: 10px;
+background: @mantle;
+border-radius: 20px 8px 20px 8px;
+color: @sapphire;
+margin-left: 6px;
+}
+
+#custom-notifications {
+background: @mantle;
+color: @red; 
+border-radius: 20px 8px 20px 8px;
+padding-right: 10px;
+padding-left: 10px;
+margin-left: 6px;
+
+}
+#disk,
+#disk#data { 
+background: @mantle;
+border-radius: 20px 8px 20px 8px;
+margin-right: 6px;
+color: @peach;
+padding-left: 10px;
+padding-right: 10px;
+}
+
+#cpu {
+  background: @mantle;
+  border-radius: 16px;
+  margin-right: 2px;
+  margin-left: 12px;
+  color: @yellow;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+#custom-updates { 
+background: @mantle;
+border-radius: 16px;
+margin-right: 6px;
+color: @yellow; 
+padding-right: 10px;
+padding-left: 10px; 
+
+}
+
+
+#network {
+  background: @mantle;
+  border-radius: 20px 8px 20px 8px;
+  margin-right: 6px;
+  color: @sapphire;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+#network.disconnected {
+  color: @red;
+}
+
+#pulseaudio {
+  background: @mantle;
+  border-radius: 20px 8px 20px 8px;
+  color: @teal;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+#pulseaudio.muted {
+  color: @overlay1;
+}
+
+#bluetooth {
+  background: @mantle;
+  border-radius: 16px;
+  margin-right: 12px;
+  color: @lavender;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
+#memory {
+color: @sapphire;
+}
+
+/* =========================
+   Tray
+   ========================= */
+#tray {
+  background: @mantle;
+  border-radius: 20px 8px 20px 8px;
+  padding-right: 10px;
+  padding-left: 10px;
+  margin-right: 6px;
+}
+
+#tray > .item,
+#tray .tray-group-item,
+#tray .tray-item {
+  padding: 0;
+  margin: 0 6px;
+  border-radius: 6px;
+}
+
+#tray > .item:hover,
+#tray .tray-group-item:hover,
+#tray .tray-item:hover {
+  background: @surface1;
+}
+
+#tooltip-format {
+border-radius: 8px;
+}
+
+/* =========================
+   Custom modules
+   ========================= */
+#custom-omarchy { background: @mantle; color: @peach; padding-left: 8px; padding-right: 12px; margin-left: 2px; border-radius: 20px 8px 20px 8px; } 
+#custom-update  { background: @mantle; color: @peach; margin-left: 6px; padding-left: 10px; padding-right: 10px; border-radius: 20px 8px 20px 8px;}
+#custom-power   { background: @mantle; border-radius: 16px; margin-right: 12px; color: @peach; padding-right: 10px; padding-left: 10px; }
+#custom-user    { background: @mantle; color: @pink; padding-left: 10px; padding-right: 10px; border-radius: 20px 8px 20px 8px; margin-left: 6px;}
+#custom-battery { color: @green; padding-left: 15px; padding-right: 15px; }
+#custom-spotify { background: @mantle; margin-right: 6px; border-radius: 20px 8px 20px 8px; color: #1DB954; padding-left: 10px; padding-right: 10px;}
+#custom-updates { color: @yellow; border-radius: 20px 8px 20px 8px; padding-right: 10px; padding-left: 10px;}
+#custom-expand-icon { background: @mantle; border-radius: 20px 8px 20px 8px; margin-right: 6px; color: @pink; padding-left: 10px; padding-right: 0px;}
+#disk           { color: @peach; padding-left: 10px;}
+#disk#data      { color: @peach;}
+#custom-gpu-temp {background: @mantle; border-radius: 20px 8px 20px 8px; color: @sapphire; padding-left: 10px; padding-right: 10px;}
+#custom-cava {background: @mantle; border-radius: 20px 8px 20px 8px; color: @pink; padding-left: 10px; padding-right: 10px; margin-left: 6px; letter-spacing: 2px;}
+/* =========================
+   Optional: fine-tuning vertical spacing inside modules
+   ========================= */
+/* This ensures content in all modules is vertically centered */
+.modules-left > widget > *,
+.modules-center > widget > *,
+.modules-right > widget > * {
+  padding: 0;      /* remove extra padding inside icons/text */
+  margin: 0;       /* remove margins inside content */
+}
+
+
+
+
+
+

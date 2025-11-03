@@ -1,0 +1,249 @@
+
+{
+  "reload_style_on_change": true,
+  "output": "DP-1",
+  "layer": "top",
+  "position": "top",
+  "spacing": 0,
+  "height": 44,
+  "click-events": true,
+  "modules-left": ["custom/omarchy","hyprland/workspaces","custom/update","custom/user","custom/cava"],
+  "modules-center": ["custom/gpu-temp","memory","clock","custom/weather","custom/vpn"],
+  "modules-right": [
+    "disk",
+    "disk#data",
+    "custom/spotify",
+    "group/tray-expander",
+    "network",
+    "custom/updates",
+    "pulseaudio",
+    "custom/notifications"
+  ],
+
+  "hyprland/workspaces": {
+    "on-click": "activate",
+    "format": "{icon}",
+    "format-icons": {
+      "default": "",
+      "1": "",
+      "2": "",
+      "3": "",
+      "4": "",
+      "5": "󰓓",
+      "6": "",
+      "7": "7",
+      "8": "8",
+      "9": "9",
+      "active": ""
+    },
+    "persistent-workspaces": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": [],
+      "6": []
+    }
+  },
+"custom/vpn": {
+    "exec": "~/.config/waybar/scripts/vpn.sh",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{}",
+    "on-click": "~/.config/waybar/scripts/vpn.sh toggle"
+},
+
+"custom/cava": {
+    "exec": "~/.config/waybar/scripts/cava.sh",
+    "format": "{}",
+    "return-type": "json"
+},
+
+
+"custom/placeholder": {
+    "exec": "~/.config/waybar/scripts/placeholder.sh",
+    "interval": 1
+},
+
+"memory": {
+    "interval": 30,
+    "format": " {}%",
+    "max-length": 10
+},
+
+"custom/gpu-temp": {
+  "format": "{}",
+  "exec": "~/.config/waybar/scripts/gpu.sh",
+  "interval": 5,
+  "return-type": "json"
+},
+ 
+"custom/notifications": {
+    "exec": "~/.config/waybar/scripts/notifications.sh",
+    "interval": 1,
+    "on-click": "swaync-client -op",
+    "format": "{}"
+},
+
+"custom/power": {
+    "exec": "echo ''",     // nerd font shutdown icon
+    "interval": 0,
+    "format": "{}",
+    "tooltip": "Shutdown",
+    "on-click": "/home/igor/.config/waybar/scripts/power.sh"
+},
+
+"pulseaudio": {
+    "format": "{icon} {volume}%",
+    "scroll-step": 5,
+    "on-click": "kitty --class=Wiremix -e wiremix",
+    "on-scroll-up": "swayosd-client --output-volume raise",
+    "on-scroll-down": "swayosd-client --output-volume lower",
+    "on-click-right": "pamixer -t",
+    "format-icons": {
+        "default": ["","",""],
+        "muted": ["󰝟"]
+    }
+},
+
+  "custom/user": {
+   "format": "{}",
+    "exec": "~/.config/waybar/scripts/user.sh",
+    "interval": 1,
+    "return-type": "json"
+},
+
+  "disk": {
+    "interval": 30,
+    "format": " {used}/{total}",
+    "path": "/",
+    "on-click": "nautilus",
+    "unit": "GB"
+  },
+
+  "disk#data": {
+    "interval": 30,
+    "path": "/mnt/data",
+    "format": " {used}/{total}",
+    "on-click": "nautilus /mnt/data",
+    "unit": "GB"
+  },   
+   
+  "custom/weather": {
+    "exec": "/home/igor/.config/waybar/scripts/weather.sh",
+    "restart-interval": 300,
+    "return-type": "json"
+  },
+
+  "custom/battery": {
+    "exec": "/home/igor/.config/waybar/scripts/battery.sh",
+    "interval": 30
+  },
+
+
+"custom/spotify": {
+    "exec": "/home/igor/.config/waybar/scripts/spotify.sh",
+    "format": "{text}",
+    "tooltip-format": "{text}",
+    "return-type": "json",
+    "interval": 1,
+    "max-length": 30,
+    "on-click": "playerctl --player=spotify play-pause",
+    "on-scroll-up": "playerctl --player=spotify next",
+    "on-scroll-down": "playerctl --player=spotify previous"
+},
+  
+
+  "custom/omarchy": {
+    "format": "<span font='MesloLGL Nerd Font'>\uf303</span>",
+    "on-click": "omarchy-menu",
+    "on-click-right": "omarchy-launch-terminal",
+    "tooltip-format": "Omarchy Menu\n\nSuper + Alt + Space"
+  },
+
+  "custom/update": {
+    "format": "",
+    "exec": "omarchy-update-available",
+    "on-click": "omarchy-launch-floating-terminal-with-presentation omarchy-update",
+    "tooltip-format": "Omarchy update available",
+    "signal": 7,
+    "interval": 1800
+  },
+
+  "custom/updates":{
+    "format": " {}",
+    "exec": "checkupdates | wc -l",
+  //"exec-if": "[[ $(checkupdates | wc -l) != 0 ]]",
+    "interval": 200,
+    "on-click": "kitty -e sudo pacman -Syyu",
+    "tooltip-format": "{} updates available"
+    },
+
+  "cpu": {
+    "interval": 5,
+    "format": "󰍛",
+    "on-click": "alacritty -e btop"
+  },
+  
+ "clock": {
+    "format": "{:L%a %d %b %y %H:%M}",
+    "rotate": 0,
+    "format-alt": "{  %d·%m·%y}",
+    "tooltip-format": "<span>{calendar}</span>",
+    "calendar": {
+        "mode": "month",
+        "format": {
+            "months": "<span color='#f5c2e7'><b>{}</b></span>",      // Pink for month
+            "days": "<span color='#cdd6f4'><b>{}</b></span>",        // Default text for days
+            "weekdays": "<span color='#89b4fa'><b>{}</b></span>",    // Blue for weekdays
+            "weekends": "<span color='#f28fad'><b>{}</b></span>",    // Red-ish/pink for weekends
+            "today": "<span color='#f9e2af'><b>{}</b></span>"        // Yellow highlight for today (no underline)
+        }
+    }
+},
+
+ 
+  "network": {
+    "format": "{icon}",
+    "format-ethernet": "󰱓",
+    "format-disconnected": "󰅛",
+    "tooltip-format-ethernet": "{ifname} ⇣{bandwidthDownBytes}  ⇡{bandwidthUpBytes}",
+    "tooltip-format-disconnected": "Disconnected",
+    "interval": 3,
+    "spacing": 1,
+    "on-click": "kitty --class=Impala -e impala"
+  },
+
+  "bluetooth": {
+    "format": "",
+    "format-disabled": "󰂲",
+    "format-connected": "",
+    "tooltip-format": "Devices connected: {num_connections}",
+    "on-click": "blueberry"
+  },
+  
+"group/tray-expander": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 600,
+      "children-class": "tray-group-item"
+    },
+    "modules": ["custom/expand-icon", "tray"]
+  },
+
+  "custom/expand-icon": {
+    "format": " ",
+    "tooltip": false
+  },
+
+  "tray": {
+    "icon-size": 12,
+    "spacing": 12,
+    "show-passive-items": true,
+    "show-other-items": true,
+    "show-menu-icons": true,
+    "ignore-icon-recolor": false
+  },
+
+}
+

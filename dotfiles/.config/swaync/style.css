@@ -1,0 +1,237 @@
+/* Catppuccin Mocha Colors */
+@define-color background           #1e1e2e; /* base */
+@define-color background-alt       #313244; /* surface0 */
+@define-color background-alt-darker #45475a; /* surface1 */
+@define-color accent-normal       #a6e3a1; /* green */
+@define-color accent-error        #f38ba8; /* red */
+@define-color bordercolor          #7f849c; /* subtext1 / border accent */
+@define-color fontcolor            #cdd6f4; /* text */
+@define-color fontaltcolor         #181825; /* mantle / darker background */
+@define-color blue      #89b4fa;
+@define-color lavender  #b4befe;
+@define-color sapphire  #74c7ec;
+@define-color sky       #89dceb;
+@define-color teal      #94e2d5;
+@define-color green     #a6e3a1;
+@define-color yellow    #f9e2af;
+@define-color peach     #fab387;
+@define-color maroon    #eba0ac;
+@define-color red       #f38ba8;
+@define-color mauve     #cba6f7;
+@define-color pink      #f5c2e7;
+@define-color flamingo  #f2cdcd;
+@define-color rosewater #f5e0dc;
+@define-color black #000000;
+
+/* =========================
+   SwayNC style (with fallbacks)
+   ========================= */
+
+* {
+    font-family: 'Noto Sans Font';
+    font-size: 13px;
+}
+
+/* Notifications */
+.notification {
+    /* try variable first, then fallback hex */
+    background-color: @background;
+    background-color: #1e1e2e;
+    color: @fontcolor;
+    color: #cdd6f4;
+    border: 2px solid @sapphire;
+    border: 2px solid #74c7ec;
+    border-radius: 10px;
+    padding: 2px;
+}   
+
+
+.body {
+  color: @fontcolor;
+  color: #cdd6f4;
+}
+
+.summary {
+  font-size: 14px;
+  font-weight: 200;
+  color: @sapphire;
+  color: #74c7ec;
+  background: transparent;
+  text-shadow: none;
+}
+
+.time {
+  font-size: 12px;
+  color: @fontcolor;
+  color: #cdd6f4;
+  margin-right: 18px;
+  background: transparent;
+  text-shadow: none;
+}
+
+.close-button {
+  background-color: @accent-error;
+  background-color: #f38ba8;
+  color: @fontaltcolor;
+  color: #181825;
+  margin-top: 5px;
+  margin-right: 5px;
+  border-radius: 6px;
+}
+.close-button:hover {
+  background-color: @pink;
+  background-color: #f5c2e7;
+  color: @fontaltcolor;
+}
+
+/* notification action hovers */
+.notification-default-action:hover,
+.notification-action:hover {
+    background-color: @background;
+    color: @fontaltcolor;
+}
+
+/* progress bars */
+.notification.critical progress {
+  background-color: @accent-error;
+  background-color: #f38ba8;
+}
+
+.notification.low progress,
+.notification.normal progress {
+  background-color: @accent-normal;
+  background-color: #a6e3a1;
+}
+
+/* Control Center window */
+.control-center {
+    background-color: rgba(30, 30, 46, 0.8);
+    color: @fontcolor;
+    color: #cdd6f4;
+    border: 3px solid @sapphire;
+    border-radius: 12px;
+    padding: 6px;
+}
+
+/* Notification Groups */
+.notification-group {
+  background-color: transparent;
+  margin: 2px 8px;
+  font-size: 14px;
+}
+
+.notification-group-icon,
+.notification-group-headers {
+  color: @fontcolor;
+  color: #cdd6f4;
+}
+
+.notification-group-collapse-button,
+.notification-group-close-all-button {
+  background-color: @pink;
+  background-color: #f5c2e7;
+  color: @fontaltcolor;
+  color: #181825;
+  margin: 4px;
+  border-radius: 6px;
+  padding: 4px;
+}
+.notification-group-collapse-button:hover,
+.notification-group-close-all-button:hover {
+  background-color: @yellow;
+  background-color: #f9e2af;
+  color: @fontaltcolor;
+}
+
+/* Widget title */
+.widget-title {
+  color: @sapphire;
+  color: #74c7ec;
+}
+
+.widget-label {
+color: @sapphire;
+}
+
+.widget-title > button {
+  font-size: 1rem;
+  color: @teal;
+  color: #94e2d5;
+  background-color: transparent;
+  box-shadow: none;
+}
+.widget-title > button:hover {
+  background-color: @peach;
+  background-color: #fab387;
+  color: @fontaltcolor;
+}
+
+/* widget button grid */
+button {
+    border: 0;
+    min-width: 26px;
+    background-color: @peach;
+    color: @black;
+    border-radius: 6px;
+}
+
+.widget-buttons-grid {
+  font-size: 30px;
+  background-color: transparent;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button {
+    color: @black;
+    margin: 8px;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button:hover {
+  background-color: @yellow;
+  background-color: #f9e2af;
+  color: @fontaltcolor;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button.toggle:checked {
+  background-color: @accent-normal;
+  background-color: #a6e3a1;
+  color: @fontaltcolor;
+}
+
+.widget-buttons-grid > flowbox > flowboxchild > button.toggle:checked label {
+  color: @fontaltcolor;
+}
+
+
+/* Volume icon spacing */
+
+.widget-volume {
+    color: @sapphire;
+}
+
+
+.widget-backlight {
+  background-color: @background-alt-darker;
+  background-color: #45475a;
+  color: @fontcolor;
+  color: #cdd6f4;
+  font-size: x-large;
+  border-radius: 6px;
+  padding: 6px;
+}
+
+/* sliders */
+trough slider {
+    background-color: @sapphire;
+    background-color: #74c7ec;
+}
+trough slider:hover {
+    background-color: @yellow;
+    background-color: #f9e2af;
+}
+trough highlight {
+  background-color: @peach;
+  margin-left: 4px;
+  border-radius: 6px;
+}
