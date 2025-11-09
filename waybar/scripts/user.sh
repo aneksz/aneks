@@ -34,6 +34,7 @@ get_icon_for_app() {
         "Spotify") echo "" ;;
         "thunderbird") echo "" ;;
         "discord") echo "" ;;
+        "org.qbittorrent.qBittorrent") echo "" ;;
         *"whatsapp.com"*) echo "󰖣" ;;  # WhatsApp icon
         *"music.apple.com"*) echo "󰝚" ;; # Apple Music icon
         *) echo "$ICON_WINDOW_DEFAULT" ;;
