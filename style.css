@@ -107,22 +107,23 @@ window#waybar {
    ========================= */
 #workspaces {
   padding: 0 4px;
-  background: @mantle;
+  background: @blue;
   margin-left: 6px;
   border-radius: 20px 8px 20px 8px;
 }
 
 #workspaces button {
+  font-weight: bold;
   padding: 4px;
   background: transparent;
-  color: @rosewater;
+  color: @mantle;
   border-radius: 50%;
   margin: 0 4px;
 }
 
 #workspaces button.active {
   background: transparent;
-  color: @mauve;
+  color: @pink;
 }
 
 #workspaces button:hover {
@@ -133,19 +134,30 @@ window#waybar {
 /* =========================
    Modules styling (colors + spacing)
    ========================= */
-#clock,
-#custom-weather {
-  background: @mantle;
-  color: @sapphire;
+#clock {
+  font-weight: bold;
+  background: @yellow;
+  color: @mantle;
   padding-left: 10px;
   padding-right: 10px;
   margin-left: 6px;
   border-radius: 20px 8px 20px 8px;
 }
 
-#memory {
-background: @mantle;
-color: @sapphire;
+#custom-weather { 
+  font-weight: bold;
+  background: @flamingo;
+  color: @mantle;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: 6px;
+  border-radius: 20px 8px 20px 8px;
+}
+
+#custom-cputemp {
+font-weight: bold;
+background: @mauve;
+color: @mantle;
 padding-left: 10px;
 padding-right: 10px;
 border-radius: 20px 8px 20px 8px;
@@ -153,17 +165,19 @@ margin-left: 6px;
 }
 
 #custom-vpn {
+font-weight: bold;
 padding-right: 10px; 
 padding-left: 10px;
-background: @mantle;
+background: @lavender;
 border-radius: 20px 8px 20px 8px;
-color: @sapphire;
+color: @mantle;
 margin-left: 6px;
 }
 
 #custom-notifications {
-background: @mantle;
-color: @red; 
+font-weight: bold;
+background: @blue;
+color: @mantle; 
 border-radius: 20px 8px 20px 8px;
 padding-right: 10px;
 padding-left: 10px;
@@ -172,10 +186,11 @@ margin-left: 6px;
 }
 #disk,
 #disk#data { 
-background: @mantle;
+font-weight: bold;
+background: @teal;
 border-radius: 20px 8px 20px 8px;
 margin-right: 6px;
-color: @peach;
+color: @surface0;
 padding-left: 10px;
 padding-right: 10px;
 }
@@ -190,21 +205,22 @@ padding-right: 10px;
   padding-left: 10px;
 }
 #custom-updates { 
-background: @mantle;
+font-weight: bold;
+background: @rosewater;
 border-radius: 16px;
 margin-right: 6px;
-color: @yellow; 
+color: @mantle; 
 padding-right: 10px;
 padding-left: 10px; 
-
+border-radius: 20px 8px 20px 8px;
 }
 
 
 #network {
-  background: @mantle;
+  background: @sky;
   border-radius: 20px 8px 20px 8px;
   margin-right: 6px;
-  color: @sapphire;
+  color: @mantle;
   padding-right: 10px;
   padding-left: 10px;
 }
@@ -213,9 +229,10 @@ padding-left: 10px;
 }
 
 #pulseaudio {
-  background: @mantle;
+  font-weight: bold;
+  background: @green;
   border-radius: 20px 8px 20px 8px;
-  color: @teal;
+  color: @mantle;
   padding-right: 10px;
   padding-left: 10px;
 }
@@ -232,9 +249,6 @@ padding-left: 10px;
   padding-left: 10px;
 }
 
-#memory {
-color: @sapphire;
-}
 
 /* =========================
    Tray
@@ -253,6 +267,7 @@ color: @sapphire;
   padding: 0;
   margin: 0 6px;
   border-radius: 6px;
+  color: @mantle;
 }
 
 #tray > .item:hover,
@@ -268,18 +283,15 @@ border-radius: 8px;
 /* =========================
    Custom modules
    ========================= */
-#custom-omarchy { background: @mantle; color: @peach; padding-left: 8px; padding-right: 12px; margin-left: 2px; border-radius: 20px 8px 20px 8px; } 
+#custom-omarchy { background: @peach; color: @mantle; font-weight: bold; padding-left: 8px; padding-right: 12px; margin-left: 2px; border-radius: 20px 8px 20px 8px; } 
 #custom-update  { background: @mantle; color: @peach; margin-left: 6px; padding-left: 10px; padding-right: 10px; border-radius: 20px 8px 20px 8px;}
 #custom-power   { background: @mantle; border-radius: 16px; margin-right: 12px; color: @peach; padding-right: 10px; padding-left: 10px; }
-#custom-user    { background: @mantle; color: @pink; padding-left: 10px; padding-right: 10px; border-radius: 20px 8px 20px 8px; margin-left: 6px;}
+#custom-user    { background: @maroon; color: @mantle; font-weight: bold; padding-left: 10px; padding-right: 10px; border-radius: 20px 8px 20px 8px; margin-left: 6px;}
 #custom-battery { color: @green; padding-left: 15px; padding-right: 15px; }
-#custom-spotify { background: @mantle; margin-right: 6px; border-radius: 20px 8px 20px 8px; color: #1DB954; padding-left: 10px; padding-right: 10px;}
-#custom-updates { color: @yellow; border-radius: 20px 8px 20px 8px; padding-right: 10px; padding-left: 10px;}
-#custom-expand-icon { background: @mantle; border-radius: 20px 8px 20px 8px; margin-right: 6px; color: @pink; padding-left: 10px; padding-right: 0px;}
-#disk           { color: @peach; padding-left: 10px;}
-#disk#data      { color: @peach;}
-#custom-gpu-temp {background: @mantle; border-radius: 20px 8px 20px 8px; color: @sapphire; padding-left: 10px; padding-right: 10px;}
-#custom-cava {background: @mantle; border-radius: 20px 8px 20px 8px; color: @pink; padding-left: 10px; padding-right: 10px; margin-left: 6px; letter-spacing: 2px;}
+#custom-spotify { color: @mantle; margin-right: 6px; border-radius: 20px 8px 20px 8px; background: #1DB954; padding-left: 10px; padding-right: 10px;}
+#custom-expand-icon { background: @red; border-radius: 20px 8px 20px 8px; margin-right: 6px; color: @mantle; padding-left: 10px; padding-right: 0px;}
+#custom-gpu-temp {background: @pink; font-weight: bold; border-radius: 20px 8px 20px 8px; color: @mantle; padding-left: 10px; padding-right: 10px;}
+#custom-cava {background: @pink; border-radius: 20px 8px 20px 8px; color: @mantle; padding-left: 10px; padding-right: 10px; margin-left: 6px; letter-spacing: 2px;}
 /* =========================
    Optional: fine-tuning vertical spacing inside modules
    ========================= */
@@ -290,7 +302,6 @@ border-radius: 8px;
   padding: 0;      /* remove extra padding inside icons/text */
   margin: 0;       /* remove margins inside content */
 }
-
 
 
 
