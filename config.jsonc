@@ -8,7 +8,7 @@
   "height": 44,
   "click-events": true,
   "modules-left": ["custom/omarchy","hyprland/workspaces","custom/update","custom/user","custom/cava"],
-  "modules-center": ["custom/gpu-temp","memory","clock","custom/weather","custom/vpn"],
+  "modules-center": ["custom/gpu-temp","custom/cputemp","clock","custom/weather","custom/vpn"],
   "modules-right": [
     "disk",
     "disk#data",
@@ -65,10 +65,10 @@
     "interval": 1
 },
 
-"memory": {
-    "interval": 30,
-    "format": " {}%",
-    "max-length": 10
+"custom/cputemp": {
+    "exec": "sensors -u k10temp-pci-00c3 | awk '/temp1_input:/ {print int($2) \"°C\"; exit}'",
+    "interval": 5,
+    "format": " {}"
 },
 
 "custom/gpu-temp": {
@@ -101,10 +101,10 @@
     "on-scroll-down": "swayosd-client --output-volume lower",
     "on-click-right": "pamixer -t",
     "format-icons": {
-        "default": ["","",""],
-        "muted": ["󰝟"]
+        "default": ["󰋋"]
     }
 },
+
 
   "custom/user": {
    "format": "{}",
@@ -157,7 +157,7 @@
   "custom/omarchy": {
     "format": "<span font='MesloLGL Nerd Font'>\uf303</span>",
     "on-click": "omarchy-menu",
-    "on-click-right": "omarchy-launch-terminal",
+    "on-click-right": "xdg-terminal-exec",
     "tooltip-format": "Omarchy Menu\n\nSuper + Alt + Space"
   },
 
