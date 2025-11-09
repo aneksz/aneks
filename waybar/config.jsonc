@@ -86,7 +86,7 @@
 },
 
 "custom/power": {
-    "exec": "echo ''",     // nerd font shutdown icon
+    "exec": "echo ''",
     "interval": 0,
     "format": "{}",
     "tooltip": "Shutdown",
@@ -243,7 +243,7 @@
     "show-other-items": true,
     "show-menu-icons": true,
     "ignore-icon-recolor": false
-  },
+  }
 
 }
 
