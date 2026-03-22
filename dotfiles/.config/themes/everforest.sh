@@ -113,10 +113,4 @@ cp "$HOME/.config/themes/everforest/everforest.conf" \
    "$HOME/.config/hypr/colors.conf"
 
 
-# ------------------------
-# NZXT Colours
-# ------------------------
-
-liquidctl set ring color fixed dbbc7f
-liquidctl set logo color fixed e69875y
 
