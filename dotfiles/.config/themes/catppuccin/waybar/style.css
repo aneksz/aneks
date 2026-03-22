@@ -1,0 +1,320 @@
+/* =========================
+   Catppuccin Mocha palette
+   ========================= */
+@define-color crust #11111b;
+@define-color base #1e1e2e;
+@define-color mantle #181825;
+@define-color text #cdd6f4;
+@define-color subtext0 #a6adc8;
+@define-color subtext1 #bac2de;
+@define-color surface0 #313244;
+@define-color surface1 #45475a;
+@define-color surface2 #585b70;
+@define-color overlay0 #6c7086;
+@define-color overlay1 #7f849c;
+@define-color overlay2 #9399b2;
+@define-color blue #89b4fa;
+@define-color lavender #b4befe;
+@define-color sapphire #74c7ec;
+@define-color sky #89dceb;
+@define-color teal #94e2d5;
+@define-color green #a6e3a1;
+@define-color yellow #f9e2af;
+@define-color peach #fab387;
+@define-color maroon #eba0ac;
+@define-color red #f38ba8;
+@define-color mauve #cba6f7;
+@define-color pink #f5c2e7;
+@define-color flamingo #f2cdcd;
+@define-color rosewater #f5e0dc;
+@define-color bright-green #64ffda;
+
+/* =========================
+   Global bar styling
+   ========================= */
+* {
+  border: none;
+  border-radius: 0;
+  font-family: "JetBrainsMono Nerd Font Propo";
+  font-size: 14px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+window#waybar {
+  background: transparent;
+  border: none;
+  color: @text;
+}
+
+/* ========================= LEFT MODULES ========================= */
+
+.modules-left {
+  border-radius: 18px;
+  padding: 4px 10px;
+  margin: 2px 6px 2px 0px;
+}
+
+.modules-left > widget {
+  padding: 0;
+  margin: 0 4px;
+  border-radius: 8px;
+}
+
+/* ========================= CENTER MODULES (Capsule) ========================= */
+
+.modules-center {
+  background: @mantle;
+  font-size: 14px;
+  border-radius: 18px;
+  padding: 4px 10px;
+  margin: 6px;
+}
+
+.modules-center > widget {
+  padding-left: 10px;
+  padding-right: 10px;
+  margin: 0 4px;
+  border-radius: 0;
+}
+
+/* ========================= RIGHT MODULES ========================= */
+
+.modules-right {
+  border-radius: 18px;
+  padding: 4px 10px;
+  margin: 2px 0px 2px 6px;
+}
+
+.modules-right > widget {
+  padding: 0 6px;
+  margin: 0 8px;
+  border-radius: 8px;
+}
+
+/* ========================= RIGHT SIDE PILL ========================= */
+
+#bluetooth {
+  background: @mantle;
+  border-radius: 18px 0 0 18px;
+  padding: 4px 8px 4px 12px;
+  font-weight: bold;
+  margin-left: 6px;
+}
+
+#network,
+#custom-updates,
+#pulseaudio {
+  background: @mantle;
+  border-radius: 0;
+  padding: 4px 8px;
+  font-weight: bold;
+}
+
+#custom-notifications {
+  background: @mantle;
+  border-radius: 0 18px 18px 0;
+  padding: 4px 12px 4px 8px;
+  margin-right: 6px;
+  font-weight: bold;
+}
+
+#bluetooth { color: @lavender; }
+#network { color: @sky; }
+#custom-updates { color: @pink; }
+#pulseaudio { color: @green; }
+#custom-notifications { color: @red; }
+
+#network.disconnected { color: @red; }
+#pulseaudio.muted { color: @overlay1; }
+
+/* ========================= Workspaces ========================= */
+
+#workspaces {
+  padding: 0 4px;
+  background: @mantle;
+  border-radius: 18px;
+}
+
+#workspaces button {
+  font-weight: bold;
+  padding: 4px;
+  background-color: rgba(0,0,0,0.1);
+  color: @mauve;
+  border-radius: 50%;
+  margin: 0 4px;
+}
+
+#workspaces button.active {
+  background: transparent;
+  color: @red;
+}
+
+#workspaces button:hover {
+  background: transparent;
+  color: @text;
+}
+
+/* ========================= Capsule inner modules ========================= */
+
+#custom-cava,
+#custom-gpu-temp,
+#cpu,
+#custom-cputemp,
+#clock,
+#custom-weather,
+#custom-vpn,
+#custom-spotify {
+  background: transparent;
+  border-radius: 0;
+  margin: 0;
+  padding: 0 6px;
+  font-weight: bold;
+}
+
+#custom-cava { color: @green; }
+#custom-gpu-temp { color: @pink; }
+#cpu { color: @yellow; }
+#custom-cputemp { color: @mauve; }
+#clock { color: @yellow; }
+#custom-weather { color: @flamingo; }
+#custom-vpn { color: @lavender; }
+#custom-spotify { color: @green; }
+
+/* ========================= Disk ========================= */
+
+#disk {
+  background: @mantle;
+  border-radius: 18px;
+  color: @blue;
+  font-weight: bold;
+  padding: 4px 8px;
+  margin-right: 0;
+}
+
+#disk#data {
+  background: @mantle;
+  border-radius: 18px;
+  color: @teal;
+  font-weight: bold;
+  padding: 4px 8px;
+  margin-right: 6px;
+}
+
+/* ========================= Tray ========================= */
+
+#tray {
+  background: @mantle;
+  border-radius: 18px;
+  padding-right: 10px;
+  padding-left: 10px;
+  margin-right: 6px;
+}
+
+#tray > .item,
+#tray .tray-group-item,
+#tray .tray-item {
+  padding: 0;
+  margin: 0 6px;
+  border-radius: 6px;
+  color: @mantle;
+}
+
+#tray > .item:hover,
+#tray .tray-group-item:hover,
+#tray .tray-item:hover {
+  background: @surface1;
+}
+
+/* ========================= Tooltip ========================= */
+
+tooltip {
+  background: @mantle;
+  border-radius: 12px;
+}
+
+tooltip label {
+  color: @flamingo;
+  padding: 2px;
+}
+
+/* ========================= Custom modules ========================= */
+
+#custom-omarchy {
+  background: @peach;
+  color: @mantle;
+  font-weight: bold;
+  padding-left: 8px;
+  padding-right: 12px;
+  margin-left: 2px;
+  border-radius: 18px;
+}
+
+#custom-update {
+  background: @teal;
+  color: @mantle;
+  margin-left: 6px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 18px;
+}
+
+#custom-power {
+  background: @mantle;
+  border-radius: 16px;
+  margin-right: 12px;
+  color: @peach;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
+#custom-user {
+  background: @mantle;
+  color: @sky;
+  font-weight: bold;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 18px;
+  margin-left: 6px;
+}
+
+#custom-battery {
+  background: @mantle;
+  color: @green;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 18px;
+  margin-left: 6px;
+}
+
+#custom-expand-icon {
+  background: @mantle;
+  border-radius: 18px;
+  margin-right: 6px;
+  color: @red;
+  padding-left: 10px;
+  padding-right: 0px;
+}
+
+#custom-cava {
+  background: @mantle;
+  border-radius: 18px;
+  color: @green;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: 6px;
+  letter-spacing: 2px;
+}
+
+/* ========================= Animations ========================= */
+
+#custom-vpn.connected {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}

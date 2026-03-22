@@ -1,0 +1,349 @@
+/* =========================
+   Horizon palette
+   ========================= */
+
+/* Backgrounds */
+@define-color bg0 #1c1e26;
+@define-color bg1 #232530;
+@define-color bg2 #2e303e;
+@define-color bg3 #3a3d4d;
+@define-color bg4 #6c6f93;
+
+/* Foreground */
+@define-color fg0 #c7c9cb;
+@define-color fg1 #b9bbbe;
+@define-color fg2 #9da0a2;
+@define-color fg3 #6c6f93;
+
+/* Accents */
+@define-color red #e95678;
+@define-color red-bright #ec6a88;
+
+@define-color green #29d398;
+@define-color green-bright #3fdaa4;
+
+@define-color yellow #fab795;
+@define-color yellow-bright #fbc3a7;
+
+@define-color blue #26bbd9;
+@define-color blue-bright #3fc4de;
+
+@define-color purple #ee64ac;
+@define-color purple-bright #f075b5;
+
+@define-color aqua #59e1e3;
+@define-color aqua-bright #6be4e6;
+
+@define-color orange #f09383;
+@define-color orange-bright #f5a494;
+
+@define-color gray #6c6f93;
+
+/* =========================
+   Global bar styling
+   ========================= */
+
+* {
+  border: none;
+  border-radius: 0;
+  font-family: "JetBrainsMono Nerd Font Propo";
+  font-size: 14px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+window#waybar {
+  background: transparent;
+  border: none;
+  color: @fg1;
+  margin-top: 6px;
+}
+
+/* ========================= LEFT MODULES ========================= */
+
+.modules-left {
+  border-radius: 18px;
+  padding: 4px 10px;
+  margin: 2px 6px 2px 0px;
+}
+
+.modules-left > widget {
+  padding: 0;
+  margin: 0 4px;
+  border-radius: 8px;
+}
+
+/* ========================= CENTER MODULES ========================= */
+
+.modules-center {
+  background: @bg2;
+  font-size: 14px;
+  border-radius: 18px;
+  padding: 4px 10px;
+  margin: 6px;
+}
+
+.modules-center > widget {
+  padding-left: 10px;
+  padding-right: 10px;
+  margin: 0 4px;
+  border-radius: 0;
+}
+
+/* ========================= RIGHT MODULES ========================= */
+
+.modules-right {
+  border-radius: 18px;
+  padding: 4px 10px;
+  margin: 2px 0px 2px 6px;
+}
+
+.modules-right > widget {
+  padding: 0 6px;
+  margin: 0 8px;
+  border-radius: 8px;
+}
+
+/* ========================= MODULE CAPSULE ========================= */
+
+#bluetooth {
+  background: @bg2;
+  border-radius: 18px 0 0 18px;
+  padding: 4px 8px 4px 12px;
+  font-weight: bold;
+  margin-left: 6px;
+}
+
+#network,
+#custom-updates,
+#pulseaudio {
+  background: @bg2;
+  border-radius: 0;
+  padding: 4px 8px;
+  font-weight: bold;
+}
+
+#custom-notifications {
+  background: @bg2;
+  border-radius: 0 18px 18px 0;
+  padding: 4px 12px 4px 8px;
+  margin-right: 6px;
+  font-weight: bold;
+}
+
+#bluetooth { color: @purple; }
+#network { color: @blue-bright; }
+#custom-updates { color: @orange-bright; }
+#pulseaudio { color: @green; }
+#custom-notifications { color: @red-bright; }
+
+#network.disconnected { color: @red; }
+#pulseaudio.muted { color: @gray; }
+
+/* ========================= WORKSPACES ========================= */
+
+#workspaces {
+  padding: 0 4px;
+  background: @bg2;
+  border-radius: 18px;
+}
+
+#workspaces button {
+  font-weight: bold;
+  padding: 4px;
+  color: @purple;
+  border-radius: 50%;
+  margin: 0 4px;
+}
+
+#workspaces button.active {
+  background: transparent;
+  color: @yellow;
+}
+
+#workspaces button:hover {
+  background: transparent;
+  color: @fg1;
+}
+
+/* ========================= CAPSULE INNER MODULES ========================= */
+
+#custom-cava,
+#custom-gpu-temp,
+#cpu,
+#custom-cputemp,
+#clock,
+#custom-weather,
+#custom-vpn,
+#custom-spotify {
+  background: transparent;
+  border-radius: 0;
+  margin: 0;
+  padding: 0 6px;
+  font-weight: bold;
+}
+
+#custom-cava { color: @green; }
+#custom-gpu-temp { color: @red-bright; }
+#cpu { color: @yellow; }
+#custom-cputemp { color: @orange; }
+#clock { color: @yellow-bright; }
+#custom-weather { color: @blue-bright; }
+#custom-vpn { color: @purple; }
+#custom-spotify { color: @green-bright; }
+
+/* ========================= DISK ========================= */
+
+#disk {
+  background: @bg2;
+  border-radius: 18px;
+  color: @blue-bright;
+  font-weight: bold;
+  padding: 4px 8px;
+}
+
+#disk#data {
+  background: @bg2;
+  border-radius: 18px;
+  color: @aqua;
+  font-weight: bold;
+  padding: 4px 8px;
+  margin-right: 6px;
+}
+
+/* ========================= TRAY ========================= */
+
+#tray {
+  background: @bg2;
+  border-radius: 18px;
+  padding-right: 10px;
+  padding-left: 10px;
+  margin-right: 6px;
+}
+
+#tray > .item,
+#tray .tray-group-item,
+#tray .tray-item {
+  padding: 0;
+  margin: 0 6px;
+  border-radius: 6px;
+}
+
+#tray > .item:hover,
+#tray .tray-group-item:hover,
+#tray .tray-item:hover {
+  background: @bg4;
+}
+
+/* ========================= TOOLTIP ========================= */
+
+tooltip {
+  background: @bg2;
+  border-radius: 12px;
+}
+
+tooltip label {
+  color: @yellow;
+  padding: 2px;
+}
+
+/* ========================= CUSTOM MODULES ========================= */
+
+#custom-omarchy {
+  background: @orange-bright;
+  color: @bg0;
+  font-weight: bold;
+  padding-left: 8px;
+  padding-right: 12px;
+  margin-left: 2px;
+  border-radius: 18px;
+}
+
+#custom-update {
+  background: @aqua-bright;
+  color: @bg0;
+  margin-left: 6px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 18px;
+}
+
+#custom-power {
+  background: @bg2;
+  border-radius: 16px;
+  margin-right: 12px;
+  color: @orange-bright;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
+#custom-user {
+  background: @bg2;
+  color: @blue-bright;
+  font-weight: bold;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 18px;
+  margin-left: 6px;
+}
+
+#custom-battery {
+  background: @bg2;
+  color: @green;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 18px;
+  margin-left: 6px;
+}
+
+#custom-expand-icon {
+  background: @bg2;
+  border-radius: 18px;
+  margin-right: 6px;
+  color: @red-bright;
+  padding-left: 10px;
+  padding-right: 0px;
+}
+
+#custom-cava {
+  background: @bg2;
+  border-radius: 18px;
+  color: @green;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: 6px;
+  letter-spacing: 2px;
+}
+
+/* ========================= ANIMATIONS ========================= */
+
+#custom-vpn.connected {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* =========================
+   CPU temperature colors
+   ========================= */
+
+#custom-cputemp.normal {
+  color: @green;
+}
+
+#custom-cputemp.warm {
+  color: @yellow;
+}
+
+#custom-cputemp.hot {
+  color: @orange;
+}
+
+#custom-cputemp.critical {
+  color: @red-bright;
+}
