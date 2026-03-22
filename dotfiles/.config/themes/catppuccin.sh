@@ -118,9 +118,3 @@ cp "$HOME/.config/themes/catppuccin/catppuccin.conf" \
    "$HOME/.config/hypr/colors.conf"
 
 
-# ------------------------
-# NZXT Colours
-# ------------------------
-
-liquidctl set ring color fixed b4befe
-liquidctl set logo color fixed cba6f7
