@@ -9,6 +9,7 @@ KITTY_COLORS="$HOME/.config/kitty/colors.conf"
 GTK4_THEME_DIR="$HOME/.local/share/themes/catppuccin-mocha-blue-standard+default/gtk-4.0"
 GTK4_CONFIG="$HOME/.config/gtk-4.0"
 WAYBAR_CONF="$THEME_DIR/waybar/style.css"
+SWAYNC_CONF="$THEME_DIR/swaync/style.css"
 
 # ------------------------
 # Apply Waybar
@@ -19,6 +20,15 @@ if [ -f "$WAYBAR_CONF" ]; then
     sleep 1
     hyprctl dispatch exec waybar
 fi
+
+# ------------------------
+# SwayNC Theme
+# ------------------------
+
+SWAYNC_CONF="$THEME_DIR/swaync/style.css"
+
+cp "$SWAYNC_CONF" ~/.config/swaync/style.css
+swaync-client -rs
 
 # ------------------------
 # Apply Kitty colors persistently
@@ -39,7 +49,7 @@ fi
 # GTK3 / legacy apps
 # ------------------------
 gsettings set org.gnome.desktop.interface gtk-theme "catppuccin-mocha-blue-standard+default"
-gsettings set org.gnome.desktop.interface icon-theme "Catppuccin-Mocha-Alt"
+gsettings set org.gnome.desktop.interface icon-theme "Catppuccin-Mocha"
 gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
 
 # -----------------------
@@ -76,7 +86,7 @@ cp ~/.config/themes/catppuccin/colors.rasi ~/.config/rofi/launchers/type-2/share
 
 # ------------------------
 # VSCodium Theme
-# ------------------------
+#  ------------------------
 
 VSCODE_SETTINGS="$HOME/.config/VSCodium/User/settings.json"
 
@@ -90,7 +100,7 @@ fi
 
 spicetify config current_theme Catppuccin
 spicetify config color_scheme mocha
-spicetify apply -n
+spicetify apply -n 
 
 # ------------------------
 # Save current theme
@@ -118,3 +128,9 @@ cp "$HOME/.config/themes/catppuccin/catppuccin.conf" \
    "$HOME/.config/hypr/colors.conf"
 
 
+# ------------------------
+# NZXT Colours
+# ------------------------
+
+liquidctl set ring color fixed b4befe
+liquidctl set logo color fixed cba6f7

@@ -1,0 +1,207 @@
+/* =========================
+   Gruvbox Dark palette
+   ========================= */
+
+/* Backgrounds */
+@define-color bg0 #282828;
+@define-color bg1 #3c3836;
+@define-color bg2 #504945;
+@define-color bg3 #665c54;
+@define-color bg4 #7c6f64;
+
+/* Foreground */
+@define-color fg0 #ebdbb2;
+@define-color fg1 #ebdbb2;
+@define-color fg2 #b8bb26;
+@define-color fg3 #a89984;
+
+/* Accents */
+@define-color red #fb4934;
+@define-color red-bright #ff6b5a;
+
+@define-color green #b8bb26;
+@define-color green-bright #d4d87a;
+
+@define-color yellow #fabd2f;
+@define-color yellow-bright #ffd166;
+
+@define-color blue #83a598;
+@define-color blue-bright #a6c0b8;
+
+@define-color purple #d3869b;
+@define-color purple-bright #e7a9b7;
+
+@define-color aqua #8ec07c;
+@define-color aqua-bright #b7e1a1;
+
+@define-color orange #fe8019;
+@define-color orange-bright #ff9f43;
+
+@define-color gray #a89984;
+
+/* =========================
+   Gruvbox SwayNC Theme
+   ========================= */
+
+* {
+    font-family: "Noto Sans";
+    font-size: 12px;
+    transition: 200ms;
+}
+
+/* Notifications */
+.notification {
+    background-color: @bg1;
+    color: @fg0;
+    border: 2px solid @blue;
+    border-radius: 12px;
+    padding: 4px;
+}
+
+.summary {
+  font-size: 14px;
+  font-weight: 500;
+  color: @blue;
+}
+
+.body {
+  color: @fg0;
+}
+
+.time {
+  color: @gray;
+}
+
+/* Close button */
+.close-button {
+  background-color: @red;
+  color: @bg0;
+  border-radius: 6px;
+}
+
+.close-button:hover {
+  background-color: @orange;
+}
+
+/* Actions */
+.notification-default-action:hover,
+.notification-action:hover {
+    background-color: @bg0;
+    color: @green;
+}
+
+/* Progress */
+.notification.critical progress {
+  background-color: @red;
+}
+
+.notification.low progress,
+.notification.normal progress {
+  background-color: @green;
+}
+
+/* Control Center */
+.control-center {
+    background: @bg0;
+    color: @fg0;
+    border: 1px solid @yellow;
+    border-radius: 16px;
+}
+
+/* Groups */
+.notification-group-collapse-button,
+.notification-group-close-all-button {
+  background-color: @bg2;
+  color: @fg0;
+  border-radius: 6px;
+}
+
+.notification-group-collapse-button:hover,
+.notification-group-close-all-button:hover {
+  background-color: @yellow;
+  color: @bg0;
+}
+
+/* Widgets */
+.widget-title {
+color: @blue;
+}
+.widget-label {
+  color: @green;
+}
+
+/* DND */
+.widget-dnd {
+  background-color: @bg0;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.widget-dnd label {
+  color: @blue;
+  font-weight: 500;
+}
+
+.widget-dnd > switch {
+  background: @bg2;
+}
+
+.widget-dnd > switch:checked {
+  background: @green;
+}
+
+.widget-dnd > switch slider {
+  background: @bg0;
+}
+
+/* Buttons */
+button {
+    background-color: @bg2;
+    color: @fg0;
+    border-radius: 6px;
+}
+
+button:hover {
+    background-color: @orange;
+    color: @bg0;
+}
+
+/* Toggles */
+.widget-buttons-grid > flowbox > flowboxchild > button.toggle:checked {
+  background-color: @green;
+  color: @bg0;
+}
+
+/* Sliders */
+trough slider {
+    background-color: @blue;
+}
+
+trough slider:hover {
+    background-color: @yellow;
+}
+
+trough highlight {
+  background-color: @green;
+}
+
+/* Misc */
+.widget-volume {
+    color: @aqua;
+}
+
+.widget-backlight {
+  background-color: @bg2;
+  color: @fg0;
+}
+
+
+/* Scroll */
+scrollbar {
+opacity: 0;
+background: transparent;
+}
+
+scrollbar:active {
+opacity: 1;
+}

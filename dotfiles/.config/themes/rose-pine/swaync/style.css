@@ -1,0 +1,229 @@
+/* =========================
+   Rose Pine palette
+   ========================= */
+
+/* Backgrounds */
+@define-color bg0 #191724;
+@define-color bg1 #1f1d2e;
+@define-color bg2 #26233a;
+@define-color bg3 #403d52;
+@define-color bg4 #524f67;
+
+/* Foreground */
+@define-color fg0 #e0def4;
+@define-color fg1 #e0def4;
+@define-color fg2 #9ccfd8;
+@define-color fg3 #6e6a86;
+
+/* Accents */
+@define-color red #eb6f92;
+@define-color red-bright #f07fa3;
+
+@define-color green #31748f;
+@define-color green-bright #3e8fa6;
+
+@define-color yellow #f6c177;
+@define-color yellow-bright #f8d08f;
+
+@define-color blue #9ccfd8;
+@define-color blue-bright #b5e0e7;
+
+@define-color purple #c4a7e7;
+@define-color purple-bright #d4b8f0;
+
+@define-color aqua #9ccfd8;
+@define-color aqua-bright #b5e0e7;
+
+@define-color orange #ea9a97;
+@define-color orange-bright #f0b0ad;
+
+@define-color gray #6e6a86;
+
+/* =========================
+   Rose Pine SwayNC Theme
+   ========================= */
+
+* {
+    font-family: "Noto Sans";
+    font-size: 12px;
+    transition: 200ms;
+}
+
+/* Notifications */
+.notification {
+    background-color: @bg1;
+    color: @fg0;
+    border: 2px solid @blue;
+    border-radius: 12px;
+    padding: 4px;
+    min-width: 240px;
+    min-height: 30px;
+}
+
+.body {
+  color: @fg0;
+}
+
+.summary {
+  font-size: 14px;
+  font-weight: 500;
+  color: @blue;
+}
+
+.time {
+  font-size: 12px;
+  color: @gray;
+  margin-right: 10px;
+  background: transparent;
+}
+
+.close-button {
+  background-color: @red;
+  color: @bg0;
+  margin-top: 5px;
+  margin-right: 5px;
+  border-radius: 6px;
+}
+
+.close-button:hover {
+  background-color: @orange;
+}
+
+/* Actions */
+.notification-default-action:hover,
+.notification-action:hover {
+    background-color: @bg0;
+    color: @green;
+}
+
+/* Progress */
+.notification.critical progress {
+  background-color: @red;
+}
+
+.notification.low progress,
+.notification.normal progress {
+  background-color: @green;
+}
+
+/* Control Center */
+.control-center {
+    border-radius: 16px;
+    background: @bg0;
+    color: @fg0;
+    border: 1px solid @purple;
+    padding: 6px;
+}
+
+/* Groups */
+.notification-group {
+  background-color: transparent;
+  margin: 2px 8px;
+  font-size: 14px;
+}
+
+.notification-group-icon,
+.notification-group-headers {
+  color: @fg0;
+}
+
+.notification-group-collapse-button,
+.notification-group-close-all-button {
+  background-color: @bg2;
+  color: @fg0;
+  margin: 4px;
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.notification-group-collapse-button:hover,
+.notification-group-close-all-button:hover {
+  background-color: @yellow;
+  color: @bg0;
+}
+
+/* Widgets */
+.widget-label {
+  color: @yellow;
+}
+
+.widget-title {
+  color: @purple;
+}
+
+/* DND */
+.widget-dnd {
+  color: @purple;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.widget-dnd label {
+  color: @purple;
+}
+
+.widget-dnd > switch {
+  background: @bg2;
+}
+
+.widget-dnd > switch:checked {
+  background: @green;
+}
+
+.widget-dnd > switch slider {
+  background: @bg0;
+  border-radius: 10px;
+}
+
+/* Buttons */
+button {
+    background-color: @bg2;
+    color: @fg0;
+    border-radius: 6px;
+}
+
+button:hover {
+    background-color: @orange;
+    color: @bg0;
+}
+
+/* Grid */
+.widget-buttons-grid > flowbox > flowboxchild > button.toggle:checked {
+  background-color: @green;
+  color: @bg0;
+}
+
+/* Volume */
+.widget-volume {
+    color: @aqua;
+}
+
+/* Backlight */
+.widget-backlight {
+  background-color: @bg2;
+  color: @fg0;
+  border-radius: 6px;
+}
+
+/* Sliders */
+trough slider {
+    background-color: @blue;
+}
+
+trough slider:hover {
+    background-color: @yellow;
+}
+
+trough highlight {
+  background-color: @green;
+}
+
+/* Scroll */
+scrollbar {
+    opacity: 0;
+    background: transparent;
+}
+
+scrollbar:active {
+    opacity: 1;
+}
