@@ -100,7 +100,7 @@ echo "horizon" > "$HOME/.config/.current_theme"
 # ------------------------
 
 cp "$HOME/.config/themes/horizon/horizon.conf" "$HOME/.config/hypr/colors.conf"
-y
+
 ln -sf "$HOME/.config/hypr/background/horizon.png" \
        "$HOME/.config/hypr/background/current.png"
 pkill hyprlock 2>/dev/null
@@ -109,5 +109,5 @@ pkill hyprlock 2>/dev/null
 # Hyprland Colours
 # ------------------------
 
-cp "$HOME/.config/themes/nord/nord.conf" \
+cp "$HOME/.config/themes/horizon/horizon.conf" \
    "$HOME/.config/hypr/colors.conf"
