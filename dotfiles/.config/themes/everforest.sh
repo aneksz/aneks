@@ -9,6 +9,7 @@ KITTY_COLORS="$HOME/.config/kitty/colors.conf"
 GTK4_THEME_DIR="$HOME/.local/share/themes/Everforest-BL-MB-Dark/gtk-4.0"
 GTK4_CONFIG="$HOME/.config/gtk-4.0"
 WAYBAR_CONF="$THEME_DIR/waybar/style.css"
+SWAYNC_CONF="$THEME_DIR/swaync/style.css"
 
 # ------------------------
 # Apply Waybar
@@ -19,6 +20,15 @@ if [ -f "$WAYBAR_CONF" ]; then
     sleep 1
     hyprctl dispatch exec waybar
 fi
+
+# ------------------------
+# SwayNC Theme
+# ------------------------
+
+SWAYNC_CONF="$THEME_DIR/swaync/style.css"
+
+cp "$SWAYNC_CONF" ~/.config/swaync/style.css
+swaync-client -rs
 
 # ------------------------
 # Apply Kitty colors persistently
@@ -88,6 +98,7 @@ fi
 spicetify config current_theme Everforest
 spicetify apply -n
 
+
 # ------------------------
 # Save current theme
 # ------------------------
@@ -113,4 +124,10 @@ cp "$HOME/.config/themes/everforest/everforest.conf" \
    "$HOME/.config/hypr/colors.conf"
 
 
+# ------------------------
+# NZXT Colours
+# ------------------------
+
+liquidctl set ring color fixed dbbc7f
+liquidctl set logo color fixed e69875
 

@@ -9,6 +9,7 @@ KITTY_COLORS="$HOME/.config/kitty/colors.conf"
 GTK4_THEME_DIR="$HOME/.local/share/themes/Tokyonight-BL-MB-Dark/gtk-4.0"
 GTK4_CONFIG="$HOME/.config/gtk-4.0"
 WAYBAR_CONF="$THEME_DIR/waybar/style.css"
+SWAYNC_CONF="$THEME_DIR/swaync/style.css"
 
 # ------------------------
 # Apply Waybar
@@ -19,6 +20,15 @@ if [ -f "$WAYBAR_CONF" ]; then
     sleep 1
     hyprctl dispatch exec waybar
 fi
+
+# ------------------------
+# SwayNC Theme
+# ------------------------
+
+SWAYNC_CONF="$THEME_DIR/swaync/style.css"
+
+cp "$SWAYNC_CONF" ~/.config/swaync/style.css
+swaync-client -rs
 
 # ------------------------
 # Apply Kitty colors persistently
@@ -99,7 +109,7 @@ echo "tokyo-night" > "$HOME/.config/.current_theme"
 # ------------------------
 
 cp "$HOME/.config/themes/tokyo-night/tokyo.conf" "$HOME/.config/hypr/colors.conf"
-y
+
 ln -sf "$HOME/.config/hypr/background/tokyo2.png" \
        "$HOME/.config/hypr/background/current.png"
 pkill hyprlock 2>/dev/null

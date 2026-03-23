@@ -9,7 +9,7 @@ KITTY_COLORS="$HOME/.config/kitty/colors.conf"
 GTK4_THEME_DIR="$HOME/.local/share/themes/Gruvbox-BL-MB-Dark/gtk-4.0"
 GTK4_CONFIG="$HOME/.config/gtk-4.0"
 WAYBAR_CONF="$THEME_DIR/waybar/style.css"
-
+SWAYNC_CONF="$THEME_DIR/swaync/style.css"
 # ------------------------
 # Apply Waybar
 # ------------------------
@@ -19,6 +19,15 @@ if [ -f "$WAYBAR_CONF" ]; then
     sleep 1
     hyprctl dispatch exec waybar
 fi
+
+# ------------------------
+# SwayNC Theme
+# ------------------------
+
+SWAYNC_CONF="$THEME_DIR/swaync/style.css"
+
+cp "$SWAYNC_CONF" ~/.config/swaync/style.css
+swaync-client -rs
 
 # ------------------------
 # Apply Kitty colors persistently
@@ -62,8 +71,8 @@ killall nautilus
 # Wallpaper Set
 # ------------------------
 
-swww img ~/.config/themes/gruvbox/wallpapers/gruv1.png --outputs DP-1 --transition-type fade
-swww img ~/.config/themes/gruvbox/wallpapers/wall.png --outputs DP-3 --transition-type fade
+swww img ~/.config/themes/gruvbox/wallpapers/gruv3.png --outputs DP-1 --transition-type fade
+swww img ~/.config/themes/gruvbox/wallpapers/gruv4.png --outputs DP-3 --transition-type fade
 
 # ------------------------
 #  Rofi Theme
@@ -103,7 +112,7 @@ echo "gruvbox" > "$HOME/.config/.current_theme"
 
 cp "$HOME/.config/themes/gruvbox/gruvbox.conf" "$HOME/.config/hypr/colors.conf"
 
-ln -sf "$HOME/.config/hypr/background/gruv1.png" \
+ln -sf "$HOME/.config/hypr/background/gruv3.png" \
        "$HOME/.config/hypr/background/current.png"
 
 pkill hyprlock 2>/dev/null

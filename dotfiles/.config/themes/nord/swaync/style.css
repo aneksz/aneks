@@ -1,0 +1,229 @@
+/* =========================
+   Nord palette
+   ========================= */
+
+/* Backgrounds */
+@define-color bg0 #2e3440;
+@define-color bg1 #3b4252;
+@define-color bg2 #434c5e;
+@define-color bg3 #4c566a;
+@define-color bg4 #616e88;
+
+/* Foreground */
+@define-color fg0 #d8dee9;
+@define-color fg1 #d8dee9;
+@define-color fg2 #a3be8c;
+@define-color fg3 #81a1c1;
+
+/* Accents */
+@define-color red #bf616a;
+@define-color red-bright #d06f79;
+
+@define-color green #a3be8c;
+@define-color green-bright #b1d196;
+
+@define-color yellow #ebcb8b;
+@define-color yellow-bright #f0d399;
+
+@define-color blue #81a1c1;
+@define-color blue-bright #9bb8d6;
+
+@define-color purple #b48ead;
+@define-color purple-bright #c6a3be;
+
+@define-color aqua #88c0d0;
+@define-color aqua-bright #9fd0de;
+
+@define-color orange #d08770;
+@define-color orange-bright #e19a85;
+
+@define-color gray #4c566a;
+
+/* =========================
+   Nord SwayNC Theme
+   ========================= */
+
+* {
+    font-family: "Noto Sans";
+    font-size: 12px;
+    transition: 200ms;
+}
+
+/* Notifications */
+.notification {
+    background-color: @bg1;
+    color: @fg0;
+    border: 2px solid @blue;
+    border-radius: 12px;
+    padding: 4px;
+    min-width: 240px;
+    min-height: 30px;
+}
+
+.body {
+  color: @fg0;
+}
+
+.summary {
+  font-size: 14px;
+  font-weight: 500;
+  color: @blue;
+}
+
+.time {
+  font-size: 12px;
+  color: @gray;
+  margin-right: 10px;
+  background: transparent;
+}
+
+.close-button {
+  background-color: @red;
+  color: @bg0;
+  margin-top: 5px;
+  margin-right: 5px;
+  border-radius: 6px;
+}
+
+.close-button:hover {
+  background-color: @orange;
+}
+
+/* Actions */
+.notification-default-action:hover,
+.notification-action:hover {
+    background-color: @bg0;
+    color: @green;
+}
+
+/* Progress */
+.notification.critical progress {
+  background-color: @red;
+}
+
+.notification.low progress,
+.notification.normal progress {
+  background-color: @green;
+}
+
+/* Control Center */
+.control-center {
+    border-radius: 16px;
+    background: @bg0;
+    color: @fg0;
+    border: 1px solid @blue;
+    padding: 6px;
+}
+
+/* Groups */
+.notification-group {
+  background-color: transparent;
+  margin: 2px 8px;
+  font-size: 14px;
+}
+
+.notification-group-icon,
+.notification-group-headers {
+  color: @fg0;
+}
+
+.notification-group-collapse-button,
+.notification-group-close-all-button {
+  background-color: @bg2;
+  color: @fg0;
+  margin: 4px;
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.notification-group-collapse-button:hover,
+.notification-group-close-all-button:hover {
+  background-color: @yellow;
+  color: @bg0;
+}
+
+/* Widgets */
+.widget-label {
+  color: @yellow;
+}
+
+.widget-title {
+  color: @blue;
+}
+
+/* DND */
+.widget-dnd {
+  color: @blue;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.widget-dnd label {
+  color: @blue;
+}
+
+.widget-dnd > switch {
+  background: @bg2;
+}
+
+.widget-dnd > switch:checked {
+  background: @green;
+}
+
+.widget-dnd > switch slider {
+  background: @bg0;
+  border-radius: 10px;
+}
+
+/* Buttons */
+button {
+    background-color: @bg2;
+    color: @fg0;
+    border-radius: 6px;
+}
+
+button:hover {
+    background-color: @orange;
+    color: @bg0;
+}
+
+/* Grid */
+.widget-buttons-grid > flowbox > flowboxchild > button.toggle:checked {
+  background-color: @green;
+  color: @bg0;
+}
+
+/* Volume */
+.widget-volume {
+    color: @aqua;
+}
+
+/* Backlight */
+.widget-backlight {
+  background-color: @bg2;
+  color: @fg0;
+  border-radius: 6px;
+}
+
+/* Sliders */
+trough slider {
+    background-color: @blue;
+}
+
+trough slider:hover {
+    background-color: @yellow;
+}
+
+trough highlight {
+  background-color: @green;
+}
+
+/* Scroll */
+scrollbar {
+    opacity: 0;
+    background: transparent;
+}
+
+scrollbar:active {
+    opacity: 1;
+}

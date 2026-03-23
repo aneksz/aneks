@@ -1,0 +1,207 @@
+/* =========================
+   Catppuccin Mocha palette
+   ========================= */
+
+/* Backgrounds */
+@define-color bg0 #1e1e2e; /* base */
+@define-color bg1 #181825; /* mantle */
+@define-color bg2 #313244; /* surface0 */
+@define-color bg3 #45475a; /* surface1 */
+@define-color bg4 #585b70; /* surface2 */
+
+/* Foreground */
+@define-color fg0 #cdd6f4; /* text */
+@define-color fg1 #cdd6f4;
+@define-color fg2 #a6e3a1; /* green */
+@define-color fg3 #bac2de; /* subtext1 */
+
+/* Accents */
+@define-color red #f38ba8;
+@define-color red-bright #f5a3b7;
+
+@define-color green #a6e3a1;
+@define-color green-bright #baf5b0;
+
+@define-color yellow #f9e2af;
+@define-color yellow-bright #fce8c6;
+
+@define-color blue #89b4fa;
+@define-color blue-bright #a6c8ff;
+
+@define-color purple #cba6f7;
+@define-color purple-bright #ddb6ff;
+
+@define-color aqua #94e2d5;
+@define-color aqua-bright #acebe0;
+
+@define-color orange #fab387;
+@define-color orange-bright #fbc9a8;
+
+@define-color gray #7f849c;
+
+/* =========================
+   Catppuccin SwayNC Theme
+   ========================= */
+
+* {
+    font-family: "Noto Sans";
+    font-size: 12px;
+    transition: 200ms;
+}
+
+/* Notifications */
+.notification {
+    background-color: @bg1;
+    color: @fg0;
+    border: 2px solid @blue;
+    border-radius: 12px;
+    padding: 4px;
+}
+
+.summary {
+  font-size: 14px;
+  font-weight: 500;
+  color: @blue;
+}
+
+.body {
+  color: @fg0;
+}
+
+.time {
+  color: @gray;
+}
+
+/* Close button */
+.close-button {
+  background-color: @red;
+  color: @bg0;
+  border-radius: 6px;
+}
+
+.close-button:hover {
+  background-color: @orange;
+}
+
+/* Actions */
+.notification-default-action:hover,
+.notification-action:hover {
+    background-color: @bg0;
+    color: @green;
+}
+
+/* Progress */
+.notification.critical progress {
+  background-color: @red;
+}
+
+.notification.low progress,
+.notification.normal progress {
+  background-color: @green;
+}
+
+/* Control Center */
+.control-center {
+    background: @bg0;
+    color: @fg0;
+    border: 1px solid @purple;
+    border-radius: 16px;
+}
+
+/* Groups */
+.notification-group-collapse-button,
+.notification-group-close-all-button {
+  background-color: @bg2;
+  color: @fg0;
+  border-radius: 6px;
+}
+
+.notification-group-collapse-button:hover,
+.notification-group-close-all-button:hover {
+  background-color: @yellow;
+  color: @bg0;
+}
+
+/* Widgets */
+.widget-title {
+  color: @blue;
+}
+
+.widget-label {
+  color: @green;
+}
+
+/* DND */
+.widget-dnd {
+  color: @blue;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.widget-dnd label {
+  color: @blue;
+}
+
+.widget-dnd > switch {
+  background: @bg2;
+}
+
+.widget-dnd > switch:checked {
+  background: @green;
+}
+
+.widget-dnd > switch slider {
+  background: @bg0;
+  border-radius: 10px;
+}
+
+/* Buttons */
+button {
+    background-color: @bg2;
+    color: @fg0;
+    border-radius: 6px;
+}
+
+button:hover {
+    background-color: @orange;
+    color: @bg0;
+}
+
+/* Toggles */
+.widget-buttons-grid > flowbox > flowboxchild > button.toggle:checked {
+  background-color: @green;
+  color: @bg0;
+}
+
+/* Sliders */
+trough slider {
+    background-color: @blue;
+}
+
+trough slider:hover {
+    background-color: @yellow;
+}
+
+trough highlight {
+  background-color: @green;
+}
+
+/* Misc */
+.widget-volume {
+    color: @aqua;
+}
+
+.widget-backlight {
+  background-color: @bg2;
+  color: @fg0;
+}
+
+/* Scroll */ 
+scrollbar { 
+opacity: 0; 
+background: transparent; 
+} 
+
+scrollbar:active { 
+opacity: 1; 
+}
