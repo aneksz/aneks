@@ -74,7 +74,7 @@ toggle_vpn() {
 # ----------------------
 select_vpn() {
     configs=$(find "$WG_DIR" -maxdepth 1 -name "*.conf" -printf "%f\n" | sed 's/.conf//' | sort)
-    theme="$HOME/.config/rofi/launchers/type-2/style-2.rasi"
+    theme="$HOME/.config/rofi/launchers/type-2/style-1.rasi"
 
     iface=$(printf "%s\n" "$configs" | rofi -dmenu -p "Select VPN" -theme "$theme")
     [ -z "$iface" ] && exit 0

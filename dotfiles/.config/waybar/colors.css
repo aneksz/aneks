@@ -1,0 +1,49 @@
+/* =========================
+   Everforest Dark (Unified)
+   ========================= */
+
+/* ---------- Backgrounds ---------- */
+@define-color bg0 #2b3339;
+@define-color bg1 #323c41;
+@define-color bg2 #3a454a;
+@define-color bg3 #445055;
+@define-color bg4 #4c555b;
+
+/* ---------- Foreground ---------- */
+@define-color fg0 #d3c6aa;
+@define-color fg1 #d3c6aa;
+@define-color fg2 #a7c080;
+@define-color fg3 #859289;
+
+/* ---------- Base palette ---------- */
+@define-color red #e67e80;
+@define-color red-bright #f85552;
+
+@define-color green #a7c080;
+@define-color green-bright #b8d99f;
+
+@define-color yellow #dbbc7f;
+@define-color yellow-bright #e6c384;
+
+@define-color blue #7fbbb3;
+@define-color blue-bright #9fd3c7;
+
+@define-color purple #d699b6;
+@define-color purple-bright #e0a9c5;
+
+@define-color aqua #83c092;
+@define-color aqua-bright #9fd9a5;
+
+@define-color orange #e69875;
+@define-color orange-bright #f0a080;
+
+@define-color gray #859289;
+
+/* ---------- Semantic roles ---------- */
+@define-color accent @blue;
+@define-color accent-hover @aqua;
+@define-color border @yellow;
+
+@define-color warning @yellow;
+@define-color error @red;
+@define-color success @green;
