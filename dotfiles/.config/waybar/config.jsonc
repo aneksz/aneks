@@ -8,7 +8,7 @@
   "height": 44,
   "click-events": true,
   "modules-left": ["hyprland/workspaces","custom/user"],
-  "modules-center": ["custom/cava","custom/gpu-temp","custom/cputemp","clock","custom/weather","custom/vpn","custom/spotify"],
+  "modules-center": ["group/hardware-capsule"],
   "modules-right": [
     "group/disk",
     "group/system"
@@ -24,8 +24,18 @@
     "custom/notifications"
   ]
   },
-
-
+   "group/hardware-capsule": {
+    "orientation": "horizontal",
+    "modules": [
+        "custom/cava",
+        "custom/gpu-temp",
+        "custom/cputemp",
+        "clock",
+        "custom/weather",
+        "custom/vpn",
+        "custom/spotify"
+    ]
+},
 
   "hyprland/workspaces": {
     "on-click": "activate",
@@ -55,7 +65,7 @@
 "custom/vpn": {
     "exec": "~/.config/waybar/scripts/vpn.sh",
     "return-type": "json",
-    "interval": 1,
+    "interval": 5,
     "format": "{}",
     "on-click": "~/.config/waybar/scripts/vpn.sh toggle",
     "on-click-right": "~/.config/waybar/scripts/vpn.sh select"
@@ -69,9 +79,9 @@
 
 
 "custom/cputemp": {
-    "exec": "sensors -u k10temp-pci-00c3 | awk '/temp1_input:/ {print int($2) \"°C\"; exit}'",
-    "interval": 5,
-    "format": " {}"
+  "exec": "sensors -u k10temp-pci-00c3 | awk '/temp1_input:/ {t=int($2); if(t<55)c=\"normal\"; else if(t<70)c=\"warm\"; else if(t<85)c=\"hot\"; else c=\"critical\"; printf(\"{\\\"text\\\":\\\" %d°C\\\",\\\"class\\\":\\\"%s\\\"}\\n\",t,c); exit}'",
+  "interval": 5,
+  "return-type": "json"
 },
 
 "custom/gpu-temp": {
@@ -113,7 +123,7 @@
   "custom/user": {
    "format": "{}",
     "exec": "~/.config/waybar/scripts/user.sh",
-    "interval": 1,
+    "interval": 5,
     "on-click": "nwg-look",
     "return-type": "json"
 },
@@ -161,7 +171,7 @@
     "tooltip-format": "{text}",
     "return-type": "json",
     "interval": 1,
-    "max-length": 30,
+    "max-length": 25,
     "on-click": "playerctl --player=spotify play-pause",
     "on-scroll-up": "playerctl --player=spotify next",
     "on-scroll-down": "playerctl --player=spotify previous",

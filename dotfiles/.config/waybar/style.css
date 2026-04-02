@@ -1,42 +1,16 @@
-/* =========================
-   Catppuccin Mocha palette
-   ========================= */
-@define-color crust #11111b;
-@define-color base #1e1e2e;
-@define-color mantle #181825;
-@define-color text #cdd6f4;
-@define-color subtext0 #a6adc8;
-@define-color subtext1 #bac2de;
-@define-color surface0 #313244;
-@define-color surface1 #45475a;
-@define-color surface2 #585b70;
-@define-color overlay0 #6c7086;
-@define-color overlay1 #7f849c;
-@define-color overlay2 #9399b2;
-@define-color blue #89b4fa;
-@define-color lavender #b4befe;
-@define-color sapphire #74c7ec;
-@define-color sky #89dceb;
-@define-color teal #94e2d5;
-@define-color green #a6e3a1;
-@define-color yellow #f9e2af;
-@define-color peach #fab387;
-@define-color maroon #eba0ac;
-@define-color red #f38ba8;
-@define-color mauve #cba6f7;
-@define-color pink #f5c2e7;
-@define-color flamingo #f2cdcd;
-@define-color rosewater #f5e0dc;
-@define-color bright-green #64ffda;
+@import "colors.css";
 
 /* =========================
    Global bar styling
    ========================= */
+
 * {
   border: none;
   border-radius: 0;
   font-family: "JetBrainsMono Nerd Font Propo";
-  font-size: 14px;
+  letter-spacing: 0.3px;
+  font-size: 13.5px;
+  font-weight: 600;
   min-height: 0;
   margin: 0;
   padding: 0;
@@ -44,119 +18,58 @@
 
 window#waybar {
   background: transparent;
-  border: none;
-  color: @text;
+  color: @fg1;
+  margin-top: 6px;
+  padding: 0;
 }
 
 /* ========================= LEFT MODULES ========================= */
-.modules-left {
-  border-radius: 18px;
-  padding: 4px 10px;
-  margin: 2px 6px 2px 0px;
-}
 
-.modules-left > widget {
-  padding: 0;
-  margin: 0 4px;
-  border-radius: 8px;
-}
-
-/* ========================= CENTER MODULES (Capsule) ========================= */
-/* This is now the single capsule for GPU, CPU, clock, weather, VPN etc */
-.modules-center {
-  background: @mantle;
-  font-size: 14px;          /* match global size */
-  border-radius: 18px;
-  padding: 4px 10px;
-  margin: 6px;
-}
-
-.modules-center > widget {
-  padding-left: 10px;
-  padding-right: 10px;
-  margin: 0 4px;
-  border-radius: 0;
-}
-
-
-/* ========================= RIGHT MODULES ========================= */
-.modules-right {
-  border-radius: 18px;
-  padding: 4px 10px;
-  margin: 2px 0px 2px 6px;
-}
-
-.modules-right > widget {
-  padding: 0 6px;
-  margin: 0 8px;
-  border-radius: 8px;
-}
-
-/* MODULES PILL - RIGHT SIDE */
-
-#bluetooth {
-  background: @mantle;
-  border-radius: 18px 0 0 18px;
-  padding: 4px 8px 4px 12px;
-  font-weight: bold;
-  margin-left: 6px;
-}
-
-#network,
-#custom-updates,
-#pulseaudio {
-  background: @mantle;
-  border-radius: 0;
-  padding: 4px 8px;
-  font-weight: bold;
-}
-
-#custom-notifications {
-  background: @mantle;
-  border-radius: 0 18px 18px 0;
-  padding: 4px 12px 4px 8px;
-  margin-right: 6px;
-  font-weight: bold;
-}
-
-#bluetooth { color: @lavender; }
-#network { color: @sky; }
-#custom-updates { color: @pink; }
-#pulseaudio { color: @green; }
-#custom-notifications { color: @red; }
-
-#network.disconnected { color: @red; }
-#pulseaudio.muted { color: @overlay1; }
-
-/* ========================= Workspaces ========================= */
 #workspaces {
-  padding: 0 4px;
-  background: @mantle;
+  background: @bg2;
   border-radius: 18px;
+  margin-top: 6px;
+  margin-left: 6px;
+  padding: 2px 10px;
 }
 
 #workspaces button {
-  font-weight: bold;
   padding: 4px;
-  background-color: rgba(0, 0, 0, 0.1);
-  color: @mauve;
-  border-radius: 50%;
   margin: 0 4px;
+  border-radius: 50%;
+  color: @purple;
 }
 
 #workspaces button.active {
-  background: transparent;
-  color: @red;
+  color: @yellow;
 }
 
 #workspaces button:hover {
-  background: transparent;
-  color: @text;
+  color: @fg1;
+  border-radius: 18px;
 }
 
-/* ========================= Capsule inner modules ========================= */
-/* These now have NO background; the capsule provides it */
+#custom-user {
+ background: @bg2;
+ color: @green;
+ border-radius: 18px;
+ margin-top: 6px;
+ margin-left: 4px;
+ padding: 2px 10px;
+   
+}
 
+/* ========================= CENTRE MODULES ========================= */
+
+/* The Main Container */
+#hardware-capsule {
+  background: @bg2;
+  margin-top: 6px;
+  padding: 2px 10px;  
+  border-radius: 18px;
+}
+
+/* Individual module spacing & colors */
 #custom-cava,
 #custom-gpu-temp,
 #cpu,
@@ -165,162 +78,96 @@ window#waybar {
 #custom-weather,
 #custom-vpn,
 #custom-spotify {
+  padding: 4px 10px; 
   background: transparent;
-  border-radius: 0;
-  margin: 0;
-  padding: 0 6px;
-  font-weight: bold;
 }
 
-/* Their colors */
+/* Your existing colors */
 #custom-cava { color: @green; }
-#custom-gpu-temp { color: @pink; }
-#cpu { color: @yellow; }
-#custom-cputemp { color: @mauve; }
-#clock { color: @yellow; }
-#custom-weather { color: @flamingo; }
-#custom-vpn { color: @lavender; }
-#custom-spotify { color: @green; }
+#custom-cputemp.normal { color: @green; }
+#custom-cputemp.warm { color: @yellow; }
+#custom-cputemp.hot { color: @red; }
+#custom-cputemp.critical { color: @red-bright; }
+#custom-gpu-temp.normal { color: @green; }
+#custom-gpu-temp.warm { color: @yellow; }
+#custom-gpu-temp.hot { color: @red; }
+#custom-gpu-temp.critical { color: @red-bright; }
+#clock { color: @yellow-bright; }
+#custom-weather { color: @blue-bright; }
+#custom-vpn { color: @purple; }
+#custom-spotify { color: @green-bright; }
 
-/* ========================= Other Modules (unchanged pills) ========================= */
 
-
-/* Left side of the pill */
-#disk {
-  background: @mantle;
-  border-radius: 18px;
-  color: @blue;
-  font-weight: bold;
-  padding: 4px 8px;
-  margin-right: 0;
+#custom-cputemp,
+#custom-gpu-temp {
+  transition: color 0.3s ease;
 }
 
-/* Right side of the pill */
+
+
+
+
+/* ========================= DISK ========================= */
+
+#disk,
 #disk#data {
-  background: @mantle;
+  background: @bg2;
   border-radius: 18px;
-  color: @teal;
-  font-weight: bold;
-  padding: 4px 8px;
-  margin-right: 6px;
+  padding: 2px 10px;
+  margin-top: 6px;
+  margin-right: 4px;
 }
 
+#disk { color: @blue-bright; }
+#disk#data { color: @aqua; margin-right: 6px; }
 
-/* ========================= Tray ========================= */
-#tray {
-  background: @mantle;
+/* ========================= RIGHT MODULES ========================= */
+
+#system {
+  background: @bg2;
+  margin-top: 6px;
+  margin-right: 6px;
+  padding: 2px 10px;  
   border-radius: 18px;
-  padding-right: 10px;
-  padding-left: 10px;
-  margin-right: 6px;
 }
 
-#tray > .item,
-#tray .tray-group-item,
-#tray .tray-item {
-  padding: 0;
-  margin: 0 6px;
-  border-radius: 6px;
-  color: @mantle;
+#bluetooth,
+#network,
+#custom-updates,
+#pulseaudio,
+#custom-notifications {
+  padding: 2px 10px; /* Adjust the 8px to your liking */
+  background: transparent;
+  margin: 0;
 }
 
-#tray > .item:hover,
-#tray .tray-group-item:hover,
-#tray .tray-item:hover {
-  background: @surface1;
-}
+#bluetooth { color: @purple; }
+#network { color: @blue-bright; }
+#custom-updates { color: @orange-bright; }
+#pulseaudio { color: @green; }
+#custom-notifications { color: @red-bright; }
 
-/* ========================= Tooltip ========================= */
+#network.disconnected { color: @red; }
+#pulseaudio.muted { color: @gray; }
+
+/* ========================= TOOLTIP ========================= */
+
 tooltip {
-  background: @mantle;
+  background: @bg2;
   border-radius: 12px;
+  margin: 8px;
 }
 
 tooltip label {
-  color: @flamingo;
-  padding: 2px;
+  color: @yellow;
+  padding: 4px;
 }
 
-/* ========================= Custom modules ========================= */
-
-#custom-omarchy {
-  background: @peach;
-  color: @mantle;
-  font-weight: bold;
-  padding-left: 8px;
-  padding-right: 12px;
-  margin-left: 2px;
-  border-radius: 18px;
+tooltip decoration {
+  background-color: transparent;
 }
 
-#custom-update {
-  background: @teal;
-  color: @mantle;
-  margin-left: 6px;
-  padding-left: 10px;
-  padding-right: 10px;
-  border-radius: 18px;
-}
-
-#custom-power {
-  background: @mantle;
-  border-radius: 16px;
-  margin-right: 12px;
-  color: @peach;
-  padding-right: 10px;
-  padding-left: 10px;
-}
-
-#custom-user {
-  background: @mantle;
-  color: @sky;
-  font-weight: bold;
-  padding-left: 10px;
-  padding-right: 10px;
-  border-radius: 18px;
-  margin-left: 6px;
-}
-
-#custom-battery {
-  background: @mantle;
-  color: @green;
-  padding-left: 10px;
-  padding-right: 10px;
-  border-radius: 18px;
-  margin-left: 6px;
-}
-
-/*
-  #custom-spotify {
-  color: @green;
-  margin-right: 6px;
-  font-weight: bold;
-  border-radius: 18px;
-  background: @mantle;
-  padding-left: 10px;
-  padding-right: 10px;
-} 
-*/
-#custom-expand-icon {
-  background: @mantle;
-  border-radius: 18px;
-  margin-right: 6px;
-  color: @red;
-  padding-left: 10px;
-  padding-right: 0px;
-}
-
-#custom-cava {
-  background: @mantle;
-  border-radius: 18px;
-  color: @green;
-  padding-left: 10px;
-  padding-right: 10px;
-  margin-left: 6px;
-  letter-spacing: 2px;
-}
-
-/* ========================= Animations ========================= */
+/* ========================= ANIMATIONS ========================= */
 
 #custom-vpn.connected {
   animation: pulse 2s infinite ease-in-out;
