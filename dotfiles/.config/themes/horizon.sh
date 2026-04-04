@@ -1,42 +1,67 @@
 #!/usr/bin/env bash
 
+THEME="horizon"
+THEME_DIR="$HOME/.config/themes/$THEME"
+
+sed -i "s/^color_theme *= *.*/color_theme = \"$THEME\"/" ~/.config/btop/btop.conf
+
+# reload btop if running
+if pgrep -x btop >/dev/null; then
+  pkill btop
+  kitty -e btop &
+fi
+
+(sleep 0.6 && notify-send -a "theme-switcher" "" "<b>Theme Updated</b>\nApplied Theme: $THEME") &
+
 # ------------------------
 # Paths
 # ------------------------
-THEME_DIR="$HOME/.config/themes/horizon"
-KITTY_CONF="$HOME/.config/kitty/kitty.conf"
+WAYBAR_DIR="$HOME/.config/waybar"
+SWAYNC_DIR="$HOME/.config/swaync"
+WLOGOUT_DIR="$HOME/.config/wlogout"
+HYPR_DIR="$HOME/.config/hypr"
+
 KITTY_COLORS="$HOME/.config/kitty/colors.conf"
-GTK4_THEME_DIR="$HOME/.local/share/themes/Material-BL-LB-Dark-Darker/gtk-4.0"
+GTK4_THEME_DIR="$HOME/.local/share/themes/Material-BL-MB-Dark-Darker/gtk-4.0"
 GTK4_CONFIG="$HOME/.config/gtk-4.0"
-WAYBAR_CONF="$THEME_DIR/waybar/style.css"
-SWAYNC_CONF="$THEME_DIR/swaync/style.css"
 
 # ------------------------
-# Apply Waybar
+# Shared colors
 # ------------------------
-if [ -f "$WAYBAR_CONF" ]; then
-    cp "$WAYBAR_CONF" "$HOME/.config/waybar/style.css"
-    pkill waybar
-    sleep 1
-    hyprctl dispatch exec waybar
-fi
+cp "$THEME_DIR/colors.css" "$WAYBAR_DIR/colors.css"
+cp "$THEME_DIR/colors.css" "$SWAYNC_DIR/colors.css"
+cp "$THEME_DIR/colors.css" "$WLOGOUT_DIR/colors.css"
 
 # ------------------------
-# SwayNC Theme
+# Waybar reload
 # ------------------------
+pkill waybar
+sleep 0.5
+waybar &
 
-SWAYNC_CONF="$THEME_DIR/swaync/style.css"
-
-cp "$SWAYNC_CONF" ~/.config/swaync/style.css
+# ------------------------
+# SwayNC reload
+# ------------------------
 swaync-client -rs
 
 # ------------------------
-# Apply Kitty colors persistently
+# Wlogout icons
+# ------------------------
+rm -f "$WLOGOUT_DIR/icons/current"
+ln -s "$WLOGOUT_DIR/icons/$THEME" "$WLOGOUT_DIR/icons/current"
+
+# ------------------------
+# Hyprland colors
+# ------------------------
+cp "$THEME_DIR/hypr.conf" "$HYPR_DIR/colors.conf"
+
+
+# ------------------------
+# Kitty
 # ------------------------
 if [ -f "$THEME_DIR/kitty/horizon.colors.conf" ]; then
     cp "$THEME_DIR/kitty/horizon.colors.conf" "$KITTY_COLORS"
 
-    # Update all running kitty windows
     for SOCKET in ~/.config/kitty/kitty.sock-*; do
         if [ -S "$SOCKET" ]; then
             export KITTY_LISTEN_ON="unix:$SOCKET"
@@ -48,8 +73,9 @@ fi
 # ------------------------
 # GTK3 / legacy apps
 # ------------------------
-gsettings set org.gnome.desktop.interface gtk-theme "Material-BL-LB-Dark-Darker"
-gsettings set org.gnome.desktop.interface icon-theme "Tela-Red"
+
+gsettings set org.gnome.desktop.interface gtk-theme "Material-BL-MB-Dark-Darker"
+gsettings set org.gnome.desktop.interface icon-theme "Tela-red"
 gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
 
 # -----------------------
@@ -69,55 +95,51 @@ xsettingsd &
 killall nautilus
 
 # ------------------------
-# Wallpaper Set
+# Wallpaper
 # ------------------------
 
-swww img ~/.config/themes/horizon/wallpapers/horizon.png --outputs DP-1 --transition-type fade
-swww img ~/.config/themes/horizon/wallpapers/horizon3.png --outputs DP-3 --transition-type fade
+awww img ~/.config/themes/horizon/wallpapers/horizon.png --outputs DP-1 --transition-type grow
+awww img ~/.config/themes/horizon/wallpapers/horizon3.png --outputs DP-3 --transition-type grow
 
 # ------------------------
-#  Rofi Theme
+# Rofi
 # ------------------------
-
-cp ~/.config/themes/horizon/colors.rasi ~/.config/rofi/launchers/type-2/shared
+cp "$THEME_DIR/colors.rasi" ~/.config/rofi/launchers/type-2/shared
 
 # ------------------------
-# VSCodium Theme
+# VSCodium
 # ------------------------
-
 VSCODE_SETTINGS="$HOME/.config/VSCodium/User/settings.json"
-
 if [ -f "$VSCODE_SETTINGS" ]; then
     sed -i 's/"workbench.colorTheme":[[:space:]]*"[^"]*"/"workbench.colorTheme": "Horizon"/' "$VSCODE_SETTINGS"
 fi
 
-
 # ------------------------
-# Spotify Theme
+# Spotify
 # ------------------------
-
 spicetify config current_theme Horizon
-spicetify apply -n
+
+if pgrep -x spotify >/dev/null; then
+  spicetify apply -n
+  sleep 0.3
+  hyprctl dispatch focuswindow class:spotify
+  hyprctl dispatch sendshortcut CTRL_SHIFT, R, class:spotify
+fi
 
 # ------------------------
-# Save current theme
+# Hyprlock
 # ------------------------
-echo "horizon" > "$HOME/.config/.current_theme"
-
-
-# ------------------------
-#  Hyprlock Theme
-# ------------------------
-
-cp "$HOME/.config/themes/horizon/horizon.conf" "$HOME/.config/hypr/colors.conf"
-
-ln -sf "$HOME/.config/hypr/background/horizon.png" \
-       "$HOME/.config/hypr/background/current.png"
+ln -sf "$HYPR_DIR/background/horizon.png" "$HYPR_DIR/background/current.png"
 pkill hyprlock 2>/dev/null
 
 # ------------------------
-# Hyprland Colours
+# Save theme
 # ------------------------
+echo "$THEME" > "$HOME/.config/.current_theme"
 
-cp "$HOME/.config/themes/horizon/horizon.conf" \
-   "$HOME/.config/hypr/colors.conf"
+
+# -----------------------
+# Kitty and Fastfetch
+# -----------------------   
+
+

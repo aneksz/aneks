@@ -1,0 +1,16 @@
+/* Base palette */
+@define-color bg0 #2b3339;
+@define-color bg1 #323c41;
+
+@define-color blue #7fbbb3;
+@define-color green #a7c080;
+@define-color yellow #dbbc7f;
+@define-color purple #d699b6;
+@define-color aqua #83c092;
+@define-color orange #e69875;
+
+/* Semantic roles */
+@define-color accent @blue;
+@define-color accent-hover @aqua;
+@define-color border @blue;
+@define-color warning @yellow;

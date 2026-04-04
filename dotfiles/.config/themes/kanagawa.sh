@@ -1,42 +1,67 @@
 #!/usr/bin/env bash
 
+THEME="kanagawa"
+THEME_DIR="$HOME/.config/themes/$THEME"
+
+sed -i "s/^color_theme *= *.*/color_theme = \"$THEME\"/" ~/.config/btop/btop.conf
+
+# reload btop if running
+if pgrep -x btop >/dev/null; then
+  pkill btop
+  kitty -e btop &
+fi
+
+(sleep 0.6 && notify-send -a "theme-switcher" "" "<b>Theme Updated</b>\nApplied Theme: $THEME") &
+
 # ------------------------
 # Paths
 # ------------------------
-THEME_DIR="$HOME/.config/themes/kanagawa"
-KITTY_CONF="$HOME/.config/kitty/kitty.conf"
+WAYBAR_DIR="$HOME/.config/waybar"
+SWAYNC_DIR="$HOME/.config/swaync"
+WLOGOUT_DIR="$HOME/.config/wlogout"
+HYPR_DIR="$HOME/.config/hypr"
+
 KITTY_COLORS="$HOME/.config/kitty/colors.conf"
 GTK4_THEME_DIR="$HOME/.local/share/themes/Kanagawa-BL-MB-Dark/gtk-4.0"
 GTK4_CONFIG="$HOME/.config/gtk-4.0"
-WAYBAR_CONF="$THEME_DIR/waybar/style.css"
-SWAYNC_CONF="$THEME_DIR/swaync/style.css"
 
 # ------------------------
-# Apply Waybar
+# Shared colors
 # ------------------------
-if [ -f "$WAYBAR_CONF" ]; then
-    cp "$WAYBAR_CONF" "$HOME/.config/waybar/style.css"
-    pkill waybar
-    sleep 0.5
-    hyprctl dispatch exec waybar
-fi
+cp "$THEME_DIR/colors.css" "$WAYBAR_DIR/colors.css"
+cp "$THEME_DIR/colors.css" "$SWAYNC_DIR/colors.css"
+cp "$THEME_DIR/colors.css" "$WLOGOUT_DIR/colors.css"
 
 # ------------------------
-# SwayNC Theme
+# Waybar reload
 # ------------------------
+pkill waybar
+sleep 0.5
+waybar &
 
-SWAYNC_CONF="$THEME_DIR/swaync/style.css"
-
-cp "$SWAYNC_CONF" ~/.config/swaync/style.css
+# ------------------------
+# SwayNC reload
+# ------------------------
 swaync-client -rs
 
 # ------------------------
-# Apply Kitty colors persistently
+# Wlogout icons
+# ------------------------
+rm -f "$WLOGOUT_DIR/icons/current"
+ln -s "$WLOGOUT_DIR/icons/$THEME" "$WLOGOUT_DIR/icons/current"
+
+# ------------------------
+# Hyprland colors
+# ------------------------
+cp "$THEME_DIR/hypr.conf" "$HYPR_DIR/colors.conf"
+hyprctl reload
+
+# ------------------------
+# Kitty
 # ------------------------
 if [ -f "$THEME_DIR/kitty/kanagawa.colors.conf" ]; then
     cp "$THEME_DIR/kitty/kanagawa.colors.conf" "$KITTY_COLORS"
 
-    # Update all running kitty windows
     for SOCKET in ~/.config/kitty/kitty.sock-*; do
         if [ -S "$SOCKET" ]; then
             export KITTY_LISTEN_ON="unix:$SOCKET"
@@ -46,15 +71,15 @@ if [ -f "$THEME_DIR/kitty/kanagawa.colors.conf" ]; then
 fi
 
 # ------------------------
-# GTK3 / legacy apps
+# GTK
 # ------------------------
 gsettings set org.gnome.desktop.interface gtk-theme "Kanagawa-BL-MB-Dark"
 gsettings set org.gnome.desktop.interface icon-theme "Kanagawa"
 gsettings set org.gnome.desktop.interface color-scheme "prefer-dark"
 
-# -----------------------
-# GTK4 / libadwaita apps
-# -----------------------
+# ------------------------
+# GTK4 / libadwaita
+# ------------------------
 if [ -d "$GTK4_THEME_DIR" ]; then
     rm -rf "$GTK4_CONFIG/assets" "$GTK4_CONFIG/gtk.css" "$GTK4_CONFIG/gtk-dark.css" 2>/dev/null
     ln -s "$GTK4_THEME_DIR/assets" "$GTK4_CONFIG/assets"
@@ -62,61 +87,56 @@ if [ -d "$GTK4_THEME_DIR" ]; then
     ln -s "$GTK4_THEME_DIR/gtk-dark.css" "$GTK4_CONFIG/gtk-dark.css"
 fi
 
-# Reload xsettingsd for GTK3/X11 apps
 killall xsettingsd 2>/dev/null
 xsettingsd &
 
-killall nautilus
+killall nautilus 2>/dev/null
 
 # ------------------------
-# Wallpaper Set
+# Wallpaper
 # ------------------------
-
-swww img ~/.config/themes/kanagawa/wallpapers/kanagawa1.png --outputs DP-1 --transition-type fade
-swww img ~/.config/themes/kanagawa/wallpapers/kanagawa2.jpg --outputs DP-3 --transition-type fade
-
-# ------------------------
-#  Rofi Theme
-# ------------------------
-
-cp ~/.config/themes/kanagawa/colors.rasi ~/.config/rofi/launchers/type-2/shared
+awww img "$THEME_DIR/wallpapers/kanagawa1.png" --outputs DP-1 --transition-type grow
+awww img "$THEME_DIR/wallpapers/kanagawa2.png" --outputs DP-3 --transition-type grow
 
 # ------------------------
-# VSCodium Theme
+# Rofi
 # ------------------------
+cp "$THEME_DIR/colors.rasi" ~/.config/rofi/launchers/type-2/shared
 
+# ------------------------
+# VSCodium
+# ------------------------
 VSCODE_SETTINGS="$HOME/.config/VSCodium/User/settings.json"
-
 if [ -f "$VSCODE_SETTINGS" ]; then
     sed -i 's/"workbench.colorTheme":[[:space:]]*"[^"]*"/"workbench.colorTheme": "Nightingale"/' "$VSCODE_SETTINGS"
 fi
 
 # ------------------------
-# Spotify Theme
+# Spotify
 # ------------------------
-
 spicetify config current_theme Kanagawa
-spicetify apply -n
+
+if pgrep -x spotify >/dev/null; then
+  spicetify apply -n
+  sleep 0.3
+  hyprctl dispatch focuswindow class:spotify
+  hyprctl dispatch sendshortcut CTRL_SHIFT, R, class:spotify
+fi
 
 # ------------------------
-# Save current theme
+# Hyprlock
 # ------------------------
-echo "kanagawa" > "$HOME/.config/.current_theme"
-
-# ------------------------
-#  Hyprlock Theme
-# ------------------------
-
-cp "$HOME/.config/themes/kanagawa/kanagawa.conf" "$HOME/.config/hypr/colors.conf"
-
-ln -sf "$HOME/.config/hypr/background/kanagawa1.png" \
-       "$HOME/.config/hypr/background/current.png"
-
+ln -sf "$HYPR_DIR/background/kanagawa1.png" "$HYPR_DIR/background/current.png"
 pkill hyprlock 2>/dev/null
 
 # ------------------------
-# Hyprland Colours
+# Save theme
 # ------------------------
+echo "$THEME" > "$HOME/.config/.current_theme"
 
-cp "$HOME/.config/themes/kanagawa/kanagawa.conf" \
-   "$HOME/.config/hypr/colors.conf"
+
+# -----------------------
+# Kitty and Fastfetch
+# -----------------------   
+
+

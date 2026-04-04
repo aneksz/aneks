@@ -1,0 +1,29 @@
+/* =========================
+   Graphite Dark palette
+   ========================= */
+
+/* Backgrounds */
+@define-color bg0 #1e1e1e;
+@define-color bg1 #242424;
+@define-color bg2 #2c2c2c;
+@define-color bg3 #343434;
+@define-color bg4 #3d3d3d;
+
+/* Foreground */
+@define-color fg0 #e6e6e6;
+@define-color fg1 #d4d4d4;
+@define-color fg2 #bfbfbf;
+@define-color fg3 #a6a6a6;
+
+/* Accents (very subtle) */
+@define-color accent #8a8a8a;
+@define-color accent-hover #a0a0a0;
+
+/* Semantic */
+@define-color border #3a3a3a;
+@define-color warning #c0a060;
+@define-color error #c06060;
+@define-color success #7fa87f;
+
+/* Optional cool tint (very subtle blue) */
+@define-color blue #6f8faf;

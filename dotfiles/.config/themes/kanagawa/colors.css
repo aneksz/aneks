@@ -1,0 +1,49 @@
+/* =========================
+   Kanagawa Dark (Unified)
+   ========================= */
+
+/* ---------- Backgrounds ---------- */
+@define-color bg0 #1f1f28;
+@define-color bg1 #2a2a37;
+@define-color bg2 #363646;
+@define-color bg3 #54546d;
+@define-color bg4 #727169;
+
+/* ---------- Foreground ---------- */
+@define-color fg0 #dcd7ba;
+@define-color fg1 #c8c093;
+@define-color fg2 #a6a69c;
+@define-color fg3 #727169;
+
+/* ---------- Base palette ---------- */
+@define-color red #c34043;
+@define-color red-bright #e82424;
+
+@define-color green #98bb6c;
+@define-color green-bright #b8d99f;
+
+@define-color yellow #dca561;
+@define-color yellow-bright #e6c384;
+
+@define-color blue #7e9cd8;
+@define-color blue-bright #9cabca;
+
+@define-color purple #957fb8;
+@define-color purple-bright #b8a0d9;
+
+@define-color aqua #7aa89f;
+@define-color aqua-bright #9fd9d0;
+
+@define-color orange #ffa066;
+@define-color orange-bright #ffb07b;
+
+@define-color gray #727169;
+
+/* ---------- Semantic roles ---------- */
+@define-color accent @blue;
+@define-color accent-hover @aqua;
+@define-color border @blue;
+
+@define-color warning @yellow;
+@define-color error @red;
+@define-color success @green;

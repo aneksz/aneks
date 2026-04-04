@@ -1,0 +1,49 @@
+/* =========================
+   One Dark (Unified)
+   ========================= */
+
+/* ---------- Backgrounds ---------- */
+@define-color bg0 #1e2127;
+@define-color bg1 #282c34;
+@define-color bg2 #2c313c;
+@define-color bg3 #353b45;
+@define-color bg4 #3e4451;
+
+/* ---------- Foreground ---------- */
+@define-color fg0 #abb2bf;
+@define-color fg1 #9da5b4;
+@define-color fg2 #7f848e;
+@define-color fg3 #5c6370;
+
+/* ---------- Base palette ---------- */
+@define-color red #e06c75;
+@define-color red-bright #ff7a84;
+
+@define-color green #98c379;
+@define-color green-bright #b6e08a;
+
+@define-color yellow #e5c07b;
+@define-color yellow-bright #ffd68a;
+
+@define-color blue #61afef;
+@define-color blue-bright #7bc3ff;
+
+@define-color purple #c678dd;
+@define-color purple-bright #d891f0;
+
+@define-color aqua #56b6c2;
+@define-color aqua-bright #6fd4e0;
+
+@define-color orange #d19a66;
+@define-color orange-bright #e6ad7a;
+
+@define-color gray #5c6370;
+
+/* ---------- Semantic roles ---------- */
+@define-color accent @blue;
+@define-color accent-hover @aqua;
+@define-color border @blue;
+
+@define-color warning @yellow;
+@define-color error @red;
+@define-color success @green;

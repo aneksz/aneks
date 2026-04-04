@@ -1,0 +1,49 @@
+/* =========================
+   Nord (Unified)
+   ========================= */
+
+/* ---------- Backgrounds ---------- */
+@define-color bg0 #2e3440;
+@define-color bg1 #3b4252;
+@define-color bg2 #434c5e;
+@define-color bg3 #4c566a;
+@define-color bg4 #616e88;
+
+/* ---------- Foreground ---------- */
+@define-color fg0 #eceff4;
+@define-color fg1 #e5e9f0;
+@define-color fg2 #d8dee9;
+@define-color fg3 #c0c5ce;
+
+/* ---------- Base palette ---------- */
+@define-color red #bf616a;
+@define-color red-bright #d06f79;
+
+@define-color green #a3be8c;
+@define-color green-bright #b6d3a2;
+
+@define-color yellow #ebcb8b;
+@define-color yellow-bright #f2d399;
+
+@define-color blue #81a1c1;
+@define-color blue-bright #9ab8d4;
+
+@define-color purple #b48ead;
+@define-color purple-bright #c6a2bf;
+
+@define-color aqua #88c0d0;
+@define-color aqua-bright #9fd3e0;
+
+@define-color orange #d08770;
+@define-color orange-bright #e39a84;
+
+@define-color gray #4c566a;
+
+/* ---------- Semantic roles ---------- */
+@define-color accent @blue;
+@define-color accent-hover @aqua;
+@define-color border @blue;
+
+@define-color warning @yellow;
+@define-color error @red;
+@define-color success @green;

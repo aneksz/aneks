@@ -55,7 +55,7 @@ window#waybar {
  border-radius: 18px;
  margin-top: 6px;
  margin-left: 4px;
- padding: 2px 10px;
+ padding: 2px 18px;
    
 }
 
@@ -72,7 +72,6 @@ window#waybar {
 /* Individual module spacing & colors */
 #custom-cava,
 #custom-gpu-temp,
-#cpu,
 #custom-cputemp,
 #clock,
 #custom-weather,
@@ -84,24 +83,15 @@ window#waybar {
 
 /* Your existing colors */
 #custom-cava { color: @green; }
-#custom-cputemp.normal { color: @green; }
-#custom-cputemp.warm { color: @yellow; }
-#custom-cputemp.hot { color: @red; }
-#custom-cputemp.critical { color: @red-bright; }
-#custom-gpu-temp.normal { color: @green; }
-#custom-gpu-temp.warm { color: @yellow; }
-#custom-gpu-temp.hot { color: @red; }
-#custom-gpu-temp.critical { color: @red-bright; }
+#custom-cputemp { color: @orange-bright; }
+#custom-gpu-temp { color: @red-bright; }
 #clock { color: @yellow-bright; }
 #custom-weather { color: @blue-bright; }
 #custom-vpn { color: @purple; }
 #custom-spotify { color: @green-bright; }
 
 
-#custom-cputemp,
-#custom-gpu-temp {
-  transition: color 0.3s ease;
-}
+
 
 
 

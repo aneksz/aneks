@@ -1,0 +1,5 @@
+{
+  "background": "{{colors.surface}}",
+  "text": "{{colors.on_surface}}",
+  "accent": "{{colors.primary}}"
+}

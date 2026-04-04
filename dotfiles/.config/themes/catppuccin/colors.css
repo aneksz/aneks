@@ -1,0 +1,49 @@
+/* =========================
+   Catppuccin Mocha (Unified)
+   ========================= */
+
+/* ---------- Backgrounds ---------- */
+@define-color bg0 #1e1e2e;
+@define-color bg1 #181825;
+@define-color bg2 #313244;
+@define-color bg3 #45475a;
+@define-color bg4 #585b70;
+
+/* ---------- Foreground ---------- */
+@define-color fg0 #cdd6f4;
+@define-color fg1 #bac2de;
+@define-color fg2 #a6adc8;
+@define-color fg3 #9399b2;
+
+/* ---------- Base palette ---------- */
+@define-color red #f38ba8;
+@define-color red-bright #f38ba8;
+
+@define-color green #a6e3a1;
+@define-color green-bright #b8f7b3;
+
+@define-color yellow #f9e2af;
+@define-color yellow-bright #ffe9b5;
+
+@define-color blue #89b4fa;
+@define-color blue-bright #a6c8ff;
+
+@define-color purple #cba6f7;
+@define-color purple-bright #d7baff;
+
+@define-color aqua #94e2d5;
+@define-color aqua-bright #a8f0e3;
+
+@define-color orange #fab387;
+@define-color orange-bright #ffbe99;
+
+@define-color gray #6c7086;
+
+/* ---------- Semantic roles ---------- */
+@define-color accent @blue;
+@define-color accent-hover @aqua;
+@define-color border @blue;
+
+@define-color warning @yellow;
+@define-color error @red;
+@define-color success @green;

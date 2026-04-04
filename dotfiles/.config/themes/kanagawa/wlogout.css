@@ -1,0 +1,12 @@
+/* Base palette */
+@define-color blue #7e9cd8;
+@define-color green #98bb6c;
+@define-color yellow #dca561;
+@define-color purple #957fb8;
+@define-color aqua #7aa89f;
+@define-color orange #ffa066;
+
+/* Semantic */
+@define-color accent @blue;
+@define-color accent-hover @green;
+@define-color border @blue;
