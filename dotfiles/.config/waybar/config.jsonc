@@ -79,8 +79,9 @@
 
 
 "custom/cputemp": {
-  "exec": "sensors -u k10temp-pci-00c3 | awk '/temp1_input:/ {t=int($2); if(t<55)c=\"normal\"; else if(t<70)c=\"warm\"; else if(t<85)c=\"hot\"; else c=\"critical\"; printf(\"{\\\"text\\\":\\\" %d°C\\\",\\\"class\\\":\\\"%s\\\"}\\n\",t,c); exit}'",
+  "exec": "sensors -u k10temp-pci-00c3 | awk '/temp1_input:/ {t=int($2); if(t<55)c=\"normal\"; else if(t<70)c=\"warm\"; else if(t<85)c=\"hot\"; else c=\"critical\"; printf(\"{\\\"text\\\":\\\" %d°C\\\", \\\"tooltip\\\":\\\"CPU Temperature: %d°C\\\", \\\"class\\\":\\\"%s\\\"}\\n\", t, t, c); exit}'",
   "interval": 5,
+  "on-click": "kitty --class btop_float -e btop",
   "return-type": "json"
 },
 

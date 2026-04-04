@@ -1,0 +1,49 @@
+/* =========================
+   Nightfox (Unified)
+   ========================= */
+
+/* ---------- Backgrounds ---------- */
+@define-color bg0 #192330;
+@define-color bg1 #1d2b3a;
+@define-color bg2 #223249;
+@define-color bg3 #2f3f5e;
+@define-color bg4 #3b5075;
+
+/* ---------- Foreground ---------- */
+@define-color fg0 #cdcecf;
+@define-color fg1 #b8c0cc;
+@define-color fg2 #9da9ba;
+@define-color fg3 #738091;
+
+/* ---------- Base palette ---------- */
+@define-color red #c94f6d;
+@define-color red-bright #d16983;
+
+@define-color green #81b29a;
+@define-color green-bright #9ccfb8;
+
+@define-color yellow #dbc074;
+@define-color yellow-bright #e6cf86;
+
+@define-color blue #719cd6;
+@define-color blue-bright #86abdc;
+
+@define-color purple #9d79d6;
+@define-color purple-bright #b08ae6;
+
+@define-color aqua #63cdcf;
+@define-color aqua-bright #7ad9db;
+
+@define-color orange #f4a261;
+@define-color orange-bright #ffb673;
+
+@define-color gray #738091;
+
+/* ---------- Semantic roles ---------- */
+@define-color accent @blue;
+@define-color accent-hover @aqua;
+@define-color border @purple;
+
+@define-color warning @yellow;
+@define-color error @red;
+@define-color success @green;

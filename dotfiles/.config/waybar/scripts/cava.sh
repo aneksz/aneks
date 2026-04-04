@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export XDG_RUNTIME_DIR=/run/user/$(id -u)
+export PULSE_SERVER=unix:$XDG_RUNTIME_DIR/pulse/native
+
 bar="▁▂▃▄▅▆▇█"
 dict="s/;//g;"
 
@@ -38,7 +41,7 @@ audio_playing() {
 while true; do
     if audio_playing; then
         # start Cava in background, capture PID
-        cava -p "$config_file" | while read -r line; do
+        cava -p "$config_file" 2>/dev/null | while read -r line; do
             echo "{\"text\": \"$(echo $line | sed $dict)\", \"class\": \"custom-cava\"}"
         done &
         CAVA_PID=$!

@@ -1,0 +1,13 @@
+/* =========================
+   Graphite Dark - Rofi
+   ========================= */
+
+* {
+    background:     #1e1e1eFF;
+    background-alt: #242424FF;
+    foreground:     #e6e6e6FF;
+
+    selected:       #8a8a8aFF;
+    active:         #6f8fafFF;
+    urgent:         #c06060FF;
+}

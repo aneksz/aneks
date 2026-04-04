@@ -1,0 +1,49 @@
+/* =========================
+   Horizon (Unified)
+   ========================= */
+
+/* ---------- Backgrounds ---------- */
+@define-color bg0 #1c1e26;
+@define-color bg1 #232530;
+@define-color bg2 #2e303e;
+@define-color bg3 #3b3e51;
+@define-color bg4 #4a4f6a;
+
+/* ---------- Foreground ---------- */
+@define-color fg0 #d5c1ac;
+@define-color fg1 #c7b9a8;
+@define-color fg2 #a8a8b3;
+@define-color fg3 #6e6e7e;
+
+/* ---------- Base palette ---------- */
+@define-color red #e95678;
+@define-color red-bright #ff6e92;
+
+@define-color green #29d398;
+@define-color green-bright #3be6aa;
+
+@define-color yellow #fab795;
+@define-color yellow-bright #ffc7a8;
+
+@define-color blue #26bbd9;
+@define-color blue-bright #3fd4f2;
+
+@define-color purple #ee64ac;
+@define-color purple-bright #ff7cc6;
+
+@define-color aqua #59e1e3;
+@define-color aqua-bright #6ff2f4;
+
+@define-color orange #f09383;
+@define-color orange-bright #ffab9c;
+
+@define-color gray #6e6e7e;
+
+/* ---------- Semantic roles ---------- */
+@define-color accent @purple;
+@define-color accent-hover @aqua;
+@define-color border @purple;
+
+@define-color warning @yellow;
+@define-color error @red;
+@define-color success @green;

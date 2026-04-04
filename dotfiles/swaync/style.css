@@ -1,0 +1,255 @@
+@import url("colors.css");
+
+/* =========================
+   Global
+   ========================= */
+
+* {
+    background: transparent;
+    font-family: "Noto Sans";
+    font-size: 12px;
+    transition: 200ms;
+}
+
+/* =========================
+   Notification Containers
+   ========================= */
+
+.notification-window,
+.notifications-container,
+.floating-notifications {
+    background: transparent;
+}
+
+/* =========================
+   Notifications (Base)
+   ========================= */
+
+.notification {
+    background-color: @bg0;
+    color: @fg0;
+    min-height: 40px;
+    border: 2px solid @border;
+    border-radius: 12px;
+    padding: 6px 8px;
+}
+
+/* Content wrapper */
+.notification-content {
+    margin-top: 2px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+/* Summary (title) */
+.notification .summary {
+    font-size: 14px;
+    font-weight: 500;
+    color: @fg0;
+    line-height: 1.6;
+    padding-top: 1px;
+}
+
+/* Body (text) */
+.notification .body {
+    color: @fg0;
+    line-height: 1.6;
+    padding-top: 2px;
+}
+
+/* Time */
+.time {
+    color: @green;
+    margin-right: 2px;
+    padding: 4px;
+}
+
+/* =========================
+   Popup Fix (notify-send)
+   ========================= */
+
+/* Small offset to remove empty summary gap */
+.notification-default-action .notification-content .body {
+    margin-top: -17px;
+}
+
+/* =========================
+   Control Center Overrides
+   ========================= */
+
+/* Remove popup hack inside control center */
+.control-center .notification-default-action .notification-content .body {
+    margin-top: 0;
+}
+
+/* Add proper spacing instead */
+.control-center .notification .summary {
+    padding-bottom: 6px;
+}
+
+.control-center .notification .body {
+    padding-top: 6px;
+}
+
+/* Control center container */
+.control-center {
+    background: @bg0;
+    color: @fg0;
+    border: 1px solid @border;
+    border-radius: 16px;
+}
+
+/* =========================
+   Buttons / Actions
+   ========================= */
+
+button {
+    background-color: @bg2;
+    color: @fg0;
+    border-radius: 6px;
+}
+
+button:hover {
+    background-color: @orange;
+    color: @bg0;
+}
+
+.notification-default-action:hover,
+.notification-action:hover {
+    background-color: @bg0;
+    color: @green;
+}
+
+/* Close button */
+.close-button {
+    background-color: @red;
+    color: @bg0;
+    border-radius: 6px;
+}
+
+.close-button:hover {
+    background-color: @orange;
+}
+
+/* =========================
+   Progress Bars
+   ========================= */
+
+.notification.critical progress {
+    background-color: @red;
+}
+
+.notification.low progress,
+.notification.normal progress {
+    background-color: @green;
+}
+
+/* =========================
+   Widgets
+   ========================= */
+
+.widget-title {
+    color: @fg0;
+}
+
+.widget-label {
+    color: @green;
+}
+
+/* DND */
+.widget-dnd {
+    background-color: @bg0;
+    border-radius: 8px;
+    padding: 6px;
+}
+
+.widget-dnd label {
+    color: @fg0;
+    font-weight: 500;
+}
+
+.widget-dnd > switch {
+    background: @bg2;
+}
+
+.widget-dnd > switch:checked {
+    background: @green;
+}
+
+.widget-dnd > switch slider {
+    background: @bg0;
+}
+
+.widget-notifications {
+font-weight: bold;
+}
+
+/* Toggles */
+.widget-buttons-grid > flowbox > flowboxchild > button.toggle:checked {
+    background-color: @green;
+    color: @bg0;
+}
+
+/* Sliders */
+trough slider {
+    background-color: @blue;
+}
+
+trough slider:hover {
+    background-color: @yellow;
+}
+
+trough highlight {
+    background-color: @green;
+}
+
+/* =========================
+   Misc
+   ========================= */
+
+.widget-volume {
+    color: @aqua;
+}
+
+.widget-backlight {
+    background-color: @bg2;
+    color: @fg0;
+}
+
+/* =========================
+   Scrollbar
+   ========================= */
+
+scrollbar {
+    opacity: 0;
+    background: transparent;
+}
+
+scrollbar:active {
+    opacity: 1;
+}
+
+/* =========================
+   Tooltip
+   ========================= */
+
+tooltip {
+    background: @bg2;
+    border-radius: 12px;
+    margin: 8px;
+}
+
+tooltip label {
+    color: @yellow;
+    padding: 4px;
+}
+
+tooltip decoration {
+    background-color: transparent;
+}
+
+
+/* =========================
+   Test
+   ========================= */
+

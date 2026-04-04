@@ -1,0 +1,49 @@
+/* =========================
+   Dracula (Unified)
+   ========================= */
+
+/* ---------- Backgrounds ---------- */
+@define-color bg0 #282a36;
+@define-color bg1 #1e1f29;
+@define-color bg2 #44475a;
+@define-color bg3 #6272a4;
+@define-color bg4 #7082b6;
+
+/* ---------- Foreground ---------- */
+@define-color fg0 #f8f8f2;
+@define-color fg1 #e6e6e0;
+@define-color fg2 #bfbfbf;
+@define-color fg3 #7f849c;
+
+/* ---------- Base palette ---------- */
+@define-color red #ff5555;
+@define-color red-bright #ff6e6e;
+
+@define-color green #50fa7b;
+@define-color green-bright #69ff94;
+
+@define-color yellow #f1fa8c;
+@define-color yellow-bright #ffffa5;
+
+@define-color blue #6272a4;
+@define-color blue-bright #7b8cc6;
+
+@define-color purple #bd93f9;
+@define-color purple-bright #d6acff;
+
+@define-color aqua #8be9fd;
+@define-color aqua-bright #a4ffff;
+
+@define-color orange #ffb86c;
+@define-color orange-bright #ffc785;
+
+@define-color gray #44475a;
+
+/* ---------- Semantic roles ---------- */
+@define-color accent @purple;
+@define-color accent-hover @aqua;
+@define-color border @purple;
+
+@define-color warning @yellow;
+@define-color error @red;
+@define-color success @green;
