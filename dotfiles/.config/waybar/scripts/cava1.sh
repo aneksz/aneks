@@ -39,38 +39,33 @@ ascii_max_range = 100
 bar_delimiter = 59
 EOF
 
-# 3. Main Loop
+# 3. The Main Loop
 while true; do
     if audio_playing; then
         # Start CAVA
         cava -p "$CONFIG" >/dev/null 2>&1 &
         CAVA_PID=$!
 
+        # Process the FIFO data
+        # We use a counter to only check pactl every ~20 lines to save CPU
         count=0
-
-        # Read directly from FIFO (no cat)
-        while read -r line; do
+        stdbuf -oL cat "$FIFO" | while read -r line; do
             if [ -n "$line" ]; then
-                # Remove trailing ';'
-                values=${line%;}
-                # Replace ';' with ','
-                values=${values//;/,}
-
+                values=$(echo "${line%;}" | tr ';' ',')
                 printf '{"values": [%s]}\n' "$values"
             fi
-
+            
             ((count++))
-            if (( count % 20 == 0 )); then
+            if [ $((count % 20)) -eq 0 ]; then
                 if ! audio_playing; then
                     echo "{\"values\": [$ZEROS]}"
                     kill $CAVA_PID 2>/dev/null
-                    break
+                    break 2 # Break out of both the 'while read' and return to main loop
                 fi
             fi
-        done < "$FIFO"
-
+        done
     else
-        # Silent state
+        # Silent state: Send zeros and wait before checking again
         echo "{\"values\": [$ZEROS]}"
         sleep 1
     fi

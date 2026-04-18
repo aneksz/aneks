@@ -3,13 +3,18 @@
 
 THEME="one-dark"
 THEME_DIR="$HOME/.config/themes/$THEME"
+QUICKSHELL_DIR="$HOME/.config/quickshell"
+
+
+# ------------------------
+#  Btop
+# ------------------------
 
 sed -i "s/^color_theme *= *.*/color_theme = \"$THEME\"/" ~/.config/btop/btop.conf
 
 # reload btop if running
 if pgrep -x btop >/dev/null; then
-  pkill btop
-  kitty -e btop &
+  pkill -x -USR2 btop
 fi
 
 (sleep 0.6 && notify-send -a "theme-switcher" "" "<b>Theme Updated</b>\nApplied Theme: $THEME") &
@@ -34,11 +39,22 @@ cp "$THEME_DIR/colors.css" "$SWAYNC_DIR/colors.css"
 cp "$THEME_DIR/colors.css" "$WLOGOUT_DIR/colors.css"
 
 # ------------------------
+#  QShell
+# ------------------------
+if [ -f "$THEME_DIR/quickshell_theme.qml" ]; then
+    cp "$THEME_DIR/quickshell_theme.qml" "$QUICKSHELL_DIR/Colors.qml"
+fi
+
+# ------------------------
+# Bar reload (Smart Logic)
+# ------------------------
+if pgrep -x "waybar" >/dev/null; then
+    killall -SIGUSR2 waybar
+fi
+# ------------------------
 # Waybar reload
 # ------------------------
-pkill waybar
-sleep 0.5
-waybar &
+
 
 # ------------------------
 # SwayNC reload
@@ -97,8 +113,8 @@ killall nautilus 2>/dev/null
 # Wallpaper
 # ------------------------
 
-awww img ~/.config/themes/one-dark/wallpapers/one-dark.png --outputs DP-1 --transition-type grow
-awww img ~/.config/themes/one-dark/wallpapers/one-dark2.png --outputs DP-3 --transition-type grow
+awww img ~/.config/themes/one-dark/wallpapers/one-dark.png --outputs DP-1 --transition-type any
+awww img ~/.config/themes/one-dark/wallpapers/one-dark2.png --outputs DP-3 --transition-type any
 
 # ------------------------
 # Rofi
@@ -119,10 +135,9 @@ fi
 spicetify config current_theme OneDark
 
 if pgrep -x spotify >/dev/null; then
-  spicetify apply -n
-  sleep 0.3
-  hyprctl dispatch focuswindow class:spotify
-  hyprctl dispatch sendshortcut CTRL_SHIFT, R, class:spotify
+  (spicetify watch -s 2>&1 | sed "/Reloaded Spotify/q") &
+else 
+  spicetify apply -n >/dev/null 2>&1
 fi
 
 # ------------------------
@@ -137,8 +152,5 @@ pkill hyprlock 2>/dev/null
 echo "$THEME" > "$HOME/.config/.current_theme"
 
 
-# -----------------------
-# Kitty and Fastfetch
-# -----------------------   
 
 
