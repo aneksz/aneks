@@ -2,16 +2,19 @@
 
 THEME="catppuccin"
 THEME_DIR="$HOME/.config/themes/$THEME"
+QUICKSHELL_DIR="$HOME/.config/quickshell"
 
+(sleep 0.6 && notify-send -a "theme-switcher" "" "<b>Theme Updated</b>\nApplied Theme: $THEME") &
+
+# ------------------------
+#  Btop
+# ------------------------
 sed -i "s/^color_theme *= *.*/color_theme = \"$THEME\"/" ~/.config/btop/btop.conf
 
 # reload btop if running
 if pgrep -x btop >/dev/null; then
-  pkill btop
-  kitty -e btop &
+  pkill -x -USR2 btop
 fi
-
-(sleep 0.6 && notify-send -a "theme-switcher" "" "<b>Theme Updated</b>\nApplied Theme: $THEME") &
 
 # ------------------------
 # Paths
@@ -33,12 +36,18 @@ cp "$THEME_DIR/colors.css" "$SWAYNC_DIR/colors.css"
 cp "$THEME_DIR/colors.css" "$WLOGOUT_DIR/colors.css"
 
 # ------------------------
-# Waybar reload
+#  QShell
 # ------------------------
-pkill waybar
-sleep 0.5
-waybar &
+if [ -f "$THEME_DIR/quickshell_theme.qml" ]; then
+    cp "$THEME_DIR/quickshell_theme.qml" "$QUICKSHELL_DIR/Colors.qml"
+fi
 
+# ------------------------
+# Bar reload (Smart Logic)
+# ------------------------
+if pgrep -x "waybar" >/dev/null; then
+    killall -SIGUSR2 waybar
+fi
 # ------------------------
 # SwayNC reload
 # ------------------------
@@ -54,7 +63,6 @@ ln -s "$WLOGOUT_DIR/icons/$THEME" "$WLOGOUT_DIR/icons/current"
 # Hyprland colors
 # ------------------------
 cp "$THEME_DIR/hypr.conf" "$HYPR_DIR/colors.conf"
-hyprctl reload
 
 # ------------------------
 # Kitty
@@ -63,12 +71,11 @@ if [ -f "$THEME_DIR/kitty/catppuccin.colors.conf" ]; then
     cp "$THEME_DIR/kitty/catppuccin.colors.conf" "$KITTY_COLORS"
 
     for SOCKET in ~/.config/kitty/kitty.sock-*; do
-    if [ -S "$SOCKET" ] && kitty @ --to "unix:$SOCKET" ls >/dev/null 2>&1; then
-        export KITTY_LISTEN_ON="unix:$SOCKET"
-        kitty @ set-colors --all --config "$THEME_DIR/kitty/$(basename "$THEME").colors.conf" 2>/dev/null
-    fi
-done
-    
+        if [ -S "$SOCKET" ]; then
+            export KITTY_LISTEN_ON="unix:$SOCKET"
+            kitty @ set-colors --all --config "$THEME_DIR/kitty/catppuccin.colors.conf"
+        fi
+    done
 fi
 
 # ------------------------
@@ -96,8 +103,8 @@ killall nautilus 2>/dev/null
 # ------------------------
 # Wallpaper
 # ------------------------
-awww img ~/.config/themes/catppuccin/wallpapers/cat1.png --outputs DP-1 --transition-type grow
-awww img ~/.config/themes/catppuccin/wallpapers/cat2.png --outputs DP-3 --transition-type grow
+awww img ~/.config/themes/catppuccin/wallpapers/cat.png --outputs DP-1 --transition-type any
+awww img ~/.config/themes/catppuccin/wallpapers/cat4.png --outputs DP-3 --transition-type any
 
 # ------------------------
 # Rofi
@@ -119,26 +126,19 @@ spicetify config current_theme Catppuccin
 spicetify config color_scheme mocha
 
 if pgrep -x spotify >/dev/null; then
-  spicetify apply -n
-  sleep 0.3
-  hyprctl dispatch focuswindow class:spotify
-  hyprctl dispatch sendshortcut CTRL_SHIFT, R, class:spotify
+  (spicetify watch -s 2>&1 | sed "/Reloaded Spotify/q") &
+else 
+  spicetify apply -n >/dev/null 2>&1
 fi
 
 # ------------------------
 # Hyprlock
 # ------------------------
-ln -sf "$HYPR_DIR/background/cat1.png" "$HYPR_DIR/background/current.png"
+ln -sf "$HYPR_DIR/background/cat.png" "$HYPR_DIR/background/current.png"
 pkill hyprlock 2>/dev/null
+
 
 # ------------------------
 # Save theme
 # ------------------------
 echo "$THEME" > "$HOME/.config/.current_theme"
-
-
-# -----------------------
-# Kitty and Fastfetch
-# -----------------------   
-
-cp ~/.config/themes/catppuccin/.zshrc ~/

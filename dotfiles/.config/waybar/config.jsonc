@@ -81,7 +81,7 @@
 "custom/cputemp": {
   "exec": "sensors -u k10temp-pci-00c3 | awk '/temp1_input:/ {t=int($2); if(t<55)c=\"normal\"; else if(t<70)c=\"warm\"; else if(t<85)c=\"hot\"; else c=\"critical\"; printf(\"{\\\"text\\\":\\\" %d°C\\\", \\\"tooltip\\\":\\\"CPU Temperature: %d°C\\\", \\\"class\\\":\\\"%s\\\"}\\n\", t, t, c); exit}'",
   "interval": 5,
-  "on-click": "kitty --class btop_float -e btop",
+  "on-click": "sleep 0.2 && kitty --class btop_float -e btop",
   "return-type": "json"
 },
 
@@ -98,14 +98,6 @@
     "on-click": "swaync-client -op",
     "on-click-right": "wlogout",
     "format": "{}"
-},
-
-"custom/power": {
-    "exec": "echo ''",
-    "interval": 0,
-    "format": "{}",
-    "tooltip": "Shutdown",
-    "on-click": "/home/igor/.config/waybar/scripts/power.sh"
 },
 
 "pulseaudio": {
@@ -183,7 +175,6 @@
   "custom/updates":{
     "format": " {}",
     "exec": "checkupdates | wc -l",
-  //"exec-if": "[[ $(checkupdates | wc -l) != 0 ]]",
     "interval": 200,
     "on-click": "kitty -e sudo pacman -Syyu",
     "tooltip-format": "{} updates available"

@@ -1,61 +1,77 @@
 #!/bin/bash
-
+export PATH=$PATH:/usr/bin:/usr/local/bin
 export XDG_RUNTIME_DIR=/run/user/$(id -u)
-export PULSE_SERVER=unix:$XDG_RUNTIME_DIR/pulse/native
 
-bar="▁▂▃▄▅▆▇█"
-dict="s/;//g;"
+FIFO="/tmp/cava_fifo"
+CONFIG="/tmp/cava_config"
+ZEROS="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
 
-# create dictionary to replace numbers with bar chars
-i=0
-while [ $i -lt ${#bar} ]; do
-    dict="${dict}s/$i/${bar:$i:1}/g;"
-    i=$((i+1))
-done
-
-config_file="/tmp/polybar_cava_config"
-
-# write Cava config
-echo "
-[general]
-bars = 8
-
-[input]
-method = pulse
-source = auto
-
-[output]
-method = raw
-raw_target = /dev/stdout
-data_format = ascii
-ascii_max_range = 7
-" > "$config_file"
-
-# function to check if any audio is playing
+# Function to check for active audio streams
 audio_playing() {
-    # returns 1 if at least one sink input is active
     pactl list sink-inputs short | grep -q .
 }
 
-# loop to dynamically run Cava only when audio is present
+cleanup() {
+    pkill -P $$ cava 2>/dev/null
+    rm -f "$FIFO" "$CONFIG"
+}
+trap cleanup EXIT
+
+# 1. Initial Setup
+rm -f "$FIFO" "$CONFIG"
+mkfifo "$FIFO"
+
+# 2. Create the CAVA config
+cat > "$CONFIG" <<EOF
+[general]
+bars = 20
+autosens = 1
+overshoot = 10
+sensitivity = 100
+[input]
+method = pulse
+source = auto
+[output]
+method = raw
+raw_target = $FIFO
+data_format = ascii
+ascii_max_range = 100
+bar_delimiter = 59
+EOF
+
+# 3. Main Loop
 while true; do
     if audio_playing; then
-        # start Cava in background, capture PID
-        cava -p "$config_file" 2>/dev/null | while read -r line; do
-            echo "{\"text\": \"$(echo $line | sed $dict)\", \"class\": \"custom-cava\"}"
-        done &
+        # Start CAVA
+        cava -p "$CONFIG" >/dev/null 2>&1 &
         CAVA_PID=$!
 
-        # wait until audio stops
-        while audio_playing; do
-            sleep 0.2
-        done
+        count=0
 
-        # audio stopped, kill Cava
-        kill $CAVA_PID 2>/dev/null
+        # Read directly from FIFO (no cat)
+        while read -r line; do
+            if [ -n "$line" ]; then
+                # Remove trailing ';'
+                values=${line%;}
+                # Replace ';' with ','
+                values=${values//;/,}
+
+                printf '{"values": [%s]}\n' "$values"
+            fi
+
+            ((count++))
+            if (( count % 20 == 0 )); then
+                if ! audio_playing; then
+                    echo "{\"values\": [$ZEROS]}"
+                    kill $CAVA_PID 2>/dev/null
+                    break
+                fi
+            fi
+        done < "$FIFO"
+
     else
-        # output nothing so Waybar hides the module
-        echo ""
-        sleep 0.5
+        # Silent state
+        echo "{\"values\": [$ZEROS]}"
+        sleep 1
     fi
 done

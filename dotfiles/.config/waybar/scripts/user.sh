@@ -33,6 +33,7 @@ get_icon_for_app() {
         "steam") echo "" ;;
         "spotify") echo "" ;;
         "thunderbird") echo "" ;;
+        "codium") echo "󰨞" ;;
         "discord") echo "" ;;
         "org.qbittorrent.qBittorrent") echo "" ;;
         *"whatsapp.com"*) echo "󰖣" ;;  # WhatsApp icon
