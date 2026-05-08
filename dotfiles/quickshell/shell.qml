@@ -1,0 +1,571 @@
+import QtQuick
+import QtQuick.Controls
+import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Wayland
+import Quickshell.Services.Pipewire
+import Quickshell.Io
+import Quickshell.Services.Notifications
+import Qt5Compat.GraphicalEffects
+import QtQuick.Layouts
+import QtQuick.Shapes
+import "components"
+
+ShellRoot {
+    id: root
+
+    SystemClock {
+    id: clock
+    precision: SystemClock.Minutes 
+}
+
+    PersistentProperties {
+    id: persist
+    // Store as JSON strings to avoid engine assignment errors
+    property string seenJson: "{}"
+    property string timestampsJson: "{}"
+}
+
+
+
+    NotificationServer {
+    id: notifServer
+    keepOnReload: true 
+    
+    onNotification: (n) => {
+        if (!n) return;
+        n.tracked = true;
+        let key = String(n.id || (n.summary + n.body));
+
+        // 1. Safely parse the persistent data
+        let timestamps = {};
+        let seen = {};
+        try {
+            timestamps = JSON.parse(persist.timestampsJson);
+            seen = JSON.parse(persist.seenJson);
+        } catch(e) { /* fallback to empty objects */ }
+
+        // 2. Handle Timestamp
+        if (!timestamps[key]) {
+            timestamps[key] = Date.now();
+            persist.timestampsJson = JSON.stringify(timestamps);
+        }
+        n.timestamp = timestamps[key];
+
+        // 3. Handle Popups & Duplicates
+        if (n.lastGeneration || seen[key]) {
+            return;
+        }
+
+        // 4. Mark as seen and trigger popup
+        seen[key] = true;
+        persist.seenJson = JSON.stringify(seen);
+        
+        root.currentNotif = n;
+    }
+}
+
+
+
+Component.onCompleted: {
+    weatherCheck.running = true
+    spotifyProc.running = true
+    wgCheck.running = true
+    diskCheck.running = true
+    uptimeCheck.running = true
+    ramCheck.running = true
+    updateCheck.running = true
+}
+
+    // ====================== PROPERTIES ======================
+    property int themeUpdateTrigger: 0
+    property string swayncText: " "
+    property string updateCount: "0"
+    property bool popupVisible: false
+    property string cpuTemp: "00°C"
+    property string cpuUsage: "0%"
+    property string gpuTemp: "00°C"
+    property string systemUptime: "0m"
+    property string dataUsage: "0 / 1" 
+    property string homeUsage: "0 / 1"
+    property var currentNotif: null
+    property string ramUsage: "0B" 
+    property string ramTotal: "0B"
+    property string weatherText: "--°C"
+    property string vpnName: ""
+    property bool vpnActive: false
+    property var vpnConfigs: []
+    property var themes: []
+    property string currentTheme: ""
+    property string spotifyTrack: ""
+    property string spotifyArtUrl: ""
+    property bool doNotDisturb: false
+    property date currentTime: clock.date
+    property bool panelVisible: false
+    property bool dndEnabled: false
+    property var globalClock: clock
+    property var notifTimestamps: ({})
+    property var seenNotifications: ({})
+    
+    
+
+    property var weatherData: ({
+        temp: "--",
+        icon: "",
+        desc: "",
+        humidity: "--",
+        feels: "--",
+        wind: "--",
+        sunrise: "--",
+        sunset: "--",
+        forecast: []
+    })
+
+    readonly property var weatherIcon: (code) => {
+        if (code === 0) return "☀️"
+        if ([1,2,3].includes(code)) return "🌤️"
+        if ([45,48].includes(code)) return "☁️"
+        if ([51,53,55].includes(code)) return "🌦️"
+        if ([61,63,65,80,81,82].includes(code)) return "🌧️"
+        if ([71,73,75].includes(code)) return "❄️"
+        if ([95,96,99].includes(code)) return "⛈️"
+        return "❔"
+    }
+
+    readonly property var weatherDesc: (code) => {
+        if (code === 0) return "Clear"
+        if ([1,2,3].includes(code)) return "Cloudy"
+        if ([45,48].includes(code)) return "Fog"
+        if ([51,53,55].includes(code)) return "Drizzle"
+        if ([61,63,65].includes(code)) return "Rain"
+        if ([71,73,75].includes(code)) return "Snow"
+        if ([80,81,82].includes(code)) return "Showers"
+        if ([95,96,99].includes(code)) return "Storm"
+        return ""
+    }
+
+
+
+PanelWindow {
+    id: bar
+    property var theme
+    
+    WlrLayershell.namespace: "my-bar"
+    WlrLayershell.exclusiveZone: 46
+    WlrLayershell.layer: WlrLayershell.Top
+    
+    anchors { top: true; left: true; right: true }
+    implicitHeight: 46
+    color: "transparent"
+   
+
+    // ====================== SERVICES ======================
+    PwObjectTracker { objects: [Pipewire.defaultAudioSink] }
+    
+    Loader {
+        id: themeLoader
+        source: "file:///home/igor/.config/quickshell/Colors.qml"
+    }
+
+    Connections {
+        target: themeLoader
+        function onStatusChanged() {
+            if (themeLoader.status === Loader.Ready) themeUpdateTrigger++
+        }
+    }
+
+    // ====================== THEME ======================
+    QtObject {
+        id: c
+        readonly property bool ready: themeLoader.status === Loader.Ready
+
+        property color bg:       ready ? (themeLoader.item?.bg ?? "#11111b") : "#11111b"
+        property color fg:       ready ? (themeLoader.item?.textPrimary ?? themeLoader.item?.fg0 ?? "#cdd6f4") : "#cdd6f4"
+        property color accent:   ready ? (themeLoader.item?.accent ?? "#89b4fa") : "#89b4fa"
+        property color inactive: ready ? (themeLoader.item?.inactive ?? "#6c7086") : "#6c7086"
+        property color activeWs: ready ? (themeLoader.item?.activeWs ?? "#89b4fa") : "#89b4fa"
+        property color green:    ready ? (themeLoader.item?.green ?? "#a6e3a1") : "#a6e3a1"
+        property color red:      ready ? (themeLoader.item?.red ?? "#f38ba8") : "#f38ba8"
+        property color surface:  ready ? (themeLoader.item?.surface ?? "#313244") : "#313244"
+        property color fg1:      ready ? (themeLoader.item?.fg1 ?? "#cdd6f4") : "#cdd6f4"
+        property color fg3:      ready ? (themeLoader.item?.fg3 ?? "#c0c5ce") : "#c0c5ce"
+        property color warning:  ready ? (themeLoader.item?.warning ?? "#ebcb8b") : "#ebcb8b"
+        property color success:  ready ? (themeLoader.item?.success ?? "#a6e3a1") : "#a6e3a1"
+        property color error:    ready ? (themeLoader.item?.error ?? "#f38ba8") : "#f38ba8"
+        property color bgAlt:     ready ? (themeLoader.item?.bg1 ?? c.bg) : c.bg
+        property color surfaceAlt: ready ? (themeLoader.item?.surfaceAlt ?? c.surface) : c.surface
+        property color border:    ready ? (themeLoader.item?.border ?? c.accent) : c.accent
+        property color hover:     ready ? (themeLoader.item?.accentHover ?? c.accent) : c.accent
+        property color textSecondary: ready ? (themeLoader.item?.textSecondary ?? c.fg1) : c.fg1
+    }
+
+    QtObject {
+    id: theme
+
+    property string font: "JetBrainsMono Nerd Font Propo"
+    property real fontSize: 11
+    property int fontWeight: Font.DemiBold
+
+    // base
+    property color bg: c.bg
+    property color fg: c.fg
+    property color fg1: c.fg1
+
+    // accents
+    property color accent: c.accent
+    property color hover: c.hover
+    property color border: c.border
+
+    // states
+    property color green: c.green
+    property color red: c.red
+    property color warning: c.warning
+    property color success: c.success
+    property color error: c.error
+
+    // surfaces
+    property color surface: c.surface
+    property color surfaceAlt: c.surfaceAlt
+    property color bgAlt: c.bgAlt
+
+    // ui
+    property color inactive: c.inactive
+    property color activeWs: c.activeWs
+
+    // text
+    property color textMuted: c.fg3
+    property color textSecondary: c.textSecondary
+}
+
+    // ====================== PROCESSES ======================
+    Process { id: vpnRunner }
+    Process { id: volumeProc }
+    Process { id: spotifyControl }
+    Process { id: themeRunner }
+    Process { id: wgCheck; command: ["sh","-c","wg show interfaces"]; stdout: StdioCollector { onTextChanged: { root.vpnName = text.trim(); root.vpnActive = text.trim().length > 0 } } }
+    Process { id: listConfigs; command: ["sh","-c", "ls /etc/wireguard/*.conf 2>/dev/null | xargs -n1 basename | sed 's/.conf//'"]; stdout: StdioCollector { onTextChanged: root.vpnConfigs = text.trim().split("\n") } }
+    Process { id: updateCheck; command: ["sh", "-c", "~/.config/scripts/updates.sh"]; stdout: StdioCollector { onStreamFinished: { updateCount = text.trim() || "0" }}}
+    Process { id: cpuCheck; command: ["sh", "-c", "sensors -u k10temp-pci-00c3 | awk '/temp1_input:/ {print int($2)}'"]; stdout: StdioCollector { onTextChanged: cpuTemp = (text.trim() || "00") + "°C" }}
+    Process { id: cpuUsageCheck; command: ["sh", "-c", "awk '/^cpu / {usage=($2+$4)*100/($2+$4+$5); printf \"%d\", usage}' /proc/stat"]; stdout: StdioCollector { onStreamFinished: cpuUsage = ((text && !isNaN(parseInt(text))) ? parseInt(text) : 0) + "%" } }
+    Process { id: gpuCheck; command: ["sh", "-c", "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits | head -n1"]; stdout: StdioCollector { onTextChanged: gpuTemp = (text.trim() || "00") + "°C" }}
+    Process { id: uptimeCheck; command: ["sh", "-c", "uptime -p | sed 's/up //; s/ hours,/h/; s/ minutes/m/'"]; stdout: StdioCollector { onTextChanged: root.systemUptime = text.trim() }}
+    Process { id: diskCheck; command: ["sh", "-c", "df -h | awk '$6==\"/mnt/data\" {print \"DATA:\" $3 \" / \" $2} $6==\"/home\" {print \"HOME:\" $3 \" / \" $2}'" ]; stdout: StdioCollector { onTextChanged: { let lines = text.trim().split("\n"); root.dataUsage = "0 / 1"; root.homeUsage = "0 / 1"; for (let line of lines) { if (line.startsWith("DATA:")) { root.dataUsage = line.replace("DATA:", ""); } if (line.startsWith("HOME:")) { root.homeUsage = line.replace("HOME:", ""); }}}}}
+    Process { id: ramCheck; command: ["sh", "-c", "free -h --si | awk '/^Mem:/ {print $3 \" \" $2}' | sed 's/Gi/GB/g'"]; running: true; stdout: StdioCollector { onTextChanged: { let parts = text.trim().split(/\s+/); if (parts.length >= 2) { root.ramUsage = parts[0]; root.ramTotal = parts[1]; } } } }
+    Process { id: checkCurrent; command: ["cat", "/home/igor/.config/.current_theme"]; stdout: StdioCollector { onTextChanged: root.currentTheme = text.trim() }}
+    Process { id: getThemes; command: ["sh", "-c", "ls /home/igor/.config/themes/*.sh | xargs -n1 basename | sed 's/.sh//'"]; stdout: StdioCollector { onTextChanged: root.themes = text.trim().split("\n") }}
+
+    Process { id: spotifyProc; command: ["sh", "-c", "/home/igor/.config/waybar/scripts/spotify.sh"]; stdout: StdioCollector { onTextChanged: { try { let j = JSON.parse(text.trim()); root.spotifyTrack = j.text || ""; root.spotifyArtUrl= j.art || ""; } catch(e) { root.spotifyTrack = ""; root.spotifyArtUrl = ""; } }} }
+    Process {
+    id: weatherCheck
+    command: ["sh", "-c", "/home/igor/.config/waybar/scripts/weather.sh"]
+
+    stdout: StdioCollector {
+        onTextChanged: {
+            const raw = text ? text.trim() : ""
+
+            if (!raw) {
+                root.weatherText = "--°C"
+                return
+            }
+
+            try {
+                const data = JSON.parse(raw)
+
+                if (data && data.text) {
+                    root.weatherText = data.text
+                } else {
+                    root.weatherText = raw
+                }
+            } catch(e) {
+                root.weatherText = raw
+            }
+        }
+    }
+}
+    Process {
+    id: weatherProc
+    command: [
+        "sh", "-c",
+        "curl -s --max-time 5 'https://api.open-meteo.com/v1/forecast?latitude=-37.814&longitude=144.9633&current=temperature_2m,weather_code,relative_humidity_2m,apparent_temperature,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset&timezone=auto'"
+    ]
+
+
+    stdout: StdioCollector {
+        waitForEnd: true
+        onTextChanged: {
+            if (typeof root === 'undefined' || !text.trim()) return;
+
+            try {
+                let data = JSON.parse(text.trim());
+                let current = data.current;
+                let daily = data.daily;
+                let code = current.weather_code;
+
+                let forecast = [];
+                for (let i = 0; i < daily.time.length; i++) {
+                    let dateObj = new Date(daily.time[i] + "T00:00:00");
+                    forecast.push({
+                        day: i === 0 ? "Today" : Qt.formatDateTime(dateObj, "ddd"),
+                        date: Qt.formatDateTime(dateObj, "MMM d"),
+                        temp: Math.round(daily.temperature_2m_max[i]),
+                        icon: root.weatherIcon(daily.weather_code[i])
+                    });
+                }
+
+                
+                root.weatherData = {
+                    temp: Math.round(current.temperature_2m),
+                    icon: root.weatherIcon(code),
+                    desc: root.weatherDesc(code),
+                    humidity: current.relative_humidity_2m + "%",
+                    feels: Math.round(current.apparent_temperature) + "°C",
+                    wind: Math.round(current.wind_speed_10m) + " km/h",
+                    sunrise: Qt.formatTime(new Date(daily.sunrise[0] + ":00"), "h:mm AP"),
+                    sunset: Qt.formatTime(new Date(daily.sunset[0] + ":00"), "h:mm AP"),
+                    forecast: forecast
+                };
+
+            } catch (e) {
+                console.log("Weather parse failed:", e);
+            }
+        }
+    }
+}
+
+   Component.onCompleted: {
+        weatherProc.running = true
+    } 
+
+
+Timer { interval: 5000; running: true; repeat: true; onTriggered: { if (!cpuCheck.running) cpuCheck.running = true } }
+Timer { interval: 5200; running: true; repeat: true; onTriggered: { if (!gpuCheck.running) gpuCheck.running = true } }
+Timer { interval: 5400; running: true; repeat: true; onTriggered: { if (!cpuUsageCheck.running) cpuUsageCheck.running = true } }
+
+Timer { interval: 3000; running: true; repeat: true; onTriggered: { if (!spotifyProc.running) spotifyProc.running = true } }
+
+Timer { interval: 600000; running: true; repeat: true; onTriggered: { if (!weatherProc.running) weatherProc.running = true } }
+Timer { interval: 600000; running: true; repeat: true; triggeredOnStart: true; onTriggered: { if (!updateCheck.running) updateCheck.running = true } }
+Timer { interval: 900000; running: true; repeat: true; onTriggered: { if (!weatherCheck.running) weatherCheck.running = true } }
+
+Timer { interval: 6000; running: true; repeat: true; onTriggered: { if (!wgCheck.running) wgCheck.running = true } }
+Timer { interval: 6500; running: true; repeat: true; onTriggered: { if (!listConfigs.running) listConfigs.running = true } }
+
+Timer { interval: 60000; running: true; repeat: true; onTriggered: { if (!diskCheck.running) diskCheck.running = true } }
+
+Timer { interval: 15000; running: true; repeat: true; onTriggered: { if (!uptimeCheck.running) uptimeCheck.running = true } }
+Timer { interval: 17000; running: true; repeat: true; onTriggered: { if (!ramCheck.running) ramCheck.running = true } }
+
+    // ====================== MAIN BAR ======================
+    Rectangle {
+        id: barBackground
+        width: bar.width > 0 ? bar.width - 16 : 1000
+        height: 38
+        radius: 20
+        color: theme.bg
+        anchors { 
+            horizontalCenter: parent.horizontalCenter
+            top: parent.top
+            topMargin: 8 
+        }
+        border.color: theme.accent
+        border.width: 1
+
+        Item {
+            anchors.fill: parent
+            anchors.leftMargin: 12
+            anchors.rightMargin: 16
+
+            Row {
+                id: leftRow
+                spacing: 20
+                anchors.left: parent.left
+                anchors.right: centerRow.left
+                anchors.verticalCenter: parent.verticalCenter
+
+                Workspaces { theme: theme }
+                Windowtitle {}
+                Cava {}
+            }
+    // ================= CENTER =================
+Row {
+    id: centerRow
+    anchors.centerIn: parent
+    spacing: 14
+    height: parent.height
+
+    ClockModule {
+        anchors.verticalCenter: parent.verticalCenter
+        theme: theme
+        weatherData: root.weatherData
+    }
+
+    Weather {
+        anchors.verticalCenter: parent.verticalCenter
+        textValue: root.weatherText || "--°C"
+        theme: theme
+    }    
+}
+
+// ================= RIGHT =================
+Row {
+    id: rightRow 
+    anchors.right: parent.right
+    anchors.left: centerRow.right 
+    
+    anchors.verticalCenter: parent.verticalCenter
+    layoutDirection: Qt.RightToLeft 
+    spacing: 8
+
+Item {
+    width: 30
+    height: 30
+    
+    HoverItem {
+        anchors.fill: parent
+        textValue: ""
+        
+        // Use the global 'theme' object instead of 'bar.theme'
+        theme: theme 
+        
+        hovered: mouseArea.containsMouse
+        
+        // Safety check using the global theme
+        overrideColor: (theme && theme.fg1) 
+                       ? (panelVisible ? theme.accent : theme.fg1) 
+                       : "#ffffff"
+    }
+
+MouseArea {
+    id: mouseArea
+    anchors.fill: parent
+    hoverEnabled: true
+    cursorShape: Qt.PointingHandCursor
+
+    onClicked: {
+        panelVisible = !panelVisible
+    }
+ }
+}
+  
+Volume {
+    anchors.verticalCenter: parent.verticalCenter
+    theme: theme
+    volumeProc: volumeProc
+}
+
+Vpn {
+    theme: theme
+    vpnRunner: vpnRunner
+
+    name: root.vpnName
+    active: root.vpnActive
+    configs: root.vpnConfigs
+}
+
+Updates {
+    updateCount: root.updateCount
+    theme: theme
+    themeRunner: themeRunner
+    updateCheck: updateCheck
+}
+
+Themes {
+    theme: theme
+    themeLoader: themeLoader
+    getThemes: getThemes
+    checkCurrent: checkCurrent
+
+    themes: root.themes
+    currentTheme: root.currentTheme
+}
+
+Cpu {
+        anchors.verticalCenter: parent.verticalCenter
+        temp: root.cpuTemp
+        theme: theme
+    }
+
+Gpu {
+        anchors.verticalCenter: parent.verticalCenter
+        temp: root.gpuTemp
+        theme: theme
+    }
+
+Ram {
+    anchors.verticalCenter: parent.verticalCenter
+    ramUsage: root.ramUsage
+    ramTotal: "15.6GB"
+    theme: theme
+    }    
+
+Spotify {
+    track: root.spotifyTrack
+    artUrl: root.spotifyArtUrl
+    theme: theme
+    spotifyControl: spotifyControl
+}
+
+   
+   Toast {
+    theme: theme
+    currentNotif: root.currentNotif
+    doNotDisturb: root.doNotDisturb
+
+    onDismiss: root.currentNotif = null
+   }
+
+   VolumeOSD {
+     theme: theme
+   }
+
+   CapsLockOSD {
+     theme: theme
+    }
+
+       }
+      }
+    }
+  }
+ Loader {
+    id: systemPanelLoader
+
+    // 🔥 Keep panel alive while closing animation runs
+    active: true
+
+    source: "components/SystemPanel.qml"
+
+    onStatusChanged: {
+        if (status === Loader.Error) {
+            console.log("LOADER ERROR:", sourceComponent.errorString())
+        }
+    }
+
+    onLoaded: {
+    if (!item) return
+
+    // --- Core ---
+    item.globalClock = globalClock
+    
+    // Fix: Bind to globalClock.date, not .time
+    item.currentTime = Qt.binding(() =>
+        (globalClock && globalClock.date) ? globalClock.date : new Date()
+    )
+    
+    item.theme = theme
+
+        // --- Live stats ---
+        item.cpuUsage = Qt.binding(() => cpuUsage)
+        item.cpuTemp = Qt.binding(() => cpuTemp)
+        item.gpuTemp = Qt.binding(() => gpuTemp)
+        item.ramUsage = Qt.binding(() => ramUsage)
+        item.dataUsage = Qt.binding(() => dataUsage)
+        item.homeUsage = Qt.binding(() => homeUsage)
+        item.systemUptime = Qt.binding(() => systemUptime)
+        item.dndEnabled = Qt.binding(() => dndEnabled)
+
+        // 🔥 CRITICAL: pass both states as bindings
+        item.panelVisible = Qt.binding(() => panelVisible)
+    }
+  }
+}
+
