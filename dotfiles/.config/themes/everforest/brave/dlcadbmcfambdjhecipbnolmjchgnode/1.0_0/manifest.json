@@ -1,0 +1,35 @@
+{
+   "description": "Warm and soft green theme for Google Chrome. Based on Everforest Color Scheme by Sainnhe.",
+   "icons": {
+      "128": "images/icon128.png",
+      "16": "images/icon16.png",
+      "48": "images/icon48.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvOEn+iLzhtRF2tluVRZ7l9ZOXin5FlmadMkHSMgqqGBqywkR+3N/zeDMrv+TeLA9RSv1hw/KBqHif+946xA/hzVXRBDeOJT34t3r0nok46QCmIEu8m6oFVbNDugnc56h1pCbdmTbYvRsFwYXiJw/gI3wz3swawNj7JpiiPHaA6/JSxXzF6bTXkpH1P742ycilzTTNse+K7F3Gte2szbvJ+7utV7xwLOLJD6d4n8zEE9I1hhZr0mKhQ365fQk0QCosTgzwQSI/5CmcRppBCDZPNDTGDvRfy1KFzNiq7i74qkF2GYEvRB+egRyc4OReky72Xwx2iHCndCApn9r+Wah+wIDAQAB",
+   "manifest_version": 3,
+   "name": "Everforest Chrome Theme",
+   "theme": {
+      "colors": {
+         "bookmark_text": [ 157, 169, 160 ],
+         "button_background": [ 45, 53, 59 ],
+         "frame": [ 45, 53, 59 ],
+         "frame_inactive": [ 45, 53, 59 ],
+         "frame_incognito": [ 61, 72, 77 ],
+         "frame_incognito_inactive": [ 61, 72, 77 ],
+         "ntp_background": [ 45, 53, 59 ],
+         "ntp_link": [ 211, 198, 170 ],
+         "ntp_text": [ 211, 198, 170 ],
+         "omnibox_background": [ 45, 53, 59 ],
+         "omnibox_text": [ 211, 198, 170 ],
+         "tab_background_text": [ 122, 132, 120 ],
+         "tab_background_text_inactive": [ 71, 82, 88 ],
+         "tab_background_text_incognito": [ 122, 132, 120 ],
+         "tab_background_text_incognito_inactive": [ 71, 82, 88 ],
+         "tab_text": [ 211, 198, 170 ],
+         "toolbar": [ 52, 63, 68 ],
+         "toolbar_button_icon": [ 167, 192, 128 ]
+      }
+   },
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "1.0"
+}

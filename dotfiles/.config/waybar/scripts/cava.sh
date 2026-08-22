@@ -24,10 +24,10 @@ mkfifo "$FIFO"
 # 2. Create the CAVA config
 cat > "$CONFIG" <<EOF
 [general]
-bars = 20
+bars = 16
 autosens = 1
-overshoot = 10
-sensitivity = 100
+overshoot = 14
+sensitivity = 149
 [input]
 method = pulse
 source = auto

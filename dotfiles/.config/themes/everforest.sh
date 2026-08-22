@@ -4,7 +4,7 @@ THEME="everforest"
 THEME_DIR="$HOME/.config/themes/$THEME"
 QUICKSHELL_DIR="$HOME/.config/quickshell"
 
-(sleep 0.6 && notify-send -a "theme-switcher" "" "<b>Theme Updated</b>\nApplied Theme: $THEME") &
+(sleep 0.6 && notify-send "Theme Updated" "Applied Theme: $THEME") &
 
 # ------------------------
 #  Btop 
@@ -18,12 +18,18 @@ if pgrep -x btop >/dev/null; then
 fi
 
 # ------------------------
+# P10k prompt
+# ------------------------
+
+cp "$THEME_DIR/${THEME}.p10k.zsh" "$HOME/.p10k.zsh"
+
+# ------------------------
 # Paths
 # ------------------------
 WAYBAR_DIR="$HOME/.config/waybar"
-SWAYNC_DIR="$HOME/.config/swaync"
 WLOGOUT_DIR="$HOME/.config/wlogout"
 HYPR_DIR="$HOME/.config/hypr"
+
 
 KITTY_COLORS="$HOME/.config/kitty/colors.conf"
 GTK4_THEME_DIR="$HOME/.local/share/themes/Everforest-BL-MB-Dark/gtk-4.0"
@@ -33,15 +39,56 @@ GTK4_CONFIG="$HOME/.config/gtk-4.0"
 # Shared colors
 # ------------------------
 cp "$THEME_DIR/colors.css" "$WAYBAR_DIR/colors.css"
-cp "$THEME_DIR/colors.css" "$SWAYNC_DIR/colors.css"
 cp "$THEME_DIR/colors.css" "$WLOGOUT_DIR/colors.css"
 
 # ------------------------
-#  QShell
+#  QShell - Main Bar
 # ------------------------
 if [ -f "$THEME_DIR/quickshell_theme.qml" ]; then
     cp "$THEME_DIR/quickshell_theme.qml" "$QUICKSHELL_DIR/Colors.qml"
 fi
+
+# ------------------------
+#  QShell - Bar 1
+# ------------------------
+if [ -f "$THEME_DIR/quickshell_theme.qml" ]; then
+    cp "$THEME_DIR/quickshell_theme.qml" "$QUICKSHELL_DIR/bar2/Colors.qml"
+fi
+
+# ------------------------
+#  QShell - Bar 2
+# ------------------------
+if [ -f "$THEME_DIR/quickshell_theme.qml" ]; then
+    cp "$THEME_DIR/quickshell_theme.qml" "$QUICKSHELL_DIR/bar2/Colors.qml"
+fi
+
+# ------------------------
+# qBittorrent
+# ------------------------
+QBIT_CONF="$HOME/.config/qBittorrent/qBittorrent.conf"
+QBIT_THEME="/home/igor/.config/themes/${THEME}/qbittorrent/${THEME}.qbtheme"
+
+QBIT_WAS_RUNNING=false
+
+if pgrep -x qbittorrent >/dev/null; then
+    QBIT_WAS_RUNNING=true
+    pkill -x qbittorrent
+    sleep 1
+fi
+
+# theme modifications here
+
+if [ "$QBIT_WAS_RUNNING" = true ]; then
+    nohup qbittorrent >/dev/null 2>&1 &
+fi
+
+sed -i \
+"s|CustomUIThemePath=.*|CustomUIThemePath=${QBIT_THEME}|" \
+"$QBIT_CONF"
+
+sed -i \
+"s|UseCustomUITheme=.*|UseCustomUITheme=true|" \
+"$QBIT_CONF"
 
 # ------------------------
 # Bar reload (Smart Logic)
@@ -54,10 +101,6 @@ fi
 # ------------------------
 #killall -SIGUSR2 waybar 2>/dev/null || waybar &
 
-# ------------------------
-# SwayNC reload
-# ------------------------
-swaync-client -rs
 
 # ------------------------
 # Wlogout icons
@@ -68,6 +111,7 @@ ln -s "$WLOGOUT_DIR/icons/$THEME" "$WLOGOUT_DIR/icons/current"
 # ------------------------
 # Hyprland colors
 # ------------------------
+cp "$THEME_DIR/hypr.lua" "$HYPR_DIR/colors.lua"
 cp "$THEME_DIR/hypr.conf" "$HYPR_DIR/colors.conf"
 
 # ------------------------
@@ -77,11 +121,14 @@ if [ -f "$THEME_DIR/kitty/everforest.colors.conf" ]; then
     cp "$THEME_DIR/kitty/everforest.colors.conf" "$KITTY_COLORS"
 
     for SOCKET in ~/.config/kitty/kitty.sock-*; do
-        if [ -S "$SOCKET" ]; then
-            export KITTY_LISTEN_ON="unix:$SOCKET"
-            kitty @ set-colors --all --config "$THEME_DIR/kitty/everforest.colors.conf"
-        fi
-    done
+    [ -S "$SOCKET" ] || continue
+
+    if kitty @ --to "unix:$SOCKET" ls >/dev/null 2>&1; then
+        kitty @ --to "unix:$SOCKET" set-colors --all --config "$THEME_DIR/kitty/everforest.colors.conf"
+    else
+        rm -f "$SOCKET"  # clean up dead socket
+    fi
+done
 fi
 
 # ------------------------

@@ -1,0 +1,572 @@
+// components/MediaPlayer.qml
+
+import Quickshell
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
+
+
+Item {
+    id: root
+
+
+    // ============================================================
+    // EXTERNAL API
+    // ============================================================
+
+    property string track: ""
+    property string artUrl: ""
+
+    property real position: 0
+    property real length: 0
+    property real closeProgress: 1.0
+
+    property var theme
+    property var spotifyControl
+    
+
+    property string status: "Paused"
+    readonly property int islandStateCollapsed: 0
+    readonly property int islandStateExpanded: 1
+    readonly property int islandStateClosing: 2
+
+    property int islandState: islandStateCollapsed
+    signal closingFinished()
+    // ============================================================
+    // ANIMATION STATE
+    // ============================================================
+
+    property bool contentVisible: false
+    property bool textVisible: false
+    property bool controlsVisible: false
+    property bool labelVisible: false
+    property bool progressVisible: false
+    property bool progressHovered: false
+    property bool progressDragging: false
+    property real seekPreview: 0
+    property bool seeking: false
+    property bool seekLock: false
+
+    // ============================================================
+    // SIZE
+    // ============================================================
+    width: parent.width
+    height: contentColumn.implicitHeight + 40
+// ============================================================
+// VISIBILITY / REVEAL SEQUENCE
+// ============================================================
+
+onIslandStateChanged: {
+
+    if (root.islandState === root.islandStateExpanded) {
+
+        if (root.contentVisible)
+            return
+
+        root.contentVisible = false
+        root.textVisible = false
+        root.progressVisible = false
+        root.controlsVisible = false
+        root.labelVisible = false
+
+        contentRevealTimer.restart()
+        textRevealTimer.restart()
+        progressRevealTimer.restart()
+        controlsRevealTimer.restart()
+        labelRevealTimer.restart()
+    }
+
+    if (root.islandState === root.islandStateClosing) {
+
+        labelCloseTimer.restart()
+        controlsCloseTimer.restart()
+        progressCloseTimer.restart()
+        textCloseTimer.restart()
+        contentCloseTimer.restart()
+    }
+}
+
+Timer { id: seekReleaseTimer; interval: 900; repeat: false; onTriggered: { root.seekLock = false }}
+// ================================================
+// Opening timers
+// ================================================
+
+Timer { id: contentRevealTimer; interval: 300; repeat: false; onTriggered: root.contentVisible = true }
+Timer { id: textRevealTimer; interval: 400; repeat: false; onTriggered: root.textVisible = true }
+Timer { id: progressRevealTimer; interval: 520; repeat: false; onTriggered: root.progressVisible = true }
+Timer { id: controlsRevealTimer; interval: 600; repeat: false; onTriggered: root.controlsVisible = true }
+Timer { id: labelRevealTimer; interval: 700; repeat: false; onTriggered: root.labelVisible = true }
+
+// ================================================
+// Closing timers
+// ================================================
+
+Timer { id: labelCloseTimer; interval: 120; repeat: false; onTriggered: root.labelVisible = false }
+Timer { id: controlsCloseTimer; interval: 200; repeat: false; onTriggered: root.controlsVisible = false }
+Timer { id: progressCloseTimer; interval: 280; repeat: false; onTriggered: root.progressVisible = false }
+Timer { id: textCloseTimer; interval: 360; repeat: false; onTriggered: root.textVisible = false }
+Timer { id: contentCloseTimer; interval: 500; repeat: false; onTriggered: { root.contentVisible = false; root.closingFinished() }}
+
+    // ============================================================
+    // DERIVED DATA
+    // ============================================================
+
+    property string artist: {
+        let parts = track.split(" - ")
+        return parts.length > 1
+            ? parts[0]
+            : ""
+    }
+
+    property string title: {
+        let parts = track.split(" - ")
+        return parts.length > 1
+            ? parts.slice(1).join(" - ")
+            : track
+    }
+
+    property real progress:
+        length > 0
+        ? position / length
+        : 0
+    // ============================================================
+    // FUNCTIONS
+    // ============================================================
+
+    function formatTime(sec) {
+
+        let s = Math.floor(sec % 60)
+
+        let m = Math.floor(sec / 60)
+
+        return m + ":" + (s < 10 ? "0" + s : s)
+    }
+    // ============================================================
+    // CONTENT
+    // ============================================================
+
+    Column {
+    id: contentColumn
+
+    width: parent.width - 40
+
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.top: parent.top
+    anchors.topMargin: 20
+
+    spacing: 18
+
+    scale: root.closeProgress
+    opacity: root.closeProgress
+
+    transformOrigin: Item.Top
+
+    Behavior on scale { NumberAnimation { duration: 350; easing.type: Easing.OutCubic }}
+    Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic }}
+        // ========================================================
+        // ALBUM ART
+        // ========================================================
+
+        Item {
+            id: artContainer
+            width: 300
+            height: 300
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            Image {
+                id: albumArt
+                anchors.fill: parent
+                source: root.artUrl
+                fillMode: Image.PreserveAspectCrop
+                smooth: true
+                layer.enabled: true
+
+                layer.effect:
+
+                    OpacityMask {
+                      maskSource:
+                            Rectangle {
+                                width: 300
+                                height: 300
+                                radius: 22
+                            }
+                    }
+
+                opacity:
+                    root.contentVisible
+                    ? 1
+                    : 0
+
+                scale:
+                    root.contentVisible
+                    ? 1
+                    : 0.96
+
+                Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.OutCubic }}
+                Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutCubic }}
+            }
+        }
+        // ========================================================
+        // TRACK INFORMATION
+        // ========================================================
+
+        Column {
+    width: parent.width
+    spacing: 4
+
+    opacity:
+        root.textVisible
+        ? 1
+        : 0
+
+    scale:
+        root.textVisible
+        ? 1
+        : 0.98
+
+    Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic }}
+    Behavior on scale { NumberAnimation { duration: 300; easing.type: Easing.OutCubic }}
+
+            Text {
+                width: parent.width
+                text: root.title
+                horizontalAlignment: Text.AlignHCenter
+                color: root.theme.fg || root.theme.fg1
+                wrapMode: Text.WordWrap
+
+                font {
+                    family: root.theme.font
+                    pixelSize: 16
+                    bold: true
+                }
+            }
+
+            Text {
+                width: parent.width
+                text: root.artist
+                horizontalAlignment: Text.AlignHCenter
+                color: root.theme.success || root.theme.inactive
+
+                font {
+                    family: root.theme.font
+                    pixelSize: 13
+                }
+            }
+        }
+
+// ========================================================
+// PROGRESS
+// ========================================================
+
+Column {
+    width: parent.width
+    spacing: 6
+
+    Item {
+        width: parent.width
+        height: 30
+        opacity: root.progressVisible ? 1 : 0
+        scale: root.progressVisible ? 1 : 0.96
+
+        Behavior on opacity { NumberAnimation { duration: 220; easing.type: Easing.OutCubic }}
+        Behavior on scale { NumberAnimation { duration: 280; easing.type: Easing.OutCubic }}
+
+        Column {
+            anchors.fill: parent
+            spacing: 6
+
+            Item {
+    id: progressBar
+
+    width: 260
+    height: 8
+    anchors.horizontalCenter: parent.horizontalCenter
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 6
+                    color: Qt.rgba(1,1,1,0.08)
+                }
+
+                Rectangle {
+                    id: progressFill
+                    width: parent.width * ( root.seeking || root.seekLock ? root.seekPreview : root.progress )
+                    height: parent.height
+                    radius: 4
+
+                    color: root.progressHovered || root.progressDragging ? root.theme.accent : Qt.rgba( root.theme.accent.r, root.theme.accent.g, root.theme.accent.b, 0.75 )
+
+                    Behavior on color { ColorAnimation { duration: 180 }}
+                    Behavior on width { NumberAnimation { duration: root.progressDragging ? 1 : 180; easing.type: Easing.OutCubic }}
+                }
+
+                Rectangle {
+                    id: seekHandle
+                    width: root.progressDragging ? 18 : 14
+                    height: width
+                    radius: width / 2
+
+                    x: (parent.width * ( root.seeking || root.seekLock ? root.seekPreview : root.progress)) - width / 2
+                    y: (parent.height - height) / 2
+
+                    visible: root.progressHovered || root.progressDragging
+                    color: root.progressDragging ? root.theme.accent : root.theme.fg
+                    opacity: visible ? 1 : 0
+
+                    Behavior on width { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                    Behavior on x { NumberAnimation { duration: root.progressDragging ? 1 : 120; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: 150 } }
+                }
+
+                function previewSeek(x) {
+
+                    root.seekPreview =
+                        Math.max(
+                            0,
+                            Math.min(
+                                1,
+                                x / width
+                            )
+                        )
+                }
+
+                function commitSeek() {
+
+    let target = root.seekPreview * root.length
+
+    root.seekLock = true
+    root.spotifyControl.command =
+    [
+        "sh",
+        "-c",
+        "playerctl --player=spotify position " + target
+    ]
+
+    root.spotifyControl.running = true
+    seekReleaseTimer.restart()
+}
+
+                MouseArea {
+                    id: progressMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+
+                    onEntered: {
+                        root.progressHovered =
+                            true
+                    }
+
+                    onExited: {
+                        if (!pressed)
+                            root.progressHovered =
+                                false
+                    }
+
+                    onPressed: (mouse) => {
+                        root.progressDragging = true
+                        root.seeking = true
+                        progressBar.previewSeek(mouse.x)
+                    }
+
+                    onPositionChanged: (mouse) => {
+                        if (pressed) {
+                            progressBar.previewSeek(mouse.x)
+                        }
+                    }
+
+                    onReleased: {
+                        progressBar.commitSeek()
+                        root.progressDragging = false
+                        root.seeking = false
+                    }
+                }
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: root.formatTime(root.position) + " / " + root.formatTime(root.length)
+
+                color: root.theme.textMuted || root.theme.inactive
+
+                font {
+                    family: root.theme.font
+                    pixelSize: 12
+                }
+            }
+        }
+    }
+}
+        // ========================================================
+        // CONTROLS
+        // ========================================================
+
+        Item {
+            width: contentColumn.width
+            height: 56
+            opacity: root.controlsVisible ? 1 : 0
+            scale: root.controlsVisible ? 1 : 0.95
+
+            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic }}
+            Behavior on scale { NumberAnimation { duration: 300; easing.type: Easing.OutCubic }}
+
+            Row {
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    verticalCenter: parent.verticalCenter
+                }
+                spacing: 26
+                // ====================================================
+                // PREVIOUS
+                // ====================================================
+
+                Item {
+                    width: 56
+                    height: 56
+
+                    HoverItem {
+                        anchors.centerIn: parent
+                        iconSize: 30
+                        textValue: "󰙣"
+                        hovered: prevMouse.containsMouse
+                        theme: root.theme
+                        overrideColor: prevMouse.containsMouse ? root.theme.accent : root.theme.fg
+                        hoverScale: 1.12
+                    }
+
+                    MouseArea {
+                        id: prevMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: {
+                            root.spotifyControl.command =
+                                [
+                                    "sh",
+                                    "-c",
+                                    "playerctl previous"
+                                ]
+
+                            root.spotifyControl.running =
+                                true
+                        }
+                    }
+                }
+                // ====================================================
+                // PLAY / PAUSE
+                // ====================================================
+
+                Item {
+                    width: 56
+                    height: 56
+
+                    HoverItem {
+                        anchors.centerIn: parent
+                        iconSize: 30
+                        textValue: root.status === "Playing" ? "" : ""
+                        hovered: playMouse.containsMouse
+                        theme: root.theme
+                        overrideColor: root.theme.accent
+                        hoverScale: 1.15
+                    }
+
+                    MouseArea {
+                        id: playMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: {
+                            root.spotifyControl.command =
+                                [
+                                    "sh",
+                                    "-c",
+                                    "playerctl play-pause"
+                                ]
+                            root.spotifyControl.running =
+                                true
+                        }
+                    }
+                }
+                // ====================================================
+                // NEXT
+                // ====================================================
+
+                Item {
+                    width: 56
+                    height: 56
+
+                    HoverItem {
+                        anchors.centerIn: parent
+                        iconSize: 30
+                        textValue: "󰙡"
+                        hovered: nextMouse.containsMouse
+                        theme: root.theme
+                        overrideColor: nextMouse.containsMouse ? root.theme.accent : root.theme.fg
+                        hoverScale: 1.12
+                    }
+
+                    MouseArea {
+                        id: nextMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: {
+                            root.spotifyControl.command =
+                                [
+                                    "sh",
+                                    "-c",
+                                    "playerctl next"
+                                ]
+                            root.spotifyControl.running =
+                                true
+                        }
+                    }
+                }
+            }
+        }
+        // ========================================================
+        // SPOTIFY LABEL
+        // ========================================================
+
+        Item {
+            width: contentColumn.width
+            height: 34
+            opacity: root.labelVisible ? 1 : 0
+            scale: root.labelVisible ? 1 : 0.95
+
+            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on scale { NumberAnimation { duration: 280; easing.type: Easing.OutCubic }}
+
+            Row {
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    verticalCenter: parent.verticalCenter
+                    verticalCenterOffset: -20
+                }
+                spacing: 6
+
+                Text {
+                    text: "󰓇"
+                    color: root.theme.accent
+                    font {
+                        family: root.theme.font
+                        pixelSize: 14
+                    }
+                }
+
+                Text {
+                    text: "Spotify"
+                    color: root.theme.inactive
+                    font {
+                        family: root.theme.font
+                        pixelSize: 14
+                    }
+                }
+            }
+        }
+    }
+}
