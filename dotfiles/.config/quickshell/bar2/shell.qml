@@ -73,10 +73,8 @@ NotificationServer {
         n.tracked = true;
         n.isSpotifyTransient = isSpotify;
 
-        // Unique tracking key parsing
         let key = String(n.id || (n.summary + n.body));
 
-        // 1. Safely pull your persistent string from the cached data store
         let timestamps = {};
         let seen = {};
         try {
@@ -84,19 +82,16 @@ NotificationServer {
             seen = JSON.parse(persist.seenJson);
         } catch(e) { /* fallback to clean dictionaries */ }
 
-        // 2. Lock-In Timestamp (Only handles organic, fresh arrival items)
         if (!timestamps[key]) {
             timestamps[key] = Date.now();
             persist.timestampsJson = JSON.stringify(timestamps);
         }
         n.timestamp = timestamps[key];
 
-        // 3. Skip re-triggering popup banners during background theme replays
         if (n.lastGeneration || seen[key]) {
             return;
         }
 
-        // 4. Mark as seen and map over to your Toast popup loader component
         seen[key] = true;
         persist.seenJson = JSON.stringify(seen);
         
@@ -247,7 +242,6 @@ NotificationServer {
     !root.weatherVisible &&
     !root.themeVisible
 
-    // Legacy context routing maps
     property var bar: root
     property var globalClock: clock
      
@@ -296,7 +290,6 @@ NotificationServer {
     }
 }    
     
-
     Component.onCompleted: { updateCheck.running = true; scanWallpapers()} 
 
     function scanWallpapers() { wallpaperProc.command = ["sh", "-c", `find "$HOME/Pictures/Wallpapers/${root.currentResolutionFolder}" -type f \\( -iname '*.jpeg' -o -iname '*.jpg' -o -iname '*.png' -o -iname '*.webp' \\)`]; wallpaperProc.running = true }
@@ -427,8 +420,6 @@ function dismissTimer() {
     // =====================================================
     // EVENT-DRIVEN INSTANT PANEL REFRESH HOOK
     // =====================================================
-    // The exact millisecond you click your gear icon to open the panel, 
-    // this forces an instant data pull so your numbers update without lag!
     onPanelVisibleChanged: {
         if (root.panelVisible) {
             statsPoller.triggered()
@@ -500,8 +491,6 @@ Timer {
 
     onTriggered: {
 
-        // Never allow normal hover state while
-        // the calendar is open.
         if (root.calendarVisible) {
             detector.activeHover = false
             return
@@ -602,8 +591,6 @@ Item {
 
         onHoveredChanged: {
 
-            // Calendar owns the island while it is open.
-            // Normal hover expansion must not activate.
             if (root.calendarVisible) {
                 detector.activeHover = false
                 hoverDebounceTimer.stop()
@@ -700,7 +687,6 @@ Loader {
         if (item) {
             item.theme = root.theme
 
-            // Safely grab the description from the root service tracking frame
             if (polkitService.flow) {
                 item.actionDescription = polkitService.flow.message
             }
@@ -719,8 +705,6 @@ Loader {
         if (polkitService.flow) {
             polkitService.flow.submit(password)
         }
-        // Do NOT hide the dialog here.
-        // Let the flow finish (success → isActive becomes false)
     }
 
     function onCancelled() {
@@ -956,7 +940,6 @@ Loader {
     Binding { target: themeSelectorLoader.item; property: "themeLoader";  value: themeEngine.themeLoader; when: themeSelectorLoader.status === Loader.Ready }
     Binding { target: themeSelectorLoader.item; property: "themes";       value: root.themes;         when: themeSelectorLoader.status === Loader.Ready }
 
-    // Catch the signal and update the real currentTheme
     Connections {
         target: themeSelectorLoader.item
         ignoreUnknownSignals: true
@@ -1113,15 +1096,11 @@ Loader {
     active: true
     visible: root.mediaVisible || root.islandState === root.islandStateClosing
     source: "components/MediaPlayer.qml"
-
-    // Match the island’s media size
     width: root.mediaVisible ? 440 : 220
-    // height is driven by MediaPlayer’s implicitHeight
 
     anchors {
         top: topBarHeader.bottom
-        horizontalCenter: parent.horizontalCenter   // ← this is the critical change
-        // do NOT use left: parent.left
+        horizontalCenter: parent.horizontalCenter   
     }
 
     onLoaded: {
@@ -1587,7 +1566,6 @@ Loader {
         } 
     } 
 
-    // The new hover tracking logic to stop the jittering
     function onHoveredChanged() { 
     detector.spotifyHovered = spotifyLoader.item.hovered 
     
