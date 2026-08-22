@@ -38,7 +38,7 @@ QtObject {
     readonly property color textMuted: fg3
 
     // ================= SURFACES =================
-    readonly property color bg: "#282a36"   // translucent bg0
+    readonly property color bg: "#282a36"  
     readonly property color surface: bg2
     readonly property color surfaceAlt: bg1
 

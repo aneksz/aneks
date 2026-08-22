@@ -1,33 +1,54 @@
 #!/bin/bash
-# Waybar Spotify module
 
 escape_markup() {
-    echo "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'
+    sed \
+        -e 's/\\/\\\\/g' \
+        -e 's/"/\\"/g' \
+        -e 's/&/\&amp;/g' \
+        -e 's/</\&lt;/g' \
+        -e 's/>/\&gt;/g'
 }
 
-output_json() {
-    local icon="$1"
-    local artist="$2"
-    local title="$3"
-    echo "{\"text\": \"$icon $artist - $title\", \"class\": \"custom-spotify\"}"
-}
+metadata=$(playerctl --player=spotify metadata \
+    --format '{{status}}|{{artist}}|{{title}}|{{mpris:artUrl}}|{{position}}|{{mpris:length}}' 2>/dev/null)
 
-player_status=$(playerctl --player=spotify status 2>/dev/null)
-
-if [[ "$player_status" == "Playing" ]]; then
-    artist=$(playerctl --player=spotify metadata artist)
-    title=$(playerctl --player=spotify metadata title)
-    artist=$(escape_markup "$artist")
-    title=$(escape_markup "$title")
-    output_json "" "$artist" "$title"
-
-elif [[ "$player_status" == "Paused" ]]; then
-    artist=$(playerctl --player=spotify metadata artist)
-    title=$(playerctl --player=spotify metadata title)
-    artist=$(escape_markup "$artist")
-    title=$(escape_markup "$title")
-    output_json "" "$artist" "$title"
-
-else
-    echo "{\"text\": \"\", \"class\": \"custom-spotify\"}"
+# Spotify not running
+if [ -z "$metadata" ]; then
+    echo '{"text":"","art":"","position":0,"length":0,"class":"custom-spotify"}'
+    exit 0
 fi
+
+IFS='|' read -r status artist title art position length <<< "$metadata"
+
+# Escape text for QML
+artist=$(printf '%s' "$artist" | escape_markup)
+title=$(printf '%s' "$title" | escape_markup)
+
+# Playback icon
+icon=""
+[ "$status" = "Playing" ] && icon=""
+
+# Safety fallbacks
+position=${position:-0}
+length=${length:-0}
+
+# Convert microseconds -> seconds safely
+position_sec=$(awk "BEGIN {printf \"%d\", $position / 1000000}")
+length_sec=$(awk "BEGIN {printf \"%d\", $length / 1000000}")
+
+# Output JSON
+printf '{
+    "text":"%s %s - %s",
+    "art":"%s",
+    "position":%s,
+    "length":%s,
+    "status":"%s",
+    "class":"custom-spotify"
+}\n' \
+"$icon" \
+"$artist" \
+"$title" \
+"$art" \
+"$position_sec" \
+"$length_sec" \
+"$status"
