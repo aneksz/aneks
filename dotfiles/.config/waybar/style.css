@@ -1,0 +1,173 @@
+@import "colors.css";
+
+/* =========================
+   Global bar styling
+   ========================= */
+
+* {
+  border: none;
+  border-radius: 0;
+  font-family: "JetBrainsMono Nerd Font Propo";
+  letter-spacing: 0.3px;
+  font-size: 13.5px;
+  font-weight: 600;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+window#waybar {
+  background: transparent;
+  color: @fg1;
+  margin-top: 6px;
+  padding: 0;
+}
+
+/* ========================= LEFT MODULES ========================= */
+
+#workspaces {
+  background: @bg2;
+  border-radius: 18px;
+  margin-top: 6px;
+  margin-left: 6px;
+  padding: 2px 10px;
+}
+
+#workspaces button {
+  padding: 4px;
+  margin: 0 4px;
+  border-radius: 50%;
+  color: @purple;
+}
+
+#workspaces button.active {
+  color: @yellow;
+}
+
+#workspaces button:hover {
+  color: @fg1;
+  border-radius: 18px;
+}
+
+#custom-user {
+ background: @bg2;
+ color: @green;
+ border-radius: 18px;
+ margin-top: 6px;
+ margin-left: 4px;
+ padding: 2px 18px;
+   
+}
+
+/* ========================= CENTRE MODULES ========================= */
+
+/* The Main Container */
+#hardware-capsule {
+  background: @bg2;
+  margin-top: 6px;
+  padding: 2px 10px;  
+  border-radius: 18px;
+}
+
+/* Individual module spacing & colors */
+#custom-cava,
+#custom-gpu-temp,
+#custom-cputemp,
+#clock,
+#custom-weather,
+#custom-vpn,
+#custom-spotify {
+  padding: 4px 10px; 
+  background: transparent;
+}
+
+/* Your existing colors */
+#custom-cava { color: @green; }
+#custom-cputemp { color: @orange-bright; }
+#custom-gpu-temp { color: @red-bright; }
+#clock { color: @yellow-bright; }
+#custom-weather { color: @blue-bright; }
+#custom-vpn { color: @purple; }
+#custom-spotify { color: @green-bright; }
+
+
+
+
+
+
+
+
+/* ========================= DISK ========================= */
+
+#disk,
+#disk#data {
+  background: @bg2;
+  border-radius: 18px;
+  padding-top: 1px;
+  padding-bottom: 2px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-top: 6px;
+  margin-right: 4px;
+}
+
+#disk { color: @blue-bright; }
+#disk#data { color: @aqua; margin-right: 6px; }
+
+/* ========================= RIGHT MODULES ========================= */
+
+#system {
+  background: @bg2;
+  margin-top: 6px;
+  margin-right: 6px;
+  padding: 2px 10px;  
+  border-radius: 18px;
+}
+
+#bluetooth,
+#network,
+#custom-updates,
+#pulseaudio,
+#custom-notifications {
+  padding: 2px 10px; /* Adjust the 8px to your liking */
+  background: transparent;
+  margin: 0;
+}
+
+#bluetooth { color: @purple; }
+#network { color: @blue-bright; }
+#custom-updates { color: @orange-bright; }
+#pulseaudio { color: @green; }
+#custom-notifications { color: @red-bright; }
+
+#network.disconnected { color: @red; }
+#pulseaudio.muted { color: @gray; }
+
+/* ========================= TOOLTIP ========================= */
+
+tooltip {
+  background: @bg2;
+  border-radius: 12px;
+  margin: 8px;
+}
+
+tooltip label {
+  color: @yellow;
+  padding: 4px;
+}
+
+tooltip decoration {
+  background-color: transparent;
+}
+
+/* ========================= ANIMATIONS ========================= */
+
+#custom-vpn.connected {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}

@@ -1,0 +1,27 @@
+#!/bin/bash
+# Robust Spotify script
+
+# 1. Check if player is running
+player_status=$(playerctl --player=spotify status 2>/dev/null)
+
+if [[ -z "$player_status" ]]; then
+    # Output empty but VALID JSON so the bar hides correctly
+    echo "{\"text\": \"\", \"art\": \"\"}"
+    exit 0
+fi
+
+# 2. Get metadata safely
+artist=$(playerctl --player=spotify metadata artist 2>/dev/null || echo "Unknown Artist")
+title=$(playerctl --player=spotify metadata title 2>/dev/null || echo "Unknown Title")
+art_url=$(playerctl --player=spotify metadata mpris:artUrl 2>/dev/null || echo "")
+
+# 3. Clean characters that break JSON
+artist=$(echo "$artist" | sed 's/"/\\"/g')
+title=$(echo "$title" | sed 's/"/\\"/g')
+
+# 4. Set icon
+icon=""
+[[ "$player_status" == "Paused" ]] && icon=""
+
+# 5. Output JSON
+echo "{\"text\": \"$icon $artist - $title\", \"art\": \"$art_url\"}"

@@ -1,0 +1,49 @@
+/* =========================
+   Rosé Pine (Unified)
+   ========================= */
+
+/* ---------- Backgrounds ---------- */
+@define-color bg0 #191724;
+@define-color bg1 #1f1d2e;
+@define-color bg2 #26233a;
+@define-color bg3 #403d52;
+@define-color bg4 #524f67;
+
+/* ---------- Foreground ---------- */
+@define-color fg0 #e0def4;
+@define-color fg1 #908caa;
+@define-color fg2 #6e6a86;
+@define-color fg3 #524f67;
+
+/* ---------- Base palette ---------- */
+@define-color red #eb6f92;
+@define-color red-bright #ff8fab;
+
+@define-color green #9ccfd8;
+@define-color green-bright #b5e3ec;
+
+@define-color yellow #f6c177;
+@define-color yellow-bright #ffd79a;
+
+@define-color blue #31748f;
+@define-color blue-bright #4a8fa8;
+
+@define-color purple #c4a7e7;
+@define-color purple-bright #d7baff;
+
+@define-color aqua #9ccfd8;
+@define-color aqua-bright #b5e3ec;
+
+@define-color orange #ea9a97;
+@define-color orange-bright #ffb3b0;
+
+@define-color gray #6e6a86;
+
+/* ---------- Semantic roles ---------- */
+@define-color accent @purple;
+@define-color accent-hover @aqua;
+@define-color border @purple;
+
+@define-color warning @yellow;
+@define-color error @red;
+@define-color success @green;
