@@ -1,25 +1,32 @@
 // components/Volume.qml
+
 import QtQuick
+import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Pipewire
+import Qt5Compat.GraphicalEffects
 
 Item {
     id: root
 
     // ============================================================
-    // PUBLIC API
+    // PROPERTIES
     // ============================================================
 
     required property var theme
-    required property var volumeProc
+
+    signal clicked()
+
     property bool hovered: false
 
-    implicitWidth: volumeRow.implicitWidth + 4
+    implicitWidth: volumeRow.implicitWidth + 12
     implicitHeight: 30
     height: 30
 
+
     // ============================================================
-    // PIPEWIRE STATE
+    // DEFAULT SINK
     // ============================================================
 
     readonly property var sink:
@@ -31,112 +38,428 @@ Item {
 
     readonly property real volume:
         hasSink
-        ? sink.audio.volume
-        : 0.0
+            ? sink.audio.volume
+            : 0
 
     readonly property bool muted:
         hasSink
-        ? sink.audio.muted
-        : false
-
-    readonly property bool isAirPods:
-        sink !== null &&
-        sink.description !== undefined &&
-        sink.description.includes("AirPods Pro")
+            ? sink.audio.muted
+            : false
 
     readonly property int volumePercent:
         Math.round(volume * 100)
 
+
     // ============================================================
-    // ICON / COLOUR
+    // TRACK CURRENT SINK
     // ============================================================
 
-    readonly property string icon: {
+    PwObjectTracker {
+        objects:
+            root.sink
+                ? [root.sink]
+                : []
+    }
 
-        if (muted)
-            return ""
 
-        if (isAirPods)
+    // ============================================================
+    // AVAILABLE SINKS
+    // ============================================================
+
+    readonly property var sinks: {
+
+        const list = []
+
+        for (const node of Pipewire.nodes.values) {
+
+            if (!node)
+                continue
+
+            if (!node.isSink)
+                continue
+
+            if (!node.audio)
+                continue
+
+            if (node.isStream)
+                continue
+
+            const name =
+                String(node.name || "").toLowerCase()
+
+            // Ignore internal combine-stream outputs
+            if (name.startsWith("output.study_combined_"))
+                continue
+
+            // Ignore monitor nodes
+            if (name.includes(".monitor"))
+                continue
+
+            list.push(node)
+        }
+
+        return list
+    }
+
+    PwObjectTracker {
+        objects: root.sinks
+    }
+
+
+    // ============================================================
+    // ACTIVE PHYSICAL PORT
+    //
+    // PipeWire's QML API does not reliably expose the active ALSA
+    // port, so pactl is used for this specific piece of information.
+    //
+    // Examples:
+    //
+    //   analog-output-headphones
+    //   analog-output-lineout
+    //
+    // AirPods do not have an ALSA port, so this will simply be empty
+    // when AirPods are the current output.
+    // ============================================================
+
+    property string detectedActivePort: ""
+
+
+    // ============================================================
+    // CHECK ACTIVE PORT
+    // ============================================================
+
+    Process {
+        id: portCheck
+
+        command: [
+            "sh",
+            "-c",
+            "pactl list sinks | " +
+            "sed -n '/Name: '\"$(pactl get-default-sink)\"'/,/^$/p' | " +
+            "awk -F': ' '/Active Port:/ {print $2; exit}'"
+        ]
+
+        stdout: StdioCollector {
+
+            onTextChanged: {
+
+                const port =
+                    text.trim()
+
+                if (root.detectedActivePort !== port) {
+
+                    root.detectedActivePort = port
+
+                    console.log(
+                        "DETECTED ACTIVE PORT:",
+                        root.detectedActivePort
+                    )
+
+                    console.log(
+                        "CURRENT ICON:",
+                        root.outputIcon
+                    )
+                }
+            }
+        }
+    }
+
+
+    // ============================================================
+    // REFRESH ACTIVE PORT
+    //
+    // The short delay is intentional.
+    //
+    // When switching sinks, PipeWire can update the default sink
+    // before pactl has updated the active ALSA port.
+    // ============================================================
+
+    Timer {
+        id: portRefreshTimer
+
+        interval: 250
+        repeat: false
+
+        onTriggered: {
+            portCheck.running = false
+            portCheck.running = true
+        }
+    }
+
+
+    function refreshActivePort() {
+        portRefreshTimer.restart()
+    }
+
+
+    // ============================================================
+    // OUTPUT ICON
+    // ============================================================
+
+    readonly property string outputIcon: {
+
+        if (!root.sink)
+            return "󰕾"
+
+        const name =
+            String(root.sink.name || "").toLowerCase()
+
+        const description =
+            String(root.sink.description || "").toLowerCase()
+
+        const port =
+            String(root.detectedActivePort || "").toLowerCase()
+
+
+        // --------------------------------------------------------
+        // AIRPODS
+        // --------------------------------------------------------
+
+        if (
+            name.startsWith("bluez_output.") ||
+            name.includes("airpods") ||
+            description.includes("airpods")
+        ) {
             return "󱡏"
+        }
 
-        return ""
+
+        // --------------------------------------------------------
+        // GENERIC BLUETOOTH HEADPHONES
+        // --------------------------------------------------------
+
+        if (
+            name.startsWith("bluez_") ||
+            name.includes("bluetooth") ||
+            description.includes("bluetooth")
+        ) {
+            return "󰋋"
+        }
+
+
+        // --------------------------------------------------------
+        // HOME PODS / AIRPLAY
+        // --------------------------------------------------------
+
+        if (
+            name.startsWith("raop_sink.") ||
+            name.includes("homepod") ||
+            description.includes("homepod")
+        ) {
+            return "󰴸"
+        }
+
+
+        // --------------------------------------------------------
+        // STUDY COMBINED
+        // --------------------------------------------------------
+
+        if (
+            name === "study_combined" ||
+            description === "study (combined)"
+        ) {
+            return "󰴸"
+        }
+
+
+        // --------------------------------------------------------
+        // PHYSICAL HEADPHONES
+        //
+        // The ALSA sink name remains unchanged when headphones
+        // are plugged in.
+        //
+        // Therefore we use the pactl-detected active port.
+        // --------------------------------------------------------
+
+        if (
+            port.includes("headphone") ||
+            port.includes("headset")
+        ) {
+            return "󰋋"
+        }
+
+
+        // --------------------------------------------------------
+        // PHYSICAL SPEAKERS / LINE OUT
+        // --------------------------------------------------------
+
+        if (
+            port.includes("lineout") ||
+            port.includes("line-out") ||
+            port.includes("speaker")
+        ) {
+            return "󰋋"
+        }
+
+
+        // --------------------------------------------------------
+        // DEFAULT
+        // --------------------------------------------------------
+
+        return "󰕾"
     }
 
-    readonly property color iconColor: {
-
-        if (muted)
-            return root.theme.fg3
-
-        if (isAirPods)
-            return root.theme.accent
-
-        return root.theme.success
-    }
+    readonly property bool isHomePod: outputIcon === "󰴸"
+    readonly property bool showHomePodSvg: isHomePod && !muted
 
     // ============================================================
-    // BUTTON BACKGROUND
+    // LABEL
+    // ============================================================
+
+    function sinkLabel(node) {
+
+        if (!node)
+            return "No output"
+
+        return (
+            node.description ||
+            node.nickname ||
+            node.name ||
+            "Unknown"
+        )
+    }
+
+
+    // ============================================================
+    // SET DEFAULT
+    // ============================================================
+
+    function setDefault(node) {
+
+        if (!node)
+            return
+
+        console.log(
+            "SWITCHING AUDIO OUTPUT:",
+            node.name
+        )
+
+        Pipewire.preferredDefaultAudioSink = node
+
+        // Refresh after PipeWire has had time to settle.
+        refreshActivePort()
+    }
+
+
+    // ============================================================
+    // BACKGROUND
     // ============================================================
 
     Rectangle {
         anchors.fill: parent
+
         radius: height / 2
 
         color:
             volumeMouseArea.containsMouse
-            ? root.theme.surfaceAlt
-            : root.theme.bg
+                ? root.theme.surfaceAlt
+                : root.theme.bg
 
-        Behavior on color { ColorAnimation { duration: 120 }}
+        Behavior on color {
+            ColorAnimation {
+                duration: 120
+            }
+        }
     }
 
+
     // ============================================================
-    // VOLUME DISPLAY
+    // BAR CONTENT
     // ============================================================
 
     Row {
         id: volumeRow
+
         anchors.centerIn: parent
-        spacing: 4
 
-        Text {
-            text: root.icon
-            color: root.iconColor
-            font {
-                family: root.theme.font
-                pixelSize: 18
-            }
-            anchors.verticalCenter: parent.verticalCenter
+        spacing: 6
 
-            Behavior on color { ColorAnimation { duration: 120 }}
-        }
 
-        Text {
-    text: root.volumePercent + "%"
-    color:
-        root.muted
-        ? root.theme.fg3
-        : root.theme.fg
-        
-    font {
-        family: root.theme.font
-        pixelSize: 16
-    }
+       // --------------------------------------------------------
+// ICON
+// --------------------------------------------------------
+
+Item {
+    width: 20
+    height: 20
     anchors.verticalCenter: parent.verticalCenter
-}
+    anchors.verticalCenterOffset: 1
+
+    // Glyph icon (everything except the HomePod)
+    Text {
+        anchors.centerIn: parent
+        visible: !root.showHomePodSvg
+        text: root.muted ? "󰝟" : root.outputIcon
+        color: root.muted ? root.theme.fg3 : root.theme.accent
+        font.family: root.theme.font
+        font.pixelSize: 18
     }
+
+    // HomePod mini SVG, tinted with the theme accent
+    Image {
+        id: homepodImg
+        anchors.fill: parent
+        visible: false
+        source: Qt.resolvedUrl("../assets/homepod-mini.svg")
+        sourceSize: Qt.size(40, 40)       // 2x for a crisp render
+        fillMode: Image.PreserveAspectFit
+    }
+
+    ColorOverlay {
+        anchors.fill: parent
+        visible: root.showHomePodSvg
+        source: homepodImg
+        color: root.theme.accent
+    }
+}
+
+        // --------------------------------------------------------
+        // VOLUME
+        // --------------------------------------------------------
+
+        Text {
+            text:
+                root.volumePercent + "%"
+
+            color:
+                root.muted
+                    ? root.theme.fg3
+                    : root.theme.fg
+
+            font.family: root.theme.font
+
+            font.pixelSize: 16
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: 1 
+        }
+    }
+
 
     // ============================================================
-    // INPUT
+    // MOUSE
     // ============================================================
 
     MouseArea {
         id: volumeMouseArea
+
         anchors.fill: parent
+
         hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
+
+        cursorShape:
+            Qt.PointingHandCursor
+
+        acceptedButtons:
+            Qt.LeftButton |
+            Qt.RightButton |
+            Qt.MiddleButton
+
+
         onContainsMouseChanged: {
-    root.hovered = containsMouse
-}
+            root.hovered = containsMouse
+        }
+
+
         // --------------------------------------------------------
         // SCROLL VOLUME
         // --------------------------------------------------------
@@ -148,10 +471,10 @@ Item {
 
             const step =
                 wheel.angleDelta.y > 0
-                ? 0.05
-                : -0.05
+                    ? 0.05
+                    : -0.05
 
-            const newVolume =
+            root.sink.audio.volume =
                 Math.max(
                     0.0,
                     Math.min(
@@ -159,29 +482,28 @@ Item {
                         root.volume + step
                     )
                 )
-
-            root.volumeProc.command = [
-                "wpctl",
-                "set-volume",
-                "@DEFAULT_AUDIO_SINK@",
-                newVolume.toFixed(2)
-            ]
-
-            root.volumeProc.running =
-                true
         }
 
+
         // --------------------------------------------------------
-        // CLICK TO MUTE
+        // CLICK
         // --------------------------------------------------------
 
-        onClicked: {
+        onClicked: function(mouse) {
 
-            if (!root.hasSink)
+            // Middle click = mute
+            if (mouse.button === Qt.MiddleButton) {
+
+                if (root.hasSink) {
+                    root.sink.audio.muted =
+                        !root.sink.audio.muted
+                }
+
                 return
+            }
 
-            root.sink.audio.muted =
-                !root.sink.audio.muted
+            // Parent handles the volume panel.
+            root.clicked()
         }
     }
 }

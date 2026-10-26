@@ -49,6 +49,21 @@ MouseArea {
     }
 }
 
+Timer {
+    id: themeUpdateTimer
+    interval: 1200
+    repeat: false
+    onTriggered: {
+        if (root.checkCurrent) {
+            root.checkCurrent.running = false
+            root.checkCurrent.running = true
+        }
+        root.themeLoader.source = ""
+        root.themeLoader.source =
+            "file:///home/igor/.config/quickshell/Colors.qml?v=" + Date.now()
+    }
+}
+
     PopupWindow {
     visible: root.menuVisible || themeContent.opacity > 0
     color: "transparent"
@@ -215,21 +230,22 @@ Column {
     }
 
     onClicked: {
-        root.currentTheme = modelData
+    root.currentTheme = modelData
 
-        Quickshell.execDetached([
-            "sh", "-c",
-            "/home/igor/.config/themes/" + modelData + ".sh"
-        ])
+    Quickshell.execDetached([
+        "sh", "-c",
+        "echo '" + modelData + "' > /home/igor/.config/.current_theme && " +
+        "/home/igor/.config/themes/apply-theme.sh '" + modelData + "'"
+    ])
 
-        root.menuVisible = false
+    root.menuVisible = false
 
-        Qt.callLater(() => {
-            themeLoader.source = ""
-            themeLoader.source =
-                "file:///home/igor/.config/quickshell/Colors.qml?v=" + Date.now()
-        })
-    }
+    Qt.callLater(() => {
+        themeLoader.source = ""
+        themeLoader.source =
+            "file:///home/igor/.config/quickshell/Colors.qml?v=" + Date.now()
+    })
+}
 }
          }
        }

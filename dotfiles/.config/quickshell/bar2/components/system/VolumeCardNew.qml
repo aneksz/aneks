@@ -73,7 +73,7 @@ Item {
                         return "󰖀"
                     return "󰕿"
                 }
-
+                
                 color: theme.accent
                 font {
                     family: theme.font
@@ -118,24 +118,40 @@ Item {
 
                 // Slider
                 MouseArea {
-                    id: sliderArea
-                    Layout.fillWidth: true
-                    height: 6
-                    cursorShape: Qt.PointingHandCursor
-                    hoverEnabled: true
+    id: sliderArea
 
-                    onClicked: (mouse) => {
-                        if (root.sink && root.sink.audio) {
-                            root.sink.audio.volume = Math.min(Math.max(mouse.x / width, 0), 1)
-                        }
-                    }
+    Layout.fillWidth: true
+    height: 6
 
-                    onWheel: (wheel) => {
-                        if (root.sink && root.sink.audio) {
-                            const step = wheel.angleDelta.y > 0 ? 0.04 : -0.04
-                            root.sink.audio.volume = Math.min(Math.max(root.sink.audio.volume + step, 0), 1)
-                        }
-                    }
+    cursorShape: Qt.PointingHandCursor
+    hoverEnabled: true
+
+    function setVolume(mouseX) {
+        if (root.sink && root.sink.audio) {
+            root.sink.audio.volume =
+                Math.min(Math.max(mouseX / width, 0), 1)
+        }
+    }
+
+    onClicked: (mouse) => {
+        setVolume(mouse.x)
+    }
+
+    onPositionChanged: (mouse) => {
+        if (pressed)
+            setVolume(mouse.x)
+    }
+
+    onWheel: (wheel) => {
+        if (root.sink && root.sink.audio) {
+            const step = wheel.angleDelta.y > 0 ? 0.04 : -0.04
+            root.sink.audio.volume =
+                Math.min(
+                    Math.max(root.sink.audio.volume + step, 0),
+                    1
+                )
+        }
+    }
 
                     // Track
                     Rectangle {

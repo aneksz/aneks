@@ -9,7 +9,6 @@ import Quickshell.Io
 import Quickshell.Services.Pipewire
 import Qt5Compat.GraphicalEffects
 
-// ============= UPDATES ================
 Item {
     id: root
     height: 32
@@ -21,81 +20,46 @@ Item {
     required property var updateCheck
     property bool hovered: false
 
-    // ===== LABEL =====
+    signal clicked
+    signal hoverEntered
+    signal hoverExited
+
     property string label: "󰅢 " + root.updateCount
 
-    // ===== COLOR LOGIC =====
-property int count: parseInt(root.updateCount)
-property color textColor:
-    count > 50 ? theme.error :
-    count > 10 ? theme.warning :
-    count > 0  ? theme.activeWs :
-                 theme.inactive 
+    property int count: parseInt(root.updateCount)
+    property color textColor:
+        count > 50 ? theme.error :
+        count > 10 ? theme.warning :
+        count > 0  ? theme.activeWs :
+                     theme.inactive
+
    
-    // ===== WIDTH =====
-    Text {
-        id: measureText
-        text: root.label
-        font.family: theme.font
-        font.pointSize: theme.fontSize
-        visible: false
-    }
 
-    width: measureText.implicitWidth + 10
+    width: hoverItem.contentWidth + 10
 
-    HoverItem {
-    anchors.fill:
-        parent
-
-    textValue:
-        root.label
-
-    theme:
-        root.theme
-
-    hovered:
-        mouseArea.containsMouse
-
-    overrideColor:
-        root.textColor
-
-    iconSize:
-        16
+HoverItem {
+    id: hoverItem
+    anchors.fill: parent
+    textValue: root.label
+    theme: root.theme
+    hovered: mouseArea.containsMouse
+    overrideColor: root.textColor
+    iconSize: 22
+    textSize: 18
 }
 
-    // ===== INPUT =====
     MouseArea {
-    id: mouseArea
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
 
-    anchors.fill:
-        parent
-
-    hoverEnabled:
-        true
-
-    cursorShape:
-        Qt.PointingHandCursor
-
-    onContainsMouseChanged: {
-        root.hovered =
-            containsMouse
-    }
-
-    onClicked: {
-    Quickshell.execDetached({
-        command: ["kitty", "-e", "pkexec", "bash", "-c", "pacman -Syyu"]
-    })
-
-
-        root.updateCount =
-            "0"
-
-        if (
-            !root.updateCheck.running
-        ) {
-            root.updateCheck.running =
-                true
+        onContainsMouseChanged: {
+            root.hovered = containsMouse
+            if (containsMouse) root.hoverEntered()
+            else root.hoverExited()
         }
+
+        onClicked: root.clicked()
     }
-}
 }

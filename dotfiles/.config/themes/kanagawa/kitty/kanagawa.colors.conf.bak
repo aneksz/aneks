@@ -1,0 +1,25 @@
+foreground #c8c093
+background #1f1f28
+selection_foreground #1f1f28
+selection_background #c8c093
+cursor #c8c093
+cursor_text_color #1f1f28
+active_border_color #7e9cd8
+active_tab_background #7e9cd8
+
+color0  #2a2a37
+color1  #c34043
+color2  #98bb6c
+color3  #dca561
+color4  #7e9cd8
+color5  #957fb8
+color6  #7aa89f
+color7  #a6a69c
+color8  #727169
+color9  #e82424
+color10 #b8d99f
+color11 #e6c384
+color12 #9cabca
+color13 #b8a0d9
+color14 #7aa89f
+color15 #dcd7ba

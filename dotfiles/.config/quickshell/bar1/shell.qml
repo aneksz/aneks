@@ -174,14 +174,22 @@ Component.onCompleted: {
 PanelWindow {
     id: bar
     property var theme
+    property bool vertical: false   // <-- flip this to switch orientation
     visible: true
-    
+
     WlrLayershell.namespace: "my-bar"
     WlrLayershell.exclusiveZone: 46
     WlrLayershell.layer: WlrLayershell.Top
-    
-    anchors { top: true; left: true; right: true }
+
+    anchors {
+        top: true
+        left: true
+        right: !vertical
+        bottom: vertical
+    }
+
     implicitHeight: 46
+    implicitWidth: 46
     color: "transparent"
    
 

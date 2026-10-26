@@ -1,294 +1,247 @@
 import QtQuick
+import QtQuick.Layouts
+import QtQml
 import Quickshell
 
 Item {
-id: root
+    id: root
+    anchors.fill: parent
 
+    // ── Interface (unchanged, shell.qml keeps working) ──────────────
+    property string currentTheme
+    property var checkCurrent
+    property var getThemes
+    property var themeLoader
+    property var theme
+    property var themes
+    property string selectedTheme: ""
+    signal themeSelected(string name)
 
-// ============================================================
-// API
-// ============================================================
+    // Paths (edit here if your layout changes)
+    property string themesDir: "/home/igor/.config/themes"
+    property string currentThemeFile: "/home/igor/.config/.current_theme"
+    property string colorsPath: "/home/igor/.config/quickshell/bar2/Colors.qml"
 
-property string currentTheme
+    // getThemes lists themes/*.sh, which also catches apply-theme.sh
+    readonly property var themeList: (themes || []).filter(t => t && t !== "apply-theme")
 
-property var checkCurrent
-property var getThemes
-property var themeLoader
-property var theme
-property var themes
-property string selectedTheme: ""
-signal themeSelected(string name)
+    // name -> { bg, accent, fg }, filled from each theme's quickshell_theme.qml
+    property var themePreviews: ({})
 
-Component.onCompleted: {
-    selectedTheme = currentTheme !== "" ? currentTheme : (themes && themes.length > 0 ? themes[0] : "")
-}
+    function tint(a) { return Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, a) }
 
-onCurrentThemeChanged: {
-    if (currentTheme !== "")
-        selectedTheme = currentTheme
-}
+    Component.onCompleted: {
+        selectedTheme = currentTheme !== "" ? currentTheme
+                      : (themeList.length > 0 ? themeList[0] : "")
+    }
+    onCurrentThemeChanged: {
+        if (currentTheme !== "")
+            selectedTheme = currentTheme
+    }
 
-Timer {
-    id: themeUpdateTimer
-    interval: 300
-    repeat: false
-    onTriggered: {
-        // Force a clean re-read of the file
-        if (root.checkCurrent) {
-            root.checkCurrent.running = false
-            root.checkCurrent.running = true
+    function applyTheme(name) {
+        selectedTheme = name
+        themeSelected(name)
+        // name is passed as $1, never interpolated into the shell string
+        Quickshell.execDetached([
+            "sh", "-c",
+            'echo "$1" > "$2" && "$3/apply-theme.sh" "$1"',
+            "sh", name, currentThemeFile, themesDir
+        ])
+        themeUpdateTimer.restart()
+    }
+
+    // Give apply-theme.sh time to write files, then refresh state + colors
+    Timer {
+        id: themeUpdateTimer
+        interval: 1200
+        repeat: false
+        onTriggered: {
+            if (root.checkCurrent) {
+                root.checkCurrent.running = false
+                root.checkCurrent.running = true
+            }
+            if (root.themeLoader) {
+                root.themeLoader.source = ""
+                root.themeLoader.source = "file://" + root.colorsPath + "?v=" + Date.now()
+            }
+        }
+    }
+
+    // Pull preview colours straight from each theme's generated file
+    Instantiator {
+        model: root.themeList
+
+        delegate: Loader {
+            required property string modelData
+            source: "file://" + root.themesDir + "/" + modelData + "/quickshell_theme.qml"
+
+            onStatusChanged: {
+                if (status === Loader.Ready && item) {
+                    var updated = Object.assign({}, root.themePreviews)
+                    // colour1..6 = red, green, yellow, blue, magenta, cyan
+                    var pal = []
+                    for (var i = 1; i <= 6; i++) {
+                        var col = item["color" + i]
+                        pal.push(col !== undefined ? col : item.accent)
+                    }
+                    updated[modelData] = {
+                        bg: item.background,
+                        accent: item.accent,
+                        fg: item.foreground,
+                        palette: pal
+                    }
+                    root.themePreviews = updated
+                }
+            }
+        }
+    }
+
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: 24
+        spacing: 16
+
+        // ── Header ──────────────────────────────────────────────────
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 14
+
+            Rectangle {
+                Layout.preferredWidth: 44
+                Layout.preferredHeight: 44
+                radius: 12
+                color: theme.surfaceAlt
+                Text {
+                    anchors.centerIn: parent
+                    text: "󰏘"
+                    font.pixelSize: 22
+                    font.family: theme.font
+                    color: theme.accent
+                }
+            }
+
+            ColumnLayout {
+                spacing: 2
+                Text {
+                    text: "Themes"
+                    font.family: theme.font
+                    font.pixelSize: 20
+                    font.bold: true
+                    color: theme.fg0
+                }
+                Text {
+                    text: root.selectedTheme !== "" ? "Current: " + root.selectedTheme
+                                                    : root.themeList.length + " available"
+                    font.family: theme.font
+                    font.pixelSize: 13
+                    color: theme.textMuted
+                }
+            }
+
+            Item { Layout.fillWidth: true }
         }
 
-        // Reload the colours
-        root.themeLoader.source = ""
-        root.themeLoader.source =
-            "file:///home/igor/.config/quickshell/bar2/Colors.qml?v=" + Date.now()
-    }
-}
+        // ── Grid ────────────────────────────────────────────────────
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
 
-// ============================================================
-// THEME PREVIEW PALETTES
-// ============================================================
+            GridView {
+                id: grid
+                anchors.fill: parent
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
+                model: root.themeList
 
-property var themePreviews: ({
+                readonly property int columns: Math.max(2, Math.floor(width / 150))
+                cellWidth: Math.floor(width / columns)
+                cellHeight: 96
 
-    "catppuccin": {
-        bg: "#1e1e2e",
-        accent: "#cba6f7",
-        fg: "#cdd6f4"
-    },
+                delegate: Item {
+                    id: cell
+                    required property var modelData
+                    width: grid.cellWidth
+                    height: grid.cellHeight
 
-    "dracula": {
-        bg: "#282a36",
-        accent: "#bd93f9",
-        fg: "#f8f8f2"
-    },
+                    readonly property var preview: root.themePreviews[modelData]
+                    readonly property bool selected: modelData === root.selectedTheme
+                    readonly property color pBg: preview ? preview.bg : theme.surface
+                    readonly property color pAccent: preview ? preview.accent : theme.accent
+                    readonly property color pFg: preview ? preview.fg : theme.fg
 
-    "everforest": {
-        bg: "#2d353b",
-        accent: "#a7c080",
-        fg: "#d3c6aa"
-    },
+                    Rectangle {
+                        anchors.fill: parent
+                        anchors.margins: 6
+                        radius: 14
+                        color: cell.pBg
+                        // border only on the active theme, in that theme's accent
+                        border.width: cell.selected ? 2 : 0
+                        border.color: cell.pAccent
+                        scale: mouse.containsMouse ? 1.03 : 1.0
+                        Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 
-    "graphite-dark": {
-        bg: "#1c1c1c",
-        accent: "#3a3a3a",
-        fg: "#e0e0e0"
-    },
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 12
 
-    "gruvbox": {
-        bg: "#282828",
-        accent: "#fabd2f",
-        fg: "#ebdbb2"
-    },
+                            Row {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 4
 
-    "horizon": {
-        bg: "#1c1e26",
-        accent: "#e95678",
-        fg: "#d5d8da"
-    },
+                                Repeater {
+                                    model: cell.preview ? cell.preview.palette : []
+                                    Rectangle {
+                                        required property var modelData
+                                        width: 10
+                                        height: 10
+                                        radius: 5
+                                        color: modelData
+                                    }
+                                }
+                            }
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: cell.modelData
+                                font.family: theme.font
+                                font.pixelSize: 12
+                                font.bold: true
+                                color: cell.pFg
+                                elide: Text.ElideRight
+                                width: Math.min(implicitWidth, cell.width - 32)
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+                        }
 
-    "kanagawa": {
-        bg: "#1f1f28",
-        accent: "#7e9cd8",
-        fg: "#dcd7ba"
-    },
-
-    "nightfox": {
-        bg: "#192330",
-        accent: "#719cd6",
-        fg: "#cdcecf"
-    },
-
-    "nord": {
-        bg: "#2e3440",
-        accent: "#88c0d0",
-        fg: "#eceff4"
-    },
-
-    "one-dark": {
-        bg: "#282c34",
-        accent: "#61afef",
-        fg: "#abb2bf"
-    },
-
-    "rose-pine": {
-        bg: "#191724",
-        accent: "#c4a7e7",
-        fg: "#e0def4"
-    },
-
-    "tokyo-night": {
-        bg: "#1a1b26",
-        accent: "#7aa2f7",
-        fg: "#c0caf5"
-    }
-})
-
-// ============================================================
-// SIZE
-// ============================================================
-
-anchors.fill: parent
-
-// ============================================================
-// THEME GRID
-// ============================================================
-
-Grid {
-    id: themeGrid
-
-    anchors.horizontalCenter: parent.horizontalCenter
-    anchors.verticalCenter: parent.verticalCenter
-    anchors.verticalCenterOffset: 12
-
-    columns: 4
-    columnSpacing: 12
-    rowSpacing: 12
-
-    Repeater {
-        model: root.themes
-
-        delegate: Rectangle {
-            id: themeCard
-
-            width: 120
-            height: 110
-
-            radius: 16
-
-            property var preview:
-                root.themePreviews[modelData]
-
-            // ====================================================
-            // CARD STYLE
-            // ====================================================
-
-            color:
-                preview
-                ? preview.bg
-                : root.theme.bg
-
-            border.width:
-                modelData === root.selectedTheme
-                ? 2
-                : 0
-
-            border.color:
-                preview
-                ? preview.accent
-                : root.theme.accent
-
-            scale:
-                themeMouse.containsMouse
-                ? 1.04
-                : 1.0
-
-            Behavior on scale {
-                NumberAnimation {
-                    duration: 140
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            Behavior on border.color {
-                ColorAnimation {
-                    duration: 140
-                }
-            }
-
-            // ====================================================
-            // CARD CONTENT
-            // ====================================================
-
-            Column {
-                anchors.centerIn: parent
-
-                spacing: 10
-
-                // ------------------------------------------------
-                // ACCENT PILL
-                // ------------------------------------------------
-
-                Rectangle {
-                    anchors.horizontalCenter:
-                        parent.horizontalCenter
-
-                    width: 64
-                    height: 10
-
-                    radius:
-                        height / 2
-
-                    color:
-                        preview
-                        ? preview.accent
-                        : root.theme.accent
-                }
-
-                // ------------------------------------------------
-                // THEME NAME
-                // ------------------------------------------------
-
-                Text {
-                    anchors.horizontalCenter:
-                        parent.horizontalCenter
-
-                    text:
-                        modelData
-
-                    color:
-                        preview
-                        ? preview.fg
-                        : root.theme.fg
-
-                    font {
-                        family:
-                            root.theme.font
-
-                        pixelSize:
-                            12
-
-                        weight:
-                            Font.Bold
+                        MouseArea {
+                            id: mouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.applyTheme(cell.modelData)
+                        }
                     }
                 }
             }
 
-            // ====================================================
-            // CLICK
-            // ====================================================
+            Text {
+                anchors.centerIn: parent
+                visible: root.themeList.length === 0
+                text: "No themes found"
+                font.family: theme.font
+                font.pixelSize: 14
+                color: theme.textMuted
+                opacity: 0.5
+            }
+        }
 
-           MouseArea {
-    id: themeMouse
-    anchors.fill: parent
-    hoverEnabled: true
-    cursorShape: Qt.PointingHandCursor
-
-    onClicked: {
-        // 1. Immediate visual feedback
-        root.selectedTheme = modelData
-        root.themeSelected(modelData)
-
-        // 2. Write the theme name into the file ourselves
-        //    (this is the key part that was missing)
-        Quickshell.execDetached([
-            "sh", "-c",
-            "echo '" + modelData + "' > /home/igor/.config/.current_theme"
-        ])
-
-        // 3. Still run the original theme script (for wallpaper, gtk, etc.)
-        Quickshell.execDetached([
-            "sh", "-c",
-            "/home/igor/.config/themes/" + modelData + ".sh"
-        ])
-
-        // 4. After a short delay, re-read the file and reload colours
-        themeUpdateTimer.restart()
-    }
-}
-
+        // ── Footer ──────────────────────────────────────────────────
+        Text {
+            Layout.fillWidth: true
+            text: "Click a theme to apply it"
+            font.family: theme.font
+            font.pixelSize: 12
+            color: theme.textMuted
         }
     }
-}
 }

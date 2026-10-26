@@ -33,15 +33,17 @@ Item {
 
         Text {
             id: weatherIcon
-
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: -1
             text: root.icon
 
             color: theme.accent
 
             font {
                 family: theme.font
-                pixelSize: 22
+                pixelSize: 20
             }
+          y: 0
         }
 
         Text {

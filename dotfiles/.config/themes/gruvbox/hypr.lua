@@ -4,18 +4,15 @@ return {
     bg1 = "0xff282828",
     bg2 = "0xff32302f",
     bg3 = "0xff3c3836",
-
     -- Foreground
     fg0 = "0xfffbf1c7",
-    fg1 = "0xffebdbb2",
-
+    fg1 = "0xffd5c4a1",
     -- Accents
-    accent     = "0xffd79921", -- yellow/gold
-    accent_alt = "0xff83a598", -- blue-bright
-
+    accent     = "0xff458588",
+    accent_alt = "0xff689d6a",
     -- Status
-    error   = "0xffcc241d",
-    warn    = "0xffd79921",
-    info    = "0xff689d6a",
-    success = "0xff98971a",
+    error   = "0xfffb4934",
+    warn    = "0xfffabd2f",
+    info    = "0xff83a598",
+    success = "0xffb8bb26",
 }

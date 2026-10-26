@@ -1,0 +1,3 @@
+song_info=$(playerctl --player=spotify metadata --format ' {{artist}} - {{title}}' 2>/dev/null)
+
+echo "$song_info"

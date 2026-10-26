@@ -1,184 +1,103 @@
 // components/Timer.qml
 import QtQuick
-import QtQuick.Controls
 
 Item {
     id: root
 
-    // ============================================================
-    // SIZE
-    // ============================================================
-
+    // ── Size ────────────────────────────────────────────────────
     width: 90
     height: 30
-
     implicitWidth: 70
     implicitHeight: 30
 
-    // ============================================================
-    // PUBLIC API
-    // ============================================================
-
+    // ── Public API ──────────────────────────────────────────────
     property var theme
 
     property bool running: false
     property bool finished: false
-    property bool hovered: timerButton.containsMouse
     property int remainingSeconds: 0
+    readonly property bool hovered: mouse.containsMouse
 
     signal clicked()
     signal adjustRequested(int seconds)
     signal dismissRequested()
 
-    // ============================================================
-    // DISPLAY STATE
-    // ============================================================
+    // ── Display state ───────────────────────────────────────────
+    readonly property bool warning: remainingSeconds > 0 && remainingSeconds <= 10
+    readonly property bool alert: finished || warning
+    readonly property string displayTime: formatTime(remainingSeconds)
 
-    readonly property bool warning:
-        remainingSeconds > 0 &&
-        remainingSeconds <= 10
-
-    readonly property string displayTime:
-        formatTime(remainingSeconds)
-
-    // ============================================================
-    // TIME FORMAT
-    // ============================================================
+    readonly property string icon: finished ? "󰂚"
+                                 : running  ? "󱎫"
+                                 :            "󱫞"
 
     function formatTime(seconds) {
-        var minutes =
-            Math.floor(seconds / 60)
-
-        var secs =
-            seconds % 60
-
-        return minutes.toString().padStart(2, "0")
-             + ":"
-             + secs.toString().padStart(2, "0")
+        const m = Math.floor(seconds / 60)
+        const s = seconds % 60
+        return m.toString().padStart(2, "0") + ":" + s.toString().padStart(2, "0")
     }
 
-    // ============================================================
-    // MAIN TIMER INTERACTION
-    // ============================================================
-
-    MouseArea {
-        id: timerButton
-
+    // ── Background ──────────────────────────────────────────────
+    Rectangle {
         anchors.fill: parent
+        radius: height / 2
+        color: mouse.containsMouse ? root.theme.surfaceAlt : "transparent"
+        Behavior on color { ColorAnimation { duration: 120 } }
+    }
 
+    // ── Content ─────────────────────────────────────────────────
+    Row {
+        anchors.centerIn: parent
+        spacing: 5
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: root.icon
+            color: root.alert ? root.theme.error : root.theme.accent
+            font {
+                family: root.theme.font
+                pixelSize: 16
+            }
+            scale: mouse.pressed ? 0.9 : mouse.containsMouse ? 1.1 : 1.0
+
+            Behavior on scale { NumberAnimation { duration: 120 } }
+            Behavior on color { ColorAnimation { duration: 120 } }
+        }
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: 1
+            text: root.finished ? "Done" : root.displayTime
+            color: root.alert ? root.theme.error : root.theme.fg1
+            font {
+                family: root.theme.font
+                pixelSize: 16
+                weight: root.theme.fontWeight
+                features: { "tnum": 1 }   // fixed-width digits, no jitter while counting
+            }
+
+            Behavior on color { ColorAnimation { duration: 120 } }
+        }
+    }
+
+    // ── Interaction ─────────────────────────────────────────────
+    MouseArea {
+        id: mouse
+        anchors.fill: parent
         hoverEnabled: true
-
-        cursorShape:
-            Qt.PointingHandCursor
+        cursorShape: Qt.PointingHandCursor
 
         onClicked: {
-            if (root.finished) {
+            if (root.finished)
                 root.dismissRequested()
-                return
-            }
-
-            root.clicked()
+            else
+                root.clicked()
         }
 
-        onWheel: function(event) {
+        onWheel: event => {
             if (root.finished)
                 return
-
-            if (event.angleDelta.y > 0)
-                root.adjustRequested(60)
-            else
-                root.adjustRequested(-60)
-        }
-
-        // --------------------------------------------------------
-        // BACKGROUND
-        // --------------------------------------------------------
-
-        Rectangle {
-            anchors.fill: parent
-
-            radius: width / 2
-
-            color:
-                timerButton.containsMouse
-                    ? root.theme.surfaceAlt
-                    : "transparent"
-        }
-
-        // --------------------------------------------------------
-        // CONTENT
-        // --------------------------------------------------------
-
-        Row {
-            anchors.centerIn: parent
-
-            spacing: 5
-
-            Text {
-                text:
-                    root.finished
-                        ? "󰂚"
-                        : root.running
-                            ? "󱎫"
-                            : "󱫞"
-
-                color:
-                    root.finished
-                        ? root.theme.error
-                        : root.warning
-                            ? root.theme.error
-                            : root.theme.accent
-
-                font {
-                    family: root.theme.font
-                    pixelSize: 16
-                }
-
-                scale:
-                    timerButton.pressed
-                        ? 0.9
-                        : timerButton.containsMouse
-                            ? 1.1
-                            : 1.0
-
-                Behavior on scale {
-                    NumberAnimation {
-                        duration: 120
-                    }
-                }
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
-                    }
-                }
-            }
-
-            Text {
-                text:
-                    root.finished
-                        ? "Done"
-                        : root.displayTime
-
-                color:
-                    root.finished
-                        ? root.theme.error
-                        : root.warning
-                            ? root.theme.error
-                            : root.theme.fg1
-
-                font {
-                    family: root.theme.font
-                    pixelSize: 16
-                    weight: root.theme.fontWeight
-                }
-
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 120
-                    }
-                }
-            }
+            root.adjustRequested(event.angleDelta.y > 0 ? 60 : -60)
         }
     }
 }

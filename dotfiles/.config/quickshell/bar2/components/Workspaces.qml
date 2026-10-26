@@ -10,6 +10,9 @@ Item {
     property int activeWs: Hyprland.focusedWorkspace?.id ?? 1
     property int hoveredIdx: -1
 
+    // Workspace labels, indexed by (workspace id - 1)
+    readonly property var kanji: ["一", "二", "三", "四", "五", "六"]
+
     width: 184
     height: 30
 
@@ -21,7 +24,7 @@ Item {
 
         anchors.fill: parent
         hoverEnabled: true
-        propagateComposedEvents: true 
+        propagateComposedEvents: true
 
         // --------------------------------------------------------
         // ENTER ZONE
@@ -39,9 +42,9 @@ Item {
         // --------------------------------------------------------
         onExited: {
             root.hoveredIdx = -1
-            
+
             // CRITICAL FIX: Do NOT set detector.activeHover = false here!
-            // Instead, start the central debounce timer so transitioning to the 
+            // Instead, start the central debounce timer so transitioning to the
             // launcher button or empty space gives a smooth 200ms handoff.
             if (typeof hoverDebounceTimer !== "undefined") {
                 hoverDebounceTimer.start()
@@ -125,12 +128,12 @@ Item {
                     anchors.fill: parent
                     radius: width / 2
 
-                    color: isActive   ? root.theme.accent
-                         : isHovered  ? root.theme.surfaceAlt
+                    color: wsItem.isActive   ? root.theme.accent
+                         : wsItem.isHovered  ? root.theme.surfaceAlt
                          : root.theme.inactive
 
-                    opacity: isActive  ? 1.0
-                           : isHovered ? 0.9
+                    opacity: wsItem.isActive  ? 1.0
+                           : wsItem.isHovered ? 0.9
                            : 0.6
 
                     Behavior on color { ColorAnimation { duration: 120 } }
@@ -138,12 +141,12 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        text: wsId
-                        color: isActive ? root.theme.bg : root.theme.fg
+                        text: root.kanji[wsItem.wsId - 1]
+                        color: wsItem.isActive ? root.theme.bg : root.theme.fg
 
                         font {
                             family: root.theme.font
-                            pixelSize: 11
+                            pixelSize: 12
                             bold: false
                         }
                     }

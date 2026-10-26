@@ -69,9 +69,10 @@ Item {
     QtObject {
         id: themeObject
 
-        property string font: "JetBrainsMono Nerd Font Propo"
-        property real fontSize: 12
-        property int fontWeight: Font.DemiBold
+        property string font: "SF Pro Text"
+        property string iconFont: "JetBrainsMono Nerd Font"
+        property real fontSize: 11
+        property int fontWeight: Font.Medium
 
         property color bg: c.bg
         property color fg: c.fg   

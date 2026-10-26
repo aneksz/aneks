@@ -32,8 +32,8 @@ Item {
     Text {
         id: clockText
 
-        anchors.centerIn:
-            parent
+        anchors.centerIn: parent
+        anchors.verticalCenterOffset: 1
 
 
         text:
@@ -41,7 +41,7 @@ Item {
                 new Date(),
                 "dd MMM HH:mm"
             )
-
+        
 
         color:
             theme.fg1
