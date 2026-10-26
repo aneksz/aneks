@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../themes"
+		},
+		{
+			"path": "../../hypr"
+		},
+		{
+			"path": "../../../Downloads"
+		},
+		{
+			"path": "../../../.local/share"
+		}
+	],
+	"settings": {}
+}

@@ -14,9 +14,9 @@ Item {
     // SIZE
     // ============================================================
 
-    property int contentWidth: 480
+    property int contentWidth: 920
 
-    width: contentWidth 
+    width: contentWidth
     height: content.implicitHeight
     implicitHeight: content.implicitHeight
 
@@ -46,7 +46,7 @@ Item {
     property string ramUsage: ""
     property string dataUsage: ""
     property string homeUsage: ""
-
+    property string ramTotal: ""
     // ============================================================
     // THEME FALLBACK
     // ============================================================
@@ -71,107 +71,109 @@ Item {
     }
 
     // ============================================================
-    // DEVICE BATTERY HELPER
+    // DEBUG PLACEHOLDER CARD (delete once real content is wired in)
     // ============================================================
 
-    DeviceBattery {
-        id: deviceBattery
+    component PlaceholderCard: Rectangle {
+        property string label: ""
+        radius: 16
+        color: systemDropdown.activeTheme.bgAlt
+        border.width: 1
+        border.color: Qt.rgba(1, 1, 1, 0.06)
+
+        Text {
+            anchors.centerIn: parent
+            text: parent.label
+            color: systemDropdown.activeTheme.inactive
+            font {
+                family: systemDropdown.activeTheme.font
+                pixelSize: 12
+            }
+        }
     }
 
     // ============================================================
-    // PANEL CONTENT
+    // THREE-COLUMN LAYOUT
     // ============================================================
 
-    Column {
+    RowLayout {
         id: content
         width: parent.width
         spacing: 10
-        anchors.margins: 10
 
         // ========================================================
-        // 1. HEADER (Avatar + Uptime + Power buttons)
+        // LEFT COLUMN — Toggles (+ Volume, tbd) / System Info
         // ========================================================
 
-        HeaderNew {
-            width: parent.width
-            x: 0
+        ColumnLayout {
+    Layout.fillWidth: true
+    Layout.preferredWidth: 1.25
+    Layout.alignment: Qt.AlignTop
+    spacing: 10
 
-            theme: systemDropdown.activeTheme
-            globalClock: systemDropdown.globalClock
-            systemUptime: systemDropdown.systemUptime
-        }
+            TogglesAndVolume {
+    Layout.fillWidth: true
+    theme: activeTheme
+    dndEnabled: systemDropdown.dndEnabled
+    onDndToggled: (enabled) => systemDropdown.dndEnabled = enabled
+}
 
-        // ========================================================
-        // 2. TOGGLES (Bluetooth, Night Light, DND, Caffeine...)
-        // ========================================================
+        SystemInfo { theme: activeTheme; Layout.fillWidth: true }
 
-        Toggles {
-            width: parent.width
-            x: 0
-
-            theme: systemDropdown.activeTheme
-            dndEnabled: systemDropdown.dndEnabled
-
-            onDndToggled: (enabled) => {
-                systemDropdown.dndEnabled = enabled
-            }
-        }
-
-        // ========================================================
-        // 3. VOLUME
-        // ========================================================
-
-        VolumeCardNew {
-            width: parent.width
-            x: 0
-            theme: systemDropdown.activeTheme
-        }
-
-        // ========================================================
-        // 4. NOTIFICATIONS
-        // ========================================================
-
-        NotificationsNew {
-            width: parent.width
-            x: 0
-
-            theme: systemDropdown.activeTheme
-            notifServer: systemDropdown.notifServer
-            dndEnabled: systemDropdown.dndEnabled
-            property bool emptyState: !notifServer || !notifServer.trackedNotifications || notifServer.trackedNotifications.values.length === 0
-            onRequestClose: systemDropdown.requestClose()
-        }
-        // ========================================================
-        // STORAGE
-        // ========================================================
         Storage {
-            width: parent.width
-            x: 0
-
-            theme: systemDropdown.activeTheme
-            dataUsage: systemDropdown.dataUsage
-            homeUsage: systemDropdown.homeUsage
-
+    Layout.fillWidth: true
+    theme: activeTheme
+    dataUsage: systemDropdown.dataUsage
+    homeUsage: systemDropdown.homeUsage
+}
         }
 
         // ========================================================
-        // 5. STATS
+        // CENTER COLUMN — Clock / Avatar / Power buttons
         // ========================================================
+
+        ColumnLayout {
+    Layout.fillWidth: true
+    Layout.preferredWidth: 1.2
+    spacing: 10
+
+
+    CenterPanel {
+    Layout.fillWidth: true
+    Layout.fillHeight: true
+    theme: activeTheme
+    globalClock: systemDropdown.globalClock
+   }
+        }
+
+        // ========================================================
+        // RIGHT COLUMN 
+        // ========================================================
+
+        ColumnLayout {
+    Layout.fillWidth: true
+    Layout.preferredWidth: 1.25
+    Layout.alignment: Qt.AlignTop
+    spacing: 10
 
         StatsNew {
-            width: parent.width
-            x: 0
+    Layout.fillWidth: true
+    theme: activeTheme
+    cpuTemp: systemDropdown.cpuTemp
+    cpuUsage: systemDropdown.cpuUsage
+    gpuTemp: systemDropdown.gpuTemp
+    ramUsage: systemDropdown.ramUsage
+    ramTotal: systemDropdown.ramTotal
+}
 
-            theme: systemDropdown.activeTheme
-
-            cpuTemp: systemDropdown.cpuTemp
-            cpuUsage: systemDropdown.cpuUsage
-            gpuTemp: systemDropdown.gpuTemp
-            ramUsage: systemDropdown.ramUsage
-            
-
-            keyboardBattery: deviceBattery.keyboardBattery
-            mouseBattery: deviceBattery.mouseBattery
+        NotificationsNew {
+    Layout.fillWidth: true
+    Layout.fillHeight: true
+    theme: activeTheme
+    notifServer: systemDropdown.notifServer
+    dndEnabled: systemDropdown.dndEnabled
+    onRequestClose: systemDropdown.requestClose()
+}
         }
     }
 }

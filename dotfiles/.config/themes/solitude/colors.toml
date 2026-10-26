@@ -1,0 +1,51 @@
+accent     = "#798186"
+cursor     = "#cacccc"
+foreground = "#cacccc"
+background = "#101315"
+
+color0  = "#101315"
+color1  = "#565d60"
+color2  = "#9fa5a9"
+color3  = "#d9dbdc"
+color4  = "#798186"
+color5  = "#aeaeae"
+color6  = "#707070"
+color7  = "#cbc2be"
+color8  = "#4b4e55"
+color9  = "#de6145"
+color10 = "#343d41"
+color11 = "#c9c2b4"
+color12 = "#5d6367"
+color13 = "#9a9a9a"
+color14 = "#707070"
+color15 = "#a5aeb4"
+
+# extra keys used only by hypr.lua - a genuine 4-step ramp exists here,
+# no duplication needed unlike several earlier themes
+bg0 = "#101315"
+bg1 = "#343d41"
+bg2 = "#4b4e55"
+bg3 = "#5d6367"
+fg0 = "#d9dbdc"
+fg1 = "#cbc2be"
+accent_alt = "#de6145"
+error = "#de6145"
+warn = "#c9c2b4"
+info = "#707070"
+success = "#9fa5a9"
+
+# border is CONFIRMED official (colors.toml's own active_border_color key,
+# distinct from accent). accent_ws/inactive have no dedicated source and
+# are my own reasonable defaults.
+border    = "#a8adb0"
+accent_ws = "#a8adb0"
+inactive  = "#4b4e55"
+
+# non-color, per-theme metadata
+gtk_theme = "Adwaita-dark"
+icon_theme      = "Tela-grey-dark"
+vscode_theme = "Noctokai Dusk"
+spicetify_theme = "Solitude"
+brave_accent    = "#101315"
+wallpaper_dp1   = "BG2.png"
+wallpaper_dp3   = "BG5.png"

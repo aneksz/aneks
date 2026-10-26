@@ -1,48 +1,51 @@
+pragma Singleton
 import QtQuick
 
 QtObject {
-    // ================= BACKGROUNDS =================
-    readonly property color bg0: "#282a36"
-    readonly property color bg1: "#1e1f29"
-    readonly property color bg2: "#44475a"
-    readonly property color bg3: "#6272a4"
-    readonly property color bg4: "#7082b6"
+    // ---- what the theme-engine (bar2/Colors.qml consumer) actually reads ----
+    readonly property color bg:            "#282a36"
+    readonly property color bg1:           "#44475a"
+    readonly property color fg0:           "#f8f8f2"
+    readonly property color fg1:           "#6272a4"
+    readonly property color fg2:           "#f8f8f2"
+    readonly property color fg3:           "#6272a4"
+    readonly property color textPrimary:   "#f8f8f2"
+    readonly property color textSecondary: "#6272a4"
 
-    // ================= FOREGROUND =================
-    readonly property color fg0: "#f8f8f2"
-    readonly property color fg1: "#e6e6e0"
-    readonly property color fg2: "#bfbfbf"
-    readonly property color fg3: "#7f849c"
+    readonly property color accent:      "#bd93f9"
+    readonly property color accentHover: "#282a36"
+    readonly property color border:      "#bd93f9"
+    readonly property color activeWs:    "#bd93f9"
+    readonly property color inactive:    "#6272a4"
 
-    // ================= BASE =================
-    readonly property color red: "#ff5555"
-    readonly property color green: "#50fa7b"
-    readonly property color yellow: "#f1fa8c"
-    readonly property color blue: "#6272a4"
-    readonly property color purple: "#bd93f9"
-    readonly property color aqua: "#8be9fd"
-    readonly property color orange: "#ffb86c"
+    readonly property color surface:    "#21222c"
+    readonly property color surfaceAlt: "#282a36"
 
-    // ================= SEMANTIC =================
-    readonly property color accent: purple
-    readonly property color accentHover: aqua
-    readonly property color border: purple
+    readonly property color green:   "#50fa7b"
+    readonly property color red:     "#ff5555"
+    readonly property color warning: "#f1fa8c"
+    readonly property color success: "#50fa7b"
+    readonly property color error:   "#ff5555"
 
-    readonly property color success: green
-    readonly property color warning: yellow
-    readonly property color error: red
+    // ---- kept for anything else that reads the plain base16 names directly ----
+    readonly property color background: "#282a36"
+    readonly property color foreground: "#f8f8f2"
+    readonly property color cursor:     "#f8f8f2"
 
-    // ================= TEXT ROLES =================
-    readonly property color textPrimary: fg0
-    readonly property color textSecondary: fg2
-    readonly property color textMuted: fg3
-
-    // ================= SURFACES =================
-    readonly property color bg: "#282a36"  
-    readonly property color surface: bg2
-    readonly property color surfaceAlt: bg1
-
-    // ================= WORKSPACES =================
-    readonly property color activeWs: purple
-    readonly property color inactive: aqua
+    readonly property color color0:  "#21222c"
+    readonly property color color1:  "#ff5555"
+    readonly property color color2:  "#50fa7b"
+    readonly property color color3:  "#f1fa8c"
+    readonly property color color4:  "#bd93f9"
+    readonly property color color5:  "#ff79c6"
+    readonly property color color6:  "#8be9fd"
+    readonly property color color7:  "#f8f8f2"
+    readonly property color color8:  "#6272a4"
+    readonly property color color9:  "#ff6e6e"
+    readonly property color color10: "#69ff94"
+    readonly property color color11: "#ffffa5"
+    readonly property color color12: "#d6acff"
+    readonly property color color13: "#ff92df"
+    readonly property color color14: "#a4ffff"
+    readonly property color color15: "#ffffff"
 }

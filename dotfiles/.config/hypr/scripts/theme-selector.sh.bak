@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+ROFI_THEME="$HOME/.config/rofi/launchers/type-2/style-1.rasi"
+THEME_DIR="$HOME/.config/themes"
+
+# Get unique list of .sh files in top-level only
+choice=$(find "$THEME_DIR" -maxdepth 1 -name "*.sh" -exec basename {} .sh \; | sort -u | rofi -dmenu -p "Select Theme" -theme "$ROFI_THEME")
+
+[ -n "$choice" ] && bash "$THEME_DIR/$choice.sh"

@@ -300,19 +300,19 @@ Rectangle {
 
             Text {
                 text: (weatherData.temp ?? "--") + "°C"
-                color: root.theme.fg
+                color: root.theme.fg0
                 font { family: root.theme.font; pixelSize: 42; bold: true }
             }
 
             Text {
                 text: (weatherData.low ?? "--") + "° / " + (weatherData.high ?? "--") + "°"
-                color: root.theme.inactive
+                color: root.theme.fg0
                 font { family: root.theme.font; pixelSize: 12 }
             }
 
             Text {
                 text: weatherData.desc || "Loading..."
-                color: root.theme.fg
+                color: root.theme.fg0
                 font { family: root.theme.font; pixelSize: 13 }
             }
         }
@@ -363,7 +363,7 @@ Rectangle {
                                 Text {
                                     Layout.fillWidth: true
                                     text: modelData.label
-                                    color: root.theme.inactive
+                                    color: root.theme.fg0
                                     font { family: root.theme.font; pixelSize: 12 }
                                 }
 
@@ -470,7 +470,7 @@ Rectangle {
                                 Text {
                                     width: parent.width
                                     text: modelData.description || ""
-                                    color: root.theme.inactive
+                                    color: root.theme.fg0
                                     font {
                                         family: root.theme.font
                                         pixelSize: 8

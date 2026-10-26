@@ -15,6 +15,7 @@ import QtQuick.Shapes
 import "./components" as LocalComponents
 import "components/buttons" as Buttons
 import "./components/system" as SystemModules
+import "components/singletons"
 
 PanelWindow {
     id: root
@@ -38,10 +39,18 @@ PanelWindow {
     root.wallpaperVisible ||
     root.timerOsdVisible ||
     root.calendarVisible ||
-    root.updateAuthVisible 
+    root.networkVisible ||
+    root.updateAuthVisible ||
+    root.updatesVisible ||
+    root.volumeVisible ||
+    root.batteryVisible ||
+    root.clipboardVisible ||
+    root.torrentsVisible
     mask: Region { item: island }
 
     Connections { target: root.theme }
+
+    
 // ===========================================================
 // PERSISTENT NOTIFICATION STORAGE (In shell.qml)
 // ===========================================================
@@ -62,19 +71,25 @@ NotificationServer {
     id: notificationServer
 
     keepOnReload: true
+    actionsSupported: true
+    bodyMarkupSupported: true
+    persistenceSupported: true
 
     onNotification: function(n) {
         if (!n) return;
 
-
         const app = String(n.appName || n.desktopEntry || "").toLowerCase();
         const isSpotify = app.includes("spotify");
+        const isBetterbird = app.includes("betterbird") || app.includes("thunderbird");
 
         n.tracked = true;
         n.isSpotifyTransient = isSpotify;
 
         let key = String(n.id || (n.summary + n.body));
-
+        if (isBetterbird) {
+            key = key + "_" + Date.now();
+        }
+        n.historyKey = key; 
         let timestamps = {};
         let seen = {};
         try {
@@ -87,6 +102,10 @@ NotificationServer {
             persist.timestampsJson = JSON.stringify(timestamps);
         }
         n.timestamp = timestamps[key];
+        
+        if (!isSpotify) {
+            NotificationHistory.addEntry(key, n.summary, n.body, n.timestamp, app);
+        }
 
         if (n.lastGeneration || seen[key]) {
             return;
@@ -94,10 +113,10 @@ NotificationServer {
 
         seen[key] = true;
         persist.seenJson = JSON.stringify(seen);
-        
         root.currentNotif = n;
     }
 }
+
     // =====================================================
     // POLKIT AGENT 
     // =====================================================
@@ -107,6 +126,10 @@ NotificationServer {
 
     onIsActiveChanged: {
         root.updateAuthVisible = polkitService.isActive
+
+        if (polkitService.isActive) {
+            root.updatesVisible = false
+        }
 
         if (polkitService.isActive && updateAuthLoader.item && polkitService.flow) {
             updateAuthLoader.item.actionDescription = polkitService.flow.message
@@ -118,9 +141,7 @@ NotificationServer {
     // THEME ENGINE
     // =====================================================
 
- LocalComponents.ThemeEngine {
-    id: themeEngine
-}
+ LocalComponents.ThemeEngine { id: themeEngine }
     
     // =====================================================
     // AUTO-DISMISS CLICK AWAY MECHANISM 
@@ -139,7 +160,13 @@ NotificationServer {
     root.weatherVisible ||
     root.wallpaperVisible ||
     root.timerOsdVisible ||
-    root.timerControlOsdVisible
+    root.networkVisible ||
+    root.timerControlOsdVisible ||
+    root.updatesVisible || 
+    root.volumeVisible || 
+    root.batteryVisible ||
+    root.clipboardVisible ||
+    root.torrentsVisible
 
     z: -1
 
@@ -151,6 +178,13 @@ NotificationServer {
         root.calendarVisible = false
         root.weatherVisible = false
         root.wallpaperVisible = false
+        root.networkVisible = false
+        root.updatesVisible = false
+        root.volumeVisible = false
+        root.batteryVisible = false
+        root.clipboardVisible = false
+        root.torrentsVisible = false
+        
     }
 }
 
@@ -175,12 +209,19 @@ NotificationServer {
     property string ramTotal: "0B"
     property string spotifyTrack: ""
     property string spotifyArtUrl: ""
+    property string spotifyIcon: ""
     property bool mediaVisible: false
+    property bool volumeVisible: false
     property bool spotifyVisible: false
     property real spotifyPosition: 0
     property real spotifyLength: 0
     property string spotifyStatus: "Paused"
     property bool panelVisible: false
+    property bool networkVisible: false
+    property bool updatesVisible: false
+    property bool batteryVisible: false
+    property bool clipboardVisible: false
+    property bool torrentsVisible: false
     property bool dndEnabled: false
     property bool caffeineEnabled: false
     property var currentNotif: null
@@ -195,7 +236,6 @@ NotificationServer {
     property bool wallpaperVisible: false
     property var wallpapers: []
     property string currentResolutionFolder: "4K"
-    property string updateCount: "0"
     property bool weatherVisible: false
     property bool calendarVisible: false
     property var toast: dynamicToastLoader.item
@@ -213,6 +253,14 @@ NotificationServer {
     property bool timerOsdVisible: false
     property bool timerControlOsdVisible: false
     property bool updateAuthVisible: false
+    property int archCount: 0
+    property int aurCount: 0
+    property int flatpakCount: 0
+    property string archChecked: "—"
+    property string aurChecked: "—"
+    property string flatpakChecked: "—"
+    property bool updatesChecking: false
+    readonly property int totalUpdateCount: archCount + aurCount + flatpakCount
 
     // Dynamic Island State Controls
     property bool launcherVisible: false
@@ -233,14 +281,29 @@ NotificationServer {
     property bool islandExpanded:
     launcherVisible ||
     panelVisible ||
-    mediaVisible
+    mediaVisible ||
+    networkVisible ||
+    updatesVisible ||
+    updateAuthVisible ||
+    volumeVisible ||
+    batteryVisible ||
+    wallpaperVisible ||
+    clipboardVisible ||
+    torrentsVisible
 
     property bool showHoverModules:
     detector.activeHover &&
     !root.launcherVisible &&
     !root.panelVisible &&
     !root.weatherVisible &&
-    !root.themeVisible
+    !root.themeVisible &&
+    !root.networkVisible &&
+    !root.updatesVisible &&
+    !root.volumeVisible &&
+    !root.batteryVisible &&
+    !root.wallpaperVisible &&
+    !root.clipboardVisible &&
+    !root.torrentsVisible
 
     property var bar: root
     property var globalClock: clock
@@ -253,12 +316,11 @@ NotificationServer {
     Process { id: vpnRunner }
     Process { id: caffeineProc }
     Process { id: spotifyControl }
-    Process { id: spotifyProc; command: ["sh", "-c", "/home/igor/.config/waybar/scripts/spotify.sh"]; running: true; stdout: StdioCollector { onTextChanged: { try { let j = JSON.parse(text.trim()); root.spotifyTrack = j.text || ""; root.spotifyArtUrl = j.art || ""; root.spotifyPosition = Number(j.position) || 0; root.spotifyLength = Number(j.length) || 0; root.spotifyStatus = j.status || "Paused";} catch(e) {} } } }
+    Process { id: spotifyProc; command: ["sh", "-c", "/home/igor/.config/waybar/scripts/spotify.sh"]; running: true; stdout: StdioCollector { onTextChanged: { try { let j = JSON.parse(text.trim()); root.spotifyTrack = j.text || ""; root.spotifyIcon = j.icon || ""; root.spotifyArtUrl = j.art || ""; root.spotifyPosition = Number(j.position) || 0; root.spotifyLength = Number(j.length) || 0; root.spotifyStatus = j.status || "Paused"; } catch(e) {} } } }
     Process { id : volumeProc }
     Process { id: wallpaperProc; stdout: StdioCollector { onTextChanged: { root.wallpapers = text.trim().split("\n").filter(path => path.length > 0);  } } }
     Process { id: themeFolderProc; command: ["sh", "-c", `find ~/Pictures/Wallpapers/${root.currentResolutionFolder} -mindepth 1 -maxdepth 1 -type d -printf '%f\n'`]; running: true; stdout: StdioCollector { onTextChanged: { root.themeFolders = [""].concat(text.trim().split("\n").filter(x => x.length > 0)) } } }
     Process { id: applyWallpaper}
-    Process { id: updateCheck; command: ["sh", "-c", "~/.config/scripts/updates.sh"]; stdout: StdioCollector { onStreamFinished: { updateCount = text.trim() || "0" }}}
     Process { id: cpuCheck; command: ["sh", "-c", "sensors -u k10temp-pci-00c3 | awk '/temp1_input:/ {print int($2)}'"]; stdout: StdioCollector { onTextChanged: root.cpuTemp = (text.trim() || "00") + "°C" } }
     Process { id: cpuUsageCheck; command: ["sh", "-c", "read cpu user nice system idle iowait irq softirq steal guest guest_nice < /proc/stat; total1=$((user + nice + system + idle + iowait + irq + softirq + steal)); idle1=$((idle + iowait)); sleep 0.1; read cpu user nice system idle iowait irq softirq steal guest guest_nice < /proc/stat; total2=$((user + nice + system + idle + iowait + irq + softirq + steal)); idle2=$((idle + iowait)); total=$((total2 - total1)); idle=$((idle2 - idle1)); usage=$((100 * (total - idle) / total)); echo \"${usage}%\""]; stdout: StdioCollector { onStreamFinished: { root.cpuUsage = text.trim() || "--" } } }
     Process { id: gpuCheck; command: ["sh", "-c", "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits | head -n1"]; stdout: StdioCollector { onTextChanged: root.gpuTemp = (text.trim() || "00") + "°C" } }
@@ -266,41 +328,44 @@ NotificationServer {
     Process { id: diskCheck; command: ["sh", "-c", "df -h | awk '$6==\"/mnt/data\" {print \"DATA:\" $3 \" / \" $2} $6==\"/home\" {print \"HOME:\" $3 \" / \" $2}'" ]; stdout: StdioCollector { onTextChanged: { let lines = text.trim().split("\n"); root.dataUsage = "0 / 1"; root.homeUsage = "0 / 1"; for (let line of lines) { if (line.startsWith("DATA:")) root.dataUsage = line.replace("DATA:", ""); if (line.startsWith("HOME:")) root.homeUsage = line.replace("HOME:", ""); } } } }
     Process { id: ramCheck; command: ["sh", "-c", "free -h --si | awk '/^Mem:/ {print $3 \" \" $2}' | sed 's/Gi/GB/g'"]; stdout: StdioCollector { onTextChanged: { let parts = text.trim().split(/\s+/); if (parts.length >= 2) { root.ramUsage = parts[0]; root.ramTotal = parts[1]; } } } }
     Process { id: checkCurrent; command: ["cat", "/home/igor/.config/.current_theme"]; stdout: StdioCollector { onTextChanged: root.currentTheme = text.trim() }}
-    Process { id: getThemes; command: ["sh", "-c", "ls /home/igor/.config/themes/*.sh | xargs -n1 basename | sed 's/.sh$//'"]; stdout: StdioCollector { onTextChanged: root.themes = text.trim().split("\n").filter(name => name.length > 0) } }
-    Process {
-    id: barWeatherProc
-
-    command: ["/home/igor/.config/waybar/scripts/weather.sh"]
-    running: true
-
-    stdout: StdioCollector {
-        onTextChanged: {
-            const output = text.trim()
-
-            if (!output)
-                return
-
-            const parts = output.split(/\s+/)
-
-            root.currentWeatherIcon = parts[0] || "❔"
-            root.currentTemperature = parts[1]
-                ? parts[1].replace("°C", "")
-                : "--"
-        }
-    }
-}    
+    Process { id: getThemes; command: ["sh", "-c", "find /home/igor/.config/themes -maxdepth 1 -mindepth 1 -type d ! -name templates -printf '%f\\n' | sort"]; stdout: StdioCollector { onTextChanged: root.themes = text.trim().split("\n").filter(name => name.length > 0) } }
+    Process { id: archCheck; command: ["sh", "-c", "checkupdates 2>/dev/null | wc -l"]; stdout: SplitParser { onRead: line => { const n = parseInt(line.trim()); root.archCount = isNaN(n) ? 0 : n; root.archChecked = root.tsNow() } } }
+    Process { id: aurCheck; command: ["sh", "-c", "yay -Qua 2>/dev/null | wc -l"]; stdout: SplitParser { onRead: line => { const n = parseInt(line.trim()); root.aurCount = isNaN(n) ? 0 : n; root.aurChecked = root.tsNow() } } }
+    Process { id: flatpakCheck; command: ["sh", "-c", "flatpak remote-ls --updates 2>/dev/null | wc -l"]; stdout: SplitParser { onRead: line => { const n = parseInt(line.trim()); root.flatpakCount = isNaN(n) ? 0 : n; root.flatpakChecked = root.tsNow() } } }
+    Process { id: archUpdateProcess; command: ["kitty", "-e", "pkexec", "bash", "-c", "pacman -Syu"]; onExited: root.checkAllUpdates() }
+    Process { id: aurUpdateProcess; command: ["kitty", "-e", "bash", "-c", "yay -Syu --aur"]; onExited: root.checkAllUpdates() }
+    Process { id: flatpakUpdateProcess; command: ["kitty", "-e", "bash", "-c", "flatpak update"]; onExited: root.checkAllUpdates() }
+    Process { id: barWeatherProc; command: ["/home/igor/.config/waybar/scripts/weather.sh"]; running: true; stdout: StdioCollector { onTextChanged: { const output = text.trim(); if (!output) return; const parts = output.split(/\s+/); root.currentWeatherIcon = parts[0] || "❔"; root.currentTemperature = parts[1] ? parts[1].replace("°C", "") : "--"; } } }
     
-    Component.onCompleted: { updateCheck.running = true; scanWallpapers()} 
+    Component.onCompleted: {scanWallpapers(); root.checkAllUpdates()} 
 
     function scanWallpapers() { wallpaperProc.command = ["sh", "-c", `find "$HOME/Pictures/Wallpapers/${root.currentResolutionFolder}" -type f \\( -iname '*.jpeg' -o -iname '*.jpg' -o -iname '*.png' -o -iname '*.webp' \\)`]; wallpaperProc.running = true }
+
+    function tsNow() {
+    return Qt.formatTime(new Date(), "hh:mm:ss")
+    }
+
+    function checkAllUpdates() {
+    root.updatesChecking = true
+    archCheck.running = true
+    aurCheck.running = true
+    flatpakCheck.running = true
+    updatesCheckingResetTimer.start()
+   }
+    
+    function updateArch() { archUpdateProcess.running = true }
+    function updateAur() { aurUpdateProcess.running = true }
+    function updateFlatpak() { flatpakUpdateProcess.running = true } 
+
     // =====================================================
     // CORE SYSTEM STATISTICS REFRESH TIMER
     // =====================================================
     Timer { id: statsPoller; interval: (detector.activeHover || root.panelVisible) ? 2000 : 8000; running: true; repeat: true; triggeredOnStart: true; onTriggered: { cpuUsageCheck.running = true; ramCheck.running = true; if (detector.activeHover || root.panelVisible) { cpuCheck.running = true; gpuCheck.running = true; uptimeCheck.running = true; diskCheck.running = true } } }
     Timer { interval: 500; running: true; repeat: true; onTriggered: { if (!spotifyProc.running) spotifyProc.running = true } }
-    Timer { interval: 600000; running: true; repeat: true; triggeredOnStart: true; onTriggered: { if (!updateCheck.running) updateCheck.running = true } }
     Timer { interval: 600000; running: true; repeat: true; onTriggered: { if (!barWeatherProc.running) barWeatherProc.running = true }}
     Timer { id: countdownTimer; interval: 1000; repeat: true }
+    Timer { id: updatesCheckingResetTimer; interval: 3000; onTriggered: root.updatesChecking = false }
+    Timer { interval: 600000; running: true; repeat: true; onTriggered: root.checkAllUpdates() }
 
 // ============================================================
 // TIMER ENGINE
@@ -333,89 +398,13 @@ Timer {
 // TIMER FUNCTIONS
 // ============================================================
 
-function startTimer(seconds) {
-    if (seconds <= 0)
-        return
-
-    root.timerDuration = seconds
-    root.timerRemaining = seconds
-    root.timerRunning = true
-    root.timerFinished = false
-    root.timerActive = true
-}
-
-function pauseTimer() {
-    root.timerRunning = false
-
-}
-
-function resumeTimer() {
-    if (root.timerRemaining <= 0)
-        return
-
-    root.timerFinished = false
-    root.timerRunning = true
-
-}
-
-function toggleTimer() {
-    if (root.timerFinished)
-        return
-
-    if (root.timerRunning)
-        pauseTimer()
-    else
-        resumeTimer()
-}
-
-function adjustTimer(seconds) {
-    if (!root.timerActive || root.timerFinished)
-        return
-
-    root.timerRemaining =
-        Math.max(
-            0,
-            root.timerRemaining + seconds
-        )
-
-    root.timerDuration =
-        Math.max(
-            0,
-            root.timerDuration + seconds
-        )
-
-    if (root.timerRemaining <= 0) {
-        root.timerRemaining = 0
-        root.timerRunning = false
-        root.timerFinished = true
-    }
-}
-
-function closeTimerControlOsd() {
-    root.timerControlOsdVisible = false
-    root.islandState = root.islandStateClosing
-
-    Qt.callLater(function() {
-        root.islandState = root.islandStateCollapsed
-    })
-
-}
-
-function dismissTimer() {
-    root.timerRunning = false
-    root.timerFinished = false
-    root.timerActive = false
-    root.timerOsdVisible = false
-
-    root.timerRemaining = 0
-    root.timerDuration = 0
-
-    root.islandState = root.islandStateClosing
-
-    Qt.callLater(function() {
-        root.islandState = root.islandStateCollapsed
-    })
-}
+function startTimer(seconds) { if (seconds > 0) { root.timerDuration = seconds; root.timerRemaining = seconds; root.timerRunning = true; root.timerFinished = false; root.timerActive = true; } }
+function pauseTimer() { root.timerRunning = false; }
+function resumeTimer() { if (root.timerRemaining > 0) { root.timerFinished = false; root.timerRunning = true; } }
+function toggleTimer() { if (!root.timerFinished) { root.timerRunning ? pauseTimer() : resumeTimer(); } }
+function adjustTimer(seconds) { if (root.timerActive && !root.timerFinished) { root.timerRemaining = Math.max(0, root.timerRemaining + seconds); root.timerDuration = Math.max(0, root.timerDuration + seconds); if (root.timerRemaining <= 0) { root.timerRemaining = 0; root.timerRunning = false; root.timerFinished = true; } } }
+function closeTimerControlOsd() { root.timerControlOsdVisible = false; root.islandState = root.islandStateClosing; Qt.callLater(() => root.islandState = root.islandStateCollapsed); }
+function dismissTimer() { root.timerRunning = false; root.timerFinished = false; root.timerActive = false; root.timerOsdVisible = false; root.timerRemaining = 0; root.timerDuration = 0; root.islandState = root.islandStateClosing; Qt.callLater(() => root.islandState = root.islandStateCollapsed); }
 
     // =====================================================
     // EVENT-DRIVEN INSTANT PANEL REFRESH HOOK
@@ -453,17 +442,25 @@ Item {
     width: Math.max(520, island.width + 20)
 
     height:
-        root.wallpaperVisible
-        ? 650
-        : root.weatherVisible
-        ? 650
-        : root.themeVisible
-        ? 500
-        : root.launcherVisible ||
-          root.panelVisible ||
-          root.mediaVisible
-        ? 540
-        : 42
+    root.wallpaperVisible
+    ? 650
+    : root.weatherVisible
+    ? 650
+    : root.themeVisible
+    ? 500
+    : root.networkVisible
+    ? 540
+    : root.updateAuthVisible
+    ? 300
+    : root.updatesVisible
+    ? 460
+    : root.volumeVisible
+    ? 540
+    : root.launcherVisible ||
+      root.panelVisible ||
+      root.mediaVisible 
+    ? 540
+    : 42
 
     // -------------------------------------------------
     // STATE
@@ -477,10 +474,16 @@ Item {
     property bool launcherHovered: false
     property bool themeHovered: false
     property bool panelHovered: false
+    property bool networkHovered: false 
     property bool spotifyHovered: false
     property bool timerHovered: false
     property bool calendarHovered: false
     property bool authHovered: false
+    property bool volumesHovered: false
+    property bool batteryHovered: false
+    property bool clipboardHovered: false
+    property bool torrentsHovered: false
+    
 // -------------------------------------------------
 // EXIT DEBOUNCE - FIXED FOR WORKSPACE HOVER
 // -------------------------------------------------
@@ -491,26 +494,8 @@ Timer {
 
     onTriggered: {
 
-        if (root.calendarVisible) {
-            detector.activeHover = false
-            return
-        }
-
-        if (root.updateAuthVisible) {
-            detector.activeHover = false
-            return
-        }
-
-        let workspacesHovered = false
-
-        if (
-            workspaceLoader &&
-            workspaceLoader.item &&
-            workspaceLoader.item.masterWorkspaceMouse
-        ) {
-            workspacesHovered =
-                workspaceLoader.item.masterWorkspaceMouse.containsMouse
-        }
+       if (root.calendarVisible || root.updateAuthVisible || root.networkVisible || root.clipboardVisible || root.volumeVisible || root.updatesVisible || root.batteryVisible) { if (root.calendarVisible || root.updateAuthVisible) detector.activeHover = false; return; }
+       let workspacesHovered = !!(workspaceLoader?.item?.masterWorkspaceMouse?.containsMouse);
 
         if (
             !masterHoverHandler.hovered &&
@@ -524,6 +509,10 @@ Timer {
             !detector.spotifyHovered &&
             !detector.timerHovered &&
             !detector.authHovered &&
+            !detector.networkHovered &&
+            !detector.batteryHovered &&
+            !detector.clipboardHovered &&
+            !detector.torrentsHovered &&
             !detector.isPinned
         ) {
             detector.activeHover = false
@@ -535,6 +524,7 @@ Timer {
     // KEYBOARD FOCUS
     // -------------------------------------------------
     FocusScope {
+    id: globalFocusScope
     anchors.fill: parent
 
     focus:
@@ -545,7 +535,13 @@ Timer {
         root.themeVisible ||
         root.wallpaperVisible ||
         root.timerOsdVisible ||
-        root.calendarVisible
+        root.calendarVisible ||
+        root.networkVisible ||
+        root.updatesVisible ||
+        root.volumeVisible ||
+        root.batteryVisible ||
+        root.clipboardVisible ||
+        root.torrentsVisible
 
     Keys.onEscapePressed: function(event) {
     root.launcherVisible = false
@@ -555,6 +551,12 @@ Timer {
     root.themeVisible = false
     root.wallpaperVisible = false
     root.calendarVisible = false
+    root.networkVisible = false
+    root.updatesVisible = false
+    root.volumeVisible = false
+    root.batteryVisible = false
+    root.clipboardVisible = false
+    root.torrentsVisible = false
 
     if (root.timerOsdVisible) {
         root.timerOsdVisible = false
@@ -597,7 +599,44 @@ Item {
                 return
             }
 
+            if (root.networkVisible) {
+                detector.activeHover = false
+                hoverDebounceTimer.stop()
+                return
+            }
+
+            if (root.torrentsVisible) {
+                detector.activeHover = false
+                hoverDebounceTimer.stop()
+                return
+            }
+
+
+            if (root.volumeVisible) {
+                detector.activeHover = false
+                hoverDebounceTimer.stop()
+                return
+            }
+
+            if (root.clipboardVisible) {
+                detector.activeHover = false
+                hoverDebounceTimer.stop()
+                return
+            }
+
+            if (root.updatesVisible) {
+                detector.activeHover = false
+                hoverDebounceTimer.stop()
+                return
+            }
+
             if (root.updateAuthVisible) {
+                detector.activeHover = false
+                hoverDebounceTimer.stop()
+                return
+            }
+
+            if (root.batteryVisible) {
                 detector.activeHover = false
                 hoverDebounceTimer.stop()
                 return
@@ -623,9 +662,7 @@ Rectangle {
     // BASIC SETUP
     // =================================================
 
-    clip: true
-
-
+   clip: true
    anchors {
     horizontalCenter: parent.horizontalCenter
     top: parent.top
@@ -765,6 +802,10 @@ Loader {
             root.weatherVisible = false
             root.themeVisible = false
             root.wallpaperVisible = false
+            root.networkVisible = false
+            root.updatesVisible = false
+            root.volumeVisible = false
+            root.batteryVisible = false
 
             root.osdMode = "toast"
             toastHideTimer.restart()
@@ -838,22 +879,10 @@ Loader {
     target: timerControlOsdLoader.item
     ignoreUnknownSignals: true
 
-    function onPauseRequested() {
-        root.pauseTimer()
-    }
-
-    function onResumeRequested() {
-        root.resumeTimer()
-    }
-
-    function onDismissRequested() {
-        root.closeTimerControlOsd()
-    }
-
-   function onCancelRequested() {
-    root.closeTimerControlOsd()
-    root.dismissTimer()
-    }
+    function onPauseRequested() { root.pauseTimer(); }
+    function onResumeRequested() { root.resumeTimer(); }
+    function onDismissRequested() { root.closeTimerControlOsd(); }
+    function onCancelRequested() { root.closeTimerControlOsd(); root.dismissTimer(); }
   }
 }
 // =====================================================
@@ -877,15 +906,8 @@ Loader {
     Connections {
         target: timerOsdLoader.item
         ignoreUnknownSignals: true
-
-        function onStartRequested(seconds) {
-            root.startTimer(seconds)
-            root.timerOsdVisible = false
-        }
-
-        function onDismissRequested() {
-            root.timerOsdVisible = false
-        }
+        function onStartRequested(seconds) { root.startTimer(seconds); root.timerOsdVisible = false; }
+        function onDismissRequested() { root.timerOsdVisible = false; }
     }
 }
 // =====================================================
@@ -902,13 +924,8 @@ Loader {
 
     Connections { 
         target: wallpaperSelectorLoader.item 
-        function onCloseRequested() { 
-            root.wallpaperVisible = false; 
-        } 
-        function onResolutionChanged(folder) { 
-            root.currentResolutionFolder = folder; 
-            root.scanWallpapers(); 
-        } 
+        function onCloseRequested() { root.wallpaperVisible = false; }
+        function onResolutionChanged(folder) { root.currentResolutionFolder = folder; root.scanWallpapers(); }
     }
 
     // Single unified set of safe bindings
@@ -944,17 +961,104 @@ Loader {
         target: themeSelectorLoader.item
         ignoreUnknownSignals: true
 
-        function onThemeSelected(name) {
-            root.currentTheme = name
-        }
+        function onThemeSelected(name) { root.currentTheme = name }
     }
 }
-// =================================================
+
+// =====================================================
+// UPDATES MODULE
+// =====================================================
+LocalComponents.UpdatesModule {
+    id: updatesLoader
+
+    anchors.fill: parent
+    anchors.margins: 14
+
+    visible: root.updatesVisible
+    theme: root.theme
+
+    archCount: root.archCount
+    aurCount: root.aurCount
+    flatpakCount: root.flatpakCount
+    archChecked: root.archChecked
+    aurChecked: root.aurChecked
+    flatpakChecked: root.flatpakChecked
+    checking: root.updatesChecking
+    checkAll: root.checkAllUpdates
+}
+
+// =====================================================
+// NETWORK MODULE
+// =====================================================
+LocalComponents.NetworkModule {
+    id: networkLoader
+    
+    anchors.fill: parent
+    anchors.margins: 14
+
+    visible: root.networkVisible
+    theme: root.theme
+}
+
+// =====================================================
+// NETWORK MODULE
+// =====================================================
+LocalComponents.TorrentsModule {
+    id: torrentLoader
+    
+    anchors.fill: parent
+    anchors.margins: 14
+
+    visible: root.torrentsVisible
+    theme: root.theme
+}
+
+// =====================================================
+// CLIPBOARD MODULE
+// =====================================================
+Loader {
+    id: clipboardLoader
+    active: root.clipboardVisible
+    visible: root.clipboardVisible
+    anchors { fill: parent; margins: 14 }
+    source: "components/ClipboardHistory.qml"
+
+    Binding { target: clipboardLoader.item; property: "theme"; value: root.theme; when: clipboardLoader.status === Loader.Ready }
+}
+// =====================================================
+// BATTERY MODULE
+// =====================================================
+LocalComponents.BatteryModule {
+    id: batteryLoader
+    
+    anchors.fill: parent
+    anchors.margins: 14
+
+    visible: root.batteryVisible
+    theme: root.theme
+}
+
+// =====================================================
+// VOLUME MODULE
+// =====================================================
+LocalComponents.VolumeModule {
+    id: volumeLoader
+
+    anchors.fill: parent
+    anchors.margins: 14
+
+    visible: root.volumeVisible
+    theme: root.theme
+    volumeButton: volumeButton          
+}
+
+// =====================================================
 // WIDTH
-// =================================================
+// =====================================================
 
 width:
-    root.osdMode === "toast" ? 300
+
+    root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitWidth : 300)
 
     : root.osdMode === "volume" ? 240
 
@@ -962,7 +1066,7 @@ width:
 
     : root.timerOsdVisible || root.timerControlOsdVisible? 300
 
-    : root.panelVisible ? 400
+    : root.panelVisible ? 940
 
     : root.launcherVisible ? 530
 
@@ -978,7 +1082,19 @@ width:
 
     : root.updateAuthVisible ? 540
 
-    : (detector.activeHover || detector.wallpaperHovered || detector.timerHovered || detector.volumeHovered || detector.themeHovered || detector.calendarHovered || detector.authHovered || root.spotifyTrack !== "")
+    : root.networkVisible ? 520
+
+    : root.updatesVisible ? 480
+
+    : root.volumeVisible ? 480
+
+    : root.batteryVisible ? 580
+
+    : root.clipboardVisible ? 700
+
+    : root.torrentsVisible ? 560
+
+    : (detector.activeHover || detector.wallpaperHovered || detector.timerHovered || detector.volumeHovered || detector.themeHovered || detector.calendarHovered || detector.networkHovered || detector.authHovered || root.spotifyTrack !== "")
 
     ? (topBarHeader.width + 32)
     
@@ -990,31 +1106,42 @@ width:
 
 height:
 
-    root.islandState === root.islandStateClosing ? 42
+   root.islandState === root.islandStateClosing ? 42
 
     : root.osdMode === "volume" ? 40
 
     : root.osdMode === "caps" ? 60
-    
-     : root.timerOsdVisible || root.timerControlOsdVisible ? 70
+    : root.timerOsdVisible || root.timerControlOsdVisible ? 70
 
-    : root.osdMode === "toast" ? 80
+    : root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitHeight : 80)
 
     : root.panelVisible ? root.islandTopMargin + topBarHeader.height + embeddedSystemContent.height + 14
 
     : root.launcherVisible ? 530
 
-    : root.mediaVisible ? 220
+    : root.mediaVisible ? 235
 
     : root.weatherVisible ? 540
 
     : root.calendarVisible ? 500
 
-    : root.themeVisible ? 420
+    : root.themeVisible ? 650
 
     : root.wallpaperVisible ? 680
 
     : root.updateAuthVisible ? 280
+
+    : root.networkVisible ? networkLoader.implicitHeight + 28
+
+    : root.updatesVisible ? 400
+
+    : root.batteryVisible ? 400
+
+    : root.clipboardVisible ? 520
+
+    : root.torrentsVisible ? 480
+
+    : root.volumeVisible ? volumeLoader.requiredHeight
 
     : 42
 
@@ -1130,6 +1257,8 @@ Loader {
     Binding { target: embeddedMediaContent.item; property: "theme";          value: root.theme;           when: embeddedMediaContent.status === Loader.Ready }
     Binding { target: embeddedMediaContent.item; property: "spotifyControl"; value: spotifyControl;       when: embeddedMediaContent.status === Loader.Ready }
     Binding { target: embeddedMediaContent.item; property: "islandState";    value: root.islandState;     when: embeddedMediaContent.status === Loader.Ready }
+    Binding { target: embeddedMediaContent.item; property: "cavaValues";  value: cavaWrapper.levels;  when: embeddedMediaContent.status === Loader.Ready }
+    Binding { target: embeddedMediaContent.item; property: "cavaPlaying"; value: cavaWrapper.playing; when: embeddedMediaContent.status === Loader.Ready }
 }
 
     // ============================================================
@@ -1183,13 +1312,16 @@ Loader {
 }   
  
 // ========================================================
-// CAVA (MUSIC ONLY)
+// CAVA 
 // ========================================================
 
 Item {
     id: cavaWrapper
     width: cavaLoader.visible ? cavaLoader.width + 16 : 0
     height: 42
+
+    readonly property var levels: cavaLoader.item ? cavaLoader.item.levels : []
+    readonly property bool playing: cavaLoader.item ? cavaLoader.item.playing : false
 
     Loader {
         id: cavaLoader
@@ -1201,11 +1333,11 @@ Item {
         visible:
             item &&
             item.active &&
-            root.spotifyTrack !== "" &&
             !root.islandExpanded &&
             !root.weatherVisible &&
             !root.themeVisible &&
-            !root.calendarVisible
+            !root.calendarVisible &&
+            !root.updateAuthVisible
 
         width: visible && item ? item.visualWidth : 0
         height: 42
@@ -1219,6 +1351,53 @@ Item {
         Behavior on width { NumberAnimation { duration: 250 }}
     }
 } 
+
+// ========================================================
+// BATTERY BUTTON
+// ========================================================
+Buttons.BatteryButton {
+    id: batteryButton
+    visible: root.showHoverModules && !root.batteryVisible && !root.mediaVisible
+    theme: root.theme
+    detector: detector
+
+    // Show the lowest battery of the devices that have reported a level
+    batteryPercent: {
+        const m = batteryLoader.mousePercent
+        const k = batteryLoader.keyboardPercent
+        if (m > 0 && k > 0) return Math.min(m, k)
+        if (m > 0) return m
+        if (k > 0) return k
+        return 1.0
+    }
+    
+    onHoverEntered: {
+    detector.batteryHovered = true
+    detector.activeHover = true
+    hoverDebounceTimer.stop()
+}
+    onHoverExited: {
+        detector.batteryHovered = false
+
+        if (
+            !detector.isPinned
+        ) {
+            hoverDebounceTimer.start()
+        }
+    }    
+    onClicked: {
+        root.launcherVisible = false
+        root.weatherVisible = false
+        root.mediaVisible = false
+        root.themeVisible = false
+        root.wallpaperVisible = false
+        root.calendarVisible = false
+        root.volumeVisible = false
+        root.batteryVisible = !root.batteryVisible
+    }
+}
+
+
 // ========================================================
 // LAUNCHER BUTTON
 // ========================================================
@@ -1357,9 +1536,11 @@ Component.onCompleted: {
 
         height: 42
         spacing: 6
+
+           
 // ========================================================
 // CLOCK
-// =========================================================
+// ========================================================
 LocalComponents.Clock {
     id: clockModule
     theme: root.theme
@@ -1373,6 +1554,11 @@ LocalComponents.Clock {
         root.wallpaperVisible = false
         root.spotifyVisible = false
         root.panelVisible = false
+        root.networkVisible = false
+        root.updatesVisible = false
+        root.volumeVisible = false
+        root.batteryVisible = false
+        root.clipboardVisible = false
         root.calendarVisible = !root.calendarVisible
 
         if (root.calendarVisible) {
@@ -1404,26 +1590,15 @@ Loader {
     target: timerLoader.item
     ignoreUnknownSignals: true
 
-    function onHoveredChanged() {
-        detector.timerHovered =
-            timerLoader.item.hovered
+    function onHoveredChanged() { detector.timerHovered = timerLoader.item.hovered; timerLoader.item.hovered ? (detector.activeHover = true, hoverDebounceTimer.stop()) : (!detector.isPinned && hoverDebounceTimer.start()); }
 
-        if (timerLoader.item.hovered) {
-            detector.activeHover = true
-            hoverDebounceTimer.stop()
-        } else if (!detector.isPinned) {
-            hoverDebounceTimer.start()
-        }
-    }
 }
 
 Connections {
     target: timerLoader.item
     ignoreUnknownSignals: true
 
-    function onClicked() {
-        root.timerControlOsdVisible = true
-    }
+    function onClicked() { root.timerControlOsdVisible = true}
   }
 }
 // =======================================================
@@ -1491,31 +1666,215 @@ Buttons.SystemButton {
         root.panelVisible = !root.panelVisible
     }
 }
+
+// ========================================================
+// TORRENTS BUTTON
+// ========================================================
+Buttons.TorrentsButton {
+    id: torrentsButton
+    visible: root.showHoverModules && !root.torrentsVisible && !root.mediaVisible
+    theme: root.theme
+    detector: detector
+    
+    onHoverEntered: {
+    detector.torrentsHovered = true
+    detector.activeHover = true
+    hoverDebounceTimer.stop()
+}
+    onHoverExited: {
+        detector.torrentsHovered = false
+
+        if (
+            !detector.isPinned
+        ) {
+            hoverDebounceTimer.start()
+        }
+    }    
+    onClicked: {
+        root.launcherVisible = false
+        root.weatherVisible = false
+        root.mediaVisible = false
+        root.themeVisible = false
+        root.wallpaperVisible = false
+        root.calendarVisible = false
+        root.volumeVisible = false
+        root.torrentsVisible = !root.torrentsVisible
+    }
+}
+
+// ========================================================
+// NETWORK BUTTON
+// ========================================================
+Buttons.NetworkButton {
+    id: networkButton
+    visible: root.showHoverModules && !root.networkVisible && !root.mediaVisible
+    theme: root.theme
+    detector: detector
+    
+    onHoverEntered: {
+    detector.networkHovered = true
+    detector.activeHover = true
+    hoverDebounceTimer.stop()
+}
+    onHoverExited: {
+        detector.networkHovered = false
+
+        if (
+            !detector.isPinned
+        ) {
+            hoverDebounceTimer.start()
+        }
+    }    
+    onClicked: {
+        root.launcherVisible = false
+        root.weatherVisible = false
+        root.mediaVisible = false
+        root.themeVisible = false
+        root.wallpaperVisible = false
+        root.calendarVisible = false
+        root.volumeVisible = false
+        root.networkVisible = !root.networkVisible
+    }
+}
+
+// ========================================================
+// CLIPBOARD BUTTON
+// ========================================================
+Buttons.ClipboardButton {
+    id: clipboardButton
+    visible: root.showHoverModules && !root.clipboardVisible && !root.mediaVisible
+    theme: root.theme
+    detector: detector
+    
+    onHoverEntered: {
+    detector.clipboardHovered = true
+    detector.activeHover = true
+    hoverDebounceTimer.stop()
+}
+    onHoverExited: {
+        detector.clipboardHovered = false
+
+        if (
+            !detector.isPinned
+        ) {
+            hoverDebounceTimer.start()
+        }
+    }    
+    onClicked: {
+        root.launcherVisible = false
+        root.weatherVisible = false
+        root.mediaVisible = false
+        root.themeVisible = false
+        root.wallpaperVisible = false
+        root.calendarVisible = false
+        root.volumeVisible = false
+        root.batteryVisible = false
+        root.networkVisible = false
+        root.torrentsVisible = false
+        root.clipboardVisible = !root.clipboardVisible
+    }
+}
+
 // ========================================================
 // VOLUME BUTTON
 // ========================================================
 
 LocalComponents.Volume {
     id: volumeButton
-    visible: root.showHoverModules && !root.mediaVisible
+    visible: root.showHoverModules && !root.volumeVisible && !root.mediaVisible
     height: 30
     anchors.verticalCenter: parent.verticalCenter
     theme: root.theme
-    volumeProc: volumeProc
+
+    onClicked: {
+        root.launcherVisible = false
+        root.weatherVisible = false
+        root.mediaVisible = false
+        root.themeVisible = false
+        root.wallpaperVisible = false
+        root.calendarVisible = false
+        root.networkVisible = false
+
+        root.volumeVisible = !root.volumeVisible
+
+        if (root.volumeVisible) {
+            detector.activeHover = false
+            hoverDebounceTimer.stop()
+            Qt.callLater(function() {
+                globalFocusScope.forceActiveFocus()
+            })
+        } else {
+            detector.activeHover = false
+            detector.volumesHovered = false
+        }
+    }
 }
+
 // ========================================================
 // UPDATES
 // ========================================================
 
 LocalComponents.Updates {
     id: updatesButton
-    visible: root.showHoverModules && !root.mediaVisible
+
+    visible:
+        root.showHoverModules &&
+        !root.updatesVisible &&
+        !root.mediaVisible
+
     height: 32
     anchors.verticalCenter: parent.verticalCenter
-    updateCount: root.updateCount
+    updateCount: root.totalUpdateCount
     theme: root.theme
     themeRunner: themeRunner
-    updateCheck: updateCheck
+
+    // ----------------------------------------------------
+    // HOVER
+    // ----------------------------------------------------
+
+    onHoverEntered: {
+        detector.updatesHovered = true
+        detector.activeHover = true
+        hoverDebounceTimer.stop()
+    }
+
+    onHoverExited: {
+        detector.updatesHovered = false
+
+        if (!detector.isPinned) {
+            hoverDebounceTimer.start()
+        }
+    }
+
+    // ----------------------------------------------------
+    // CLICK
+    // ----------------------------------------------------
+
+    onClicked: {
+    root.launcherVisible = false
+    root.weatherVisible = false
+    root.mediaVisible = false
+    root.themeVisible = false
+    root.wallpaperVisible = false
+    root.calendarVisible = false
+    root.networkVisible = false
+    root.volumeVisible = false
+    root.updateAuthVisible = false
+
+    root.updatesVisible = !root.updatesVisible
+
+    if (root.updatesVisible) {
+        detector.activeHover = false
+        hoverDebounceTimer.stop()
+
+        Qt.callLater(function() {
+            globalFocusScope.forceActiveFocus()
+        })
+    } else {
+        detector.activeHover = false
+        detector.updatesHovered = false
+    }
+}
 }
 // ========================================================
 // VOLUME HOVER BRIDGE
@@ -1536,7 +1895,14 @@ Loader {
              !root.panelVisible &&
              !root.weatherVisible &&
              !root.themeVisible &&
-             !root.calendarVisible
+             !root.calendarVisible &&
+             !root.networkVisible &&
+             !root.updatesVisible &&
+             !root.volumeVisible &&
+             !root.updateAuthVisible &&
+             !root.batteryVisible &&
+             !root.clipboardVisible &&
+             !root.torrentsVisible
 
     width: visible && item ? item.implicitWidth : 0
     height: 42
@@ -1544,37 +1910,19 @@ Loader {
 
     Behavior on width { NumberAnimation { duration: 250 }}
 
-    Binding { target: spotifyLoader.item; property: "track"; value: root.spotifyTrack; when: spotifyLoader.status === Loader.Ready }
-    Binding { target: spotifyLoader.item; property: "artUrl"; value: root.spotifyArtUrl; when: spotifyLoader.status === Loader.Ready }
-    Binding { target: spotifyLoader.item; property: "theme"; value: root.theme; when: spotifyLoader.status === Loader.Ready }
-    Binding { target: spotifyLoader.item; property: "spotifyControl"; value: spotifyControl; when: spotifyLoader.status === Loader.Ready }
+   Binding { target: spotifyLoader.item; property: "track";         value: root.spotifyTrack;   when: spotifyLoader.status === Loader.Ready }
+   Binding { target: spotifyLoader.item; property: "icon";          value: root.spotifyIcon;    when: spotifyLoader.status === Loader.Ready }
+   Binding { target: spotifyLoader.item; property: "artUrl";        value: root.spotifyArtUrl;  when: spotifyLoader.status === Loader.Ready }
+   Binding { target: spotifyLoader.item; property: "theme";         value: root.theme;          when: spotifyLoader.status === Loader.Ready }
+   Binding { target: spotifyLoader.item; property: "spotifyControl"; value: spotifyControl;     when: spotifyLoader.status === Loader.Ready }
    
     Connections { 
     target: spotifyLoader.item
     ignoreUnknownSignals: true
     
-    function onClicked() { 
-        root.launcherVisible = false 
-        root.panelVisible = false 
-        root.themeVisible = false 
-        root.weatherVisible = false 
-        if (!root.mediaVisible) { 
-            root.mediaVisible = true
-            root.islandState = root.islandStateExpanded 
-        } else { 
-            root.islandState = root.islandStateClosing 
-        } 
-    } 
+    function onClicked() { root.launcherVisible = false; root.panelVisible = false; root.themeVisible = false; root.weatherVisible = false; !root.mediaVisible ? (root.mediaVisible = true, root.islandState = root.islandStateExpanded) : root.islandState = root.islandStateClosing; }
+    function onHoveredChanged() { detector.spotifyHovered = spotifyLoader.item.hovered; spotifyLoader.item.hovered ? hoverDebounceTimer.stop() : (!detector.isPinned && hoverDebounceTimer.start()); }
 
-    function onHoveredChanged() { 
-    detector.spotifyHovered = spotifyLoader.item.hovered 
-    
-    if (spotifyLoader.item.hovered) { 
-        hoverDebounceTimer.stop() 
-    } else if (!detector.isPinned) { 
-        hoverDebounceTimer.start() 
-     } 
-   }
   }
 }
 // ========================================================
@@ -1650,11 +1998,10 @@ Item {
 
     LocalComponents.SystemNew {
         id: systemDashboardTileModule
-        width: 360
         anchors {
             top: parent.top
             horizontalCenter: parent.horizontalCenter
-            topMargin: 28
+            topMargin: 20
         }
 
         dndEnabled: root.dndEnabled
@@ -1673,6 +2020,7 @@ Item {
         cpuUsage: root.cpuUsage
         gpuTemp: root.gpuTemp
         ramUsage: root.ramUsage
+        ramTotal: root.ramTotal
         dataUsage: root.dataUsage
         homeUsage: root.homeUsage
         systemUptime: root.systemUptime

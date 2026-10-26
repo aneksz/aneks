@@ -21,6 +21,11 @@ Item {
     signal dismiss()
     signal toastTriggered()
 
+    function truncateText(str, maxLen) {
+    if (!str) return ""
+    return str.length > maxLen ? str.substring(0, maxLen).trim() + "…" : str
+}
+
     // ============================================================
     // STATE
     // ============================================================
@@ -32,10 +37,27 @@ Item {
     property real progress: 0
 
     // ============================================================
-    // SIZE
+    // SIZE - grows with content between a floor and a cap, instead
+    // of a flat anchors.fill:parent tied to whatever fixed size the
+    // outer container gives it. NOTE: the outer container (wherever
+    // this is instantiated in shell.qml) also needs to stop imposing
+    // a fixed width/height for this to actually show on screen -
+    // see the note in chat.
     // ============================================================
 
-    anchors.fill: parent
+    readonly property int minToastWidth: 320
+    readonly property int maxToastWidth: 420
+    readonly property int minToastHeight: 72
+    readonly property int maxToastHeight: 220
+
+    implicitWidth: Math.min(maxToastWidth, Math.max(minToastWidth, contentRow.implicitWidth + 34))
+    implicitHeight: Math.min(maxToastHeight, Math.max(minToastHeight, contentRow.implicitHeight + 20))
+
+    width: implicitWidth
+    height: implicitHeight
+
+    Behavior on implicitWidth { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+    Behavior on implicitHeight { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
 
     // ============================================================
     // NOTIFICATION CHANGED
@@ -136,8 +158,8 @@ Item {
 
         Text {
             id: closeButton
-            text: ""
-            color: root.theme.inactive
+            text: ""
+            color: root.theme.fg1
             opacity: 0.7
             z: 100
 
@@ -150,7 +172,7 @@ Item {
 
             font {
                 family: root.theme.font
-                pixelSize: 16
+                pixelSize: 18
             }
 
             MouseArea {
@@ -173,6 +195,7 @@ Item {
         // ========================================================
 
         RowLayout {
+            id: contentRow
             anchors.fill: parent
             anchors.margins: 10
             anchors.rightMargin: 24
@@ -185,9 +208,9 @@ Item {
             Item {
                 id: iconContainer
 
-                Layout.preferredWidth: 52
-                Layout.preferredHeight: 52
-                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: 64
+                Layout.preferredHeight: 64
+                Layout.alignment: Qt.AlignTop
 
                 // Helper: does this notification have a real image?
                 function hasRealImage() {
@@ -200,8 +223,9 @@ Item {
                         ""
                     ).toLowerCase()
 
-                    // Catch theme updates early so they never evaluate as image fallbacks
-                    if (isThemeUpdate()) return false
+                    // Catch theme updates and qbittorrent early so they never evaluate as image fallbacks
+                    if (isThemeUpdate() || isQbittorrent() || isEmail()) return false
+                    if (isThemeUpdate() || isQbittorrent() || isCaffeine() || isNightLight() || isEmail()) return false
 
                     // Spotify with album art
                     if (app.includes("spotify") && root.spotifyArtUrl && root.spotifyArtUrl !== "")
@@ -225,6 +249,53 @@ Item {
                     return summary.includes("theme updated") || body.includes("theme updated")
                 }
 
+                // Identify if notification originates from qBittorrent
+                function isQbittorrent() {
+                    if (!root.currentNotif) return false
+                    
+                    const app = String(
+                        root.currentNotif.appName ||
+                        root.currentNotif.app_name ||
+                        root.currentNotif.desktopEntry ||
+                        ""
+                    ).toLowerCase()
+                    
+                    return app.includes("qbittorrent")
+                }
+
+                // Identify if notification is a Caffeine (Stay Awake) toggle
+function isCaffeine() {
+    if (!root.currentNotif) return false
+    const summary = String(root.currentNotif.summary || "").toLowerCase()
+    return summary.includes("stay awake")
+}
+
+// Identify if notification is a Night Light toggle
+function isNightLight() {
+    if (!root.currentNotif) return false
+    const summary = String(root.currentNotif.summary || "").toLowerCase()
+    return summary.includes("night light")
+}
+
+// Identify if notification originates from Betterbird/Thunderbird (email)
+function isEmail() {
+    if (!root.currentNotif) return false
+    const app = String(
+        root.currentNotif.appName ||
+        root.currentNotif.app_name ||
+        root.currentNotif.desktopEntry ||
+        ""
+    ).toLowerCase()
+    return app.includes("betterbird") || app.includes("thunderbird")
+}
+
+// Shared: was this toggle turned on or off?
+function isOn() {
+    if (!root.currentNotif) return false
+    const body = String(root.currentNotif.body || "").toLowerCase()
+    return body.includes("on")
+}
+
                 Rectangle {
                     anchors.fill: parent
                     radius: 10
@@ -246,24 +317,29 @@ Item {
                             asynchronous: true
 
                             function getNotificationSource() {
-                                if (!root.currentNotif)
-                                    return ""
+    if (!root.currentNotif)
+        return ""
 
-                                const app = String(
-                                    root.currentNotif.appName ||
-                                    root.currentNotif.app_name ||
-                                    root.currentNotif.desktopEntry ||
-                                    ""
-                                ).toLowerCase()
+    const app = String(
+        root.currentNotif.appName ||
+        root.currentNotif.app_name ||
+        root.currentNotif.desktopEntry ||
+        ""
+    ).toLowerCase()
 
-                                if (app.includes("spotify") && root.spotifyArtUrl)
-                                    return root.spotifyArtUrl
+    // Silence the image loader warning if it's a theme update or qbittorrent
+    if (iconContainer.isThemeUpdate() || iconContainer.isQbittorrent() || iconContainer.isCaffeine() || iconContainer.isNightLight() || iconContainer.isEmail())
+    return ""
 
-                                return root.currentNotif.image ||
-                                       root.currentNotif.appIcon ||
-                                       root.currentNotif.icon ||
-                                       ""
-                            }
+    if (app.includes("spotify") && root.spotifyArtUrl)
+        return root.spotifyArtUrl
+
+    return root.currentNotif.image ||
+           root.currentNotif.appIcon ||
+           root.currentNotif.icon ||
+           ""
+}
+
 
                             source: {
                                 // force re-evaluation when these change
@@ -285,11 +361,19 @@ Item {
                         }
                     }
 
-                    // ---------- Fallback Text Glyphs (Bell vs Palette) ----------
+                    // ---------- Fallback Text Glyphs (Bell vs Palette vs qBittorrent) ----------
                     Text {
                         anchors.centerIn: parent
                         visible: !iconContainer.hasRealImage()
-                        text: iconContainer.isThemeUpdate() ? "󰏘" : "󰂚"
+                        
+                        // Condition tree evaluating icons: qBittorrent -> Theme -> Default Bell
+                        text: iconContainer.isQbittorrent() ? "󰅢" 
+    : iconContainer.isThemeUpdate() ? "󰏘" 
+    : iconContainer.isCaffeine() ? (iconContainer.isOn() ? "󰾪" : "󰅶")
+    : iconContainer.isNightLight() ? (iconContainer.isOn() ? "󰖔" : "󰖨")
+    : iconContainer.isEmail() ? "󰇮"
+    : "󰂚"
+                            
                         color: root.theme.accent
 
                         font {
@@ -301,8 +385,12 @@ Item {
             }
 
 
+
             // ====================================================
-            // NOTIFICATION TEXT
+            // NOTIFICATION TEXT - wraps and grows vertically instead
+            // of being hard-cut at a small fixed character count.
+            // Still capped (truncateText below) so a genuinely huge
+            // body can't grow the toast past maxToastHeight forever.
             // ====================================================
 
             ColumnLayout {
@@ -311,29 +399,31 @@ Item {
                 spacing: 2
 
                 Text {
-                    Layout.fillWidth: true
-                    text: root.currentNotif ? root.currentNotif.summary : ""
-                    color: root.theme.fg1
-                    elide: Text.ElideRight
+    Layout.fillWidth: true
+    text: root.currentNotif ? truncateText(root.currentNotif.summary, 60) : ""
+    color: root.theme.fg1
+    wrapMode: Text.WordWrap
+    maximumLineCount: 2
+    elide: Text.ElideRight
+    font {
+        family: root.theme.font
+        pointSize: 9
+        bold: true
+    }
+}
 
-                    font {
-                        family: root.theme.font
-                        pointSize: 9
-                        bold: true
-                    }
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    text: root.currentNotif ? root.currentNotif.body : ""
-                    color: root.theme.inactive
-                    elide: Text.ElideRight
-
-                    font {
-                        family: root.theme.font
-                        pointSize: 8
-                    }
-                }
+Text {
+    Layout.fillWidth: true
+    text: root.currentNotif ? truncateText(root.currentNotif.body, 160) : ""
+    color: root.theme.fg1
+    wrapMode: Text.WordWrap
+    maximumLineCount: 5
+    elide: Text.ElideRight
+    font {
+        family: root.theme.font
+        pointSize: 8
+    }
+}
             }
         }
 

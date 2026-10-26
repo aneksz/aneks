@@ -1,0 +1,62 @@
+# ============================================================
+# Ghost Pastel
+# Source: https://github.com/row-huh/omarchy-ghost-pastel-theme
+# VS Code: rokage.ghost-pastel ("Ghost Pastel")
+# ============================================================
+
+accent = "#979fec"
+cursor = "#ffffff"
+foreground = "#ffffff"
+background = "#070506"
+
+color0 = "#070506"
+color1 = "#b37580"
+color2 = "#648ed0"
+color3 = "#e095b5"
+color4 = "#979fec"
+color5 = "#cd9dcf"
+color6 = "#7c93dd"
+color7 = "#d9b6fd"
+color8 = "#836f79"
+color9 = "#d5aeb5"
+color10 = "#a7c1e8"
+color11 = "#f6dbe6"
+color12 = "#e4e6fb"
+color13 = "#eddaee"
+color14 = "#c3cef2"
+color15 = "#ffffff"
+
+# --- Everything below is NOT part of the source theme's own
+# --- palette - it only defines the 22 keys above. These are my
+# --- own reasonable choices to fill your schema's remaining
+# --- fields, picked to match the palette's look. Worth reviewing
+# --- against your other 12 themes' conventions before treating
+# --- them as final, rather than assuming they're sourced facts.
+
+bg0 = "#070506"
+bg1 = "#100c10"
+bg2 = "#1a141a"
+bg3 = "#251d26"
+fg0 = "#ffffff"
+fg1 = "#d9b6fd"
+
+accent_alt = "#7c93dd"
+error = "#b37580"
+warn = "#e095b5"
+info = "#648ed0"
+success = "#a7c1e8"
+
+border = "#836f79"
+accent_ws = "#979fec"
+inactive = "#836f79"
+
+
+gtk_theme = "Adwaita-dark"
+icon_theme = "Yaru-magenta"
+
+vscode_theme = "Ghost Pastel"
+brave_accent = "#33314a"
+spicetify_theme = "Ghost-Pastel"
+spicetify_color_scheme = "ghost-pastel"
+wallpaper_dp1 = "ghost-pastel1.png"
+wallpaper_dp3 = "ghost-pastel2.png"

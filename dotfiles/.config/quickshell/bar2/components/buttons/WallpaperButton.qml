@@ -42,7 +42,7 @@ Rectangle {
                 root.theme.font
 
             pixelSize:
-                16
+                18
         }
     }
 

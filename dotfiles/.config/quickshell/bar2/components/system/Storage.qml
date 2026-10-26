@@ -6,8 +6,8 @@ Item {
     id: root
 
     width: parent ? parent.width : 0
-    height: 130
     implicitHeight: 140
+    height: implicitHeight
 
     property var theme
     property string dataUsage: ""
@@ -84,7 +84,7 @@ Item {
                 // Used / Total under the bar
                 Text {
                     text: root.homeUsage || "—"
-                    color: theme.inactive
+                    color: theme.fg0
                     font {
                         family: theme.font
                         pixelSize: 11
@@ -131,7 +131,7 @@ Item {
                 // Used / Total under the bar
                 Text {
                     text: root.dataUsage || "—"
-                    color: theme.inactive
+                    color: theme.fg0
                     font {
                         family: theme.font
                         pixelSize: 11

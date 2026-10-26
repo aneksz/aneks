@@ -1,227 +1,159 @@
-// components/Wallpapers.qml
-
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
-import Quickshell
-import Quickshell.Io
 import Qt5Compat.GraphicalEffects
 
 Item {
     id: root
 
-    // =====================================================
-    // LAYOUT
-    // =====================================================
-
-    anchors.fill:
-        parent
-
-    // =====================================================
-    // EXTERNAL DATA
-    // =====================================================
-
+    // ── Interface (unchanged, shell.qml keeps working) ──────────────
     property var theme
-    property var themeFolders
-    property var wallpapers
+    property var themeFolders: []
+    property var wallpapers: []
     property var applyWallpaper
     property var wallpaperProc
 
-    // =====================================================
-    // SIGNALS
-    // =====================================================
+    property string currentMonitor: "DP-1"
+    property string currentResolutionFolder: "4K"
+    property string currentThemeFolder: ""
 
     signal closeRequested()
     signal folderChanged(string folder)
     signal resolutionChanged(string folder)
 
-    // =====================================================
-    // UI STATE
-    // =====================================================
-
-    property bool themeDropdownOpen: false
-
-    // =====================================================
-    // DISPLAY STATE
-    // =====================================================
-
-    property string currentMonitor: "DP-1"
-
-    property string currentResolutionFolder: "4K"
-
-    property string currentThemeFolder: ""
-
-    // =====================================================
-    // FILTERED WALLPAPERS
-    // =====================================================
-
-    property var filteredWallpapers: {
-
-        if (
-            !root.wallpapers
-        ) {
-            return []
-        }
-
-
-        if (
-            root.currentThemeFolder === ""
-        ) {
-            return root.wallpapers
-        }
-
-
-        return root.wallpapers.filter(
-            wallpaper =>
-                wallpaper.includes(
-                    "/" +
-                    root.currentThemeFolder +
-                    "/"
-                )
-        )
+    readonly property var filteredWallpapers: {
+        const all = root.wallpapers || []
+        if (root.currentThemeFolder === "")
+            return all
+        const needle = "/" + root.currentThemeFolder + "/"
+        return all.filter(p => p.includes(needle))
     }
-    // =====================================================
-    // MAIN CARD
-    // =====================================================
+
+    implicitWidth: 920
+    implicitHeight: 640
+    focus: true
+
+    Keys.onEscapePressed: root.closeRequested()
+    onVisibleChanged: if (visible) forceActiveFocus()
+
+    function tint(a) { return Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, a) }
 
     Rectangle {
-        id: wallpaperCard
         anchors.fill: parent
-        color: root.theme.bg
         radius: 24
+        color: theme.bg
+      
 
-        // =================================================
-        // CONTENT
-        // =================================================
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 24
+            spacing: 16
 
-        Column {
-            id: contentColumn
-
-
-            anchors { fill: parent; margins: 20 }
-
-
-            spacing:
-                14
-            // =============================================
-            // HEADER
-            // =============================================
-
-            Row {
-                id: headerRow
-                width: parent.width
-                height: 34
-                spacing: 12
-                // =========================================
-                // TITLE
-                // =========================================
-
-                Text {
-                    text:
-                        " Wallpapers"
-
-                    color: root.theme.fg1
-
-
-                    font {
-                        family:
-                            root.theme.font
-                            pixelSize: 16
-                            weight: root.theme.fontWeight
-                    }
-                     anchors.verticalCenter: parent.verticalCenter
-                }
-
-                // =========================================
-                // SPACER
-                // =========================================
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                // =========================================
-                // RESOLUTION BUTTON
-                // =========================================
+            // ── Header ──────────────────────────────────────────────
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 14
 
                 Rectangle {
-                    id: resolutionButton
-                    width: 100
-                    height: 30
+                    Layout.preferredWidth: 44
+                    Layout.preferredHeight: 44
                     radius: 12
-
-                    color: root.theme.surface
-                    anchors.verticalCenter: parent.verticalCenter
-
+                    color: theme.surfaceAlt
                     Text {
                         anchors.centerIn: parent
-                        text: root.currentResolutionFolder
-                        color: root.theme.fg1
+                        text: "󰸉"
+                        font.pixelSize: 22
+                        font.family: theme.font
+                        color: theme.accent
+                    }
+                }
 
-                        font {
-                            family: root.theme.font
-                            pixelSize: 12
+                ColumnLayout {
+                    spacing: 2
+                    Text {
+                        text: "Wallpapers"
+                        font.family: theme.font
+                        font.pixelSize: 20
+                        font.bold: true
+                        color: theme.fg0
+                    }
+                    Text {
+                        text: root.filteredWallpapers.length + " images · " + root.currentMonitor
+                        font.family: theme.font
+                        font.pixelSize: 13
+                        color: theme.textMuted
+                    }
+                }
+
+                Item { Layout.fillWidth: true }
+
+                // Resolution / monitor toggle
+                Rectangle {
+                    id: resPill
+                    Layout.preferredHeight: 32
+                    Layout.preferredWidth: resRow.implicitWidth + 28
+                    radius: 16
+                    color: resMouse.containsMouse ? root.tint(0.22) : root.tint(0.12)
+                    border.width: 1
+                    border.color: theme.accent
+                    Behavior on color { ColorAnimation { duration: 120 } }
+
+                    Row {
+                        id: resRow
+                        anchors.centerIn: parent
+                        spacing: 6
+                        Text {
+                            text: "󰍹"
+                            font.pixelSize: 14
+                            font.family: theme.font
+                            color: theme.accent
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                        Text {
+                            text: root.currentResolutionFolder
+                            font.family: theme.font
+                            font.pixelSize: 13
+                            font.bold: true
+                            color: theme.accent
+                            anchors.verticalCenter: parent.verticalCenter
                         }
                     }
 
                     MouseArea {
-    anchors.fill: parent
-
-    cursorShape: Qt.PointingHandCursor
-
-    onClicked: {
-    if (root.currentResolutionFolder === "4K") {
-        root.currentMonitor = "DP-3"
-        root.currentResolutionFolder = "HD"
-    } else {
-        root.currentMonitor = "DP-1"
-        root.currentResolutionFolder = "4K"
-    }
-
-    root.currentThemeFolder = ""
-
-    root.resolutionChanged(
-        root.currentResolutionFolder
-    )
-}
-}
+                        id: resMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (root.currentResolutionFolder === "4K") {
+                                root.currentResolutionFolder = "HD"
+                                root.currentMonitor = "DP-3"
+                            } else {
+                                root.currentResolutionFolder = "4K"
+                                root.currentMonitor = "DP-1"
+                            }
+                            root.currentThemeFolder = ""
+                            root.resolutionChanged(root.currentResolutionFolder)
+                        }
+                    }
                 }
 
-                // =========================================
-                // CLOSE BUTTON
-                // =========================================
-
+                // Close
                 Rectangle {
-                    id: closeButton
-                    width: 30
-                    height: 30
-                    radius: 15
-
-                    color:
-                        closeMouse.containsMouse
-                        ? root.theme.surfaceAlt
-                        : "transparent"
-
-                    anchors.verticalCenter: parent.verticalCenter
-
+                    Layout.preferredWidth: 32
+                    Layout.preferredHeight: 32
+                    radius: 16
+                    color: closeMouse.containsMouse ? Qt.rgba(theme.error.r, theme.error.g, theme.error.b, 0.18) : "transparent"
+                    border.width: 1
+                    border.color: closeMouse.containsMouse ? theme.error : theme.border
+                    Behavior on color { ColorAnimation { duration: 120 } }
 
                     Text {
                         anchors.centerIn: parent
-
-
                         text: "󰅖"
-
-                        color:
-                            closeMouse.containsMouse
-                            ? root.theme.error
-                            : root.theme.fg1
-
-                        font {
-                            family: root.theme.font
-                            pixelSize: 16
-                        }
+                        font.pixelSize: 14
+                        font.family: theme.font
+                        color: closeMouse.containsMouse ? theme.error : theme.textMuted
                     }
-
                     MouseArea {
                         id: closeMouse
                         anchors.fill: parent
@@ -232,257 +164,156 @@ Item {
                 }
             }
 
-            // =============================================
-            // THEME SELECTOR
-            // =============================================
-
-            Rectangle {
-                id: themeSelector
-                width: 140
-                height: 34
-                radius: 12
-                color: root.theme.surface
-
-                border {
-                    width: 1
-                     color:
-                        Qt.rgba(1,1,1,0.05)
-                }
-
-                Row {
-                    anchors {
-                        fill: parent
-                        leftMargin: 12
-                        rightMargin: 12
-                    }
-                    spacing: 6
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: parent.width - 25
-
-                        text:
-                            root.currentThemeFolder === ""
-                            ? "All Themes"
-                            : root.currentThemeFolder
-
-                        color: root.theme.fg1
-                        elide: Text.ElideRight
-
-                        font {
-                            family: root.theme.font
-                            pixelSize: 11
-                        }
-                    }
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        text:
-                            root.themeDropdownOpen
-                            ? "󰅀"
-                            : "󰅂"
-
-                        color: root.theme.inactive
-                        font.pixelSize: 12
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-
-                    onClicked:
-                        root.themeDropdownOpen =
-                            !root.themeDropdownOpen
-                }
-            }
-            // =============================================
-            // THEME OPTIONS
-            // =============================================
-
-            Column {
-                id: themeOptions
-                visible: root.themeDropdownOpen
-                width: 140
-                spacing: 2
+            // ── Theme folder chips ──────────────────────────────────
+            Flow {
+                Layout.fillWidth: true
+                spacing: 8
+                visible: (root.themeFolders || []).length > 1
 
                 Repeater {
-                    model:
-                        root.themeFolders || []
+                    model: root.themeFolders
 
-                    delegate:
+                    Rectangle {
+                        required property var modelData
+                        readonly property bool active: root.currentThemeFolder === modelData
+
+                        height: 32
+                        width: chipText.implicitWidth + 28
+                        radius: 16
+                        color: active ? root.tint(0.22)
+                             : chipMouse.containsMouse ? theme.surfaceAlt : theme.surface
+                        border.width: 1
+                        border.color: active ? theme.accent : theme.border
+                        Behavior on color { ColorAnimation { duration: 120 } }
+
+                        Text {
+                            id: chipText
+                            anchors.centerIn: parent
+                            text: modelData === "" ? "All" : modelData
+                            font.family: theme.font
+                            font.pixelSize: 13
+                            font.bold: parent.active
+                            color: parent.active ? theme.accent : theme.fg
+                        }
+                        MouseArea {
+                            id: chipMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                root.currentThemeFolder = modelData
+                                root.folderChanged(modelData)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── Grid ────────────────────────────────────────────────
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                GridView {
+                    id: grid
+                    anchors.fill: parent
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    model: root.filteredWallpapers
+
+                    readonly property int columns: Math.max(2, Math.floor(width / 200))
+                    cellWidth: Math.floor(width / columns)
+                    cellHeight: Math.round(cellWidth * 0.58)
+
+                    delegate: Item {
+                        id: cell
+                        required property var modelData
+                        width: grid.cellWidth
+                        height: grid.cellHeight
+
                         Rectangle {
-                               width: 140
-                               height: 30
-                               radius: 10
+                            id: tile
+                            anchors.fill: parent
+                            anchors.margins: 6
+                            radius: 12
+                            color: theme.surface
+                            scale: tileMouse.containsMouse ? 1.03 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 
-                            color:
-                                root.currentThemeFolder ===
-                                modelData
-                                ? root.theme.accent
-                                : "transparent"
+                            Image {
+                                id: img
+                                anchors.fill: parent
+                                source: "file://" + cell.modelData
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                cache: false
+                                sourceSize.width: 400
+                                visible: false
+                            }
+                            Rectangle {
+                                id: mask
+                                anchors.fill: parent
+                                radius: 12
+                                visible: false
+                            }
+                            OpacityMask {
+                                anchors.fill: parent
+                                source: img
+                                maskSource: mask
+                                opacity: img.status === Image.Ready ? 1 : 0
+                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                            }
 
-                            Text {
-                                anchors.centerIn: parent
-                                text:
-                                    modelData === ""
-                                    ? "All Themes"
-                                    : modelData
-
-                                color: root.theme.fg1
-
-                                font {
-                                    family: root.theme.font
-                                    pixelSize: 11
-                                }
+                            // hover border
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: 12
+                                color: "transparent"
+                                border.width: tileMouse.containsMouse ? 2 : 1
+                                border.color: tileMouse.containsMouse ? theme.accent : theme.border
                             }
 
                             MouseArea {
+                                id: tileMouse
                                 anchors.fill: parent
+                                hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                            
-                            onClicked: {
-                                root.currentThemeFolder = modelData
-                                root.themeDropdownOpen = false
-                                root.folderChanged(modelData)
+                                onClicked: {
+                                    // Apply the wallpaper, and when it is for the primary monitor
+                                    // (DP-1) also repoint the lock screen's current.png at it.
+                                    root.applyWallpaper.command = [
+                                        "sh", "-c",
+                                        'awww img "$1" --outputs "$2" --transition-type any && ' +
+                                        '{ [ "$2" != "DP-1" ] || ln -sf "$1" "$HOME/.config/hypr/background/current.png"; }',
+                                        "sh", cell.modelData, root.currentMonitor
+                                    ]
+                                    root.applyWallpaper.running = true
+                                    root.closeRequested()
                                 }
                             }
                         }
-                }
-            }
-
-            // =============================================
-            // DEBUG INFO
-            // =============================================
-
-            Text {
-                text:
-                    "Wallpapers: " +
-                    (
-                        root.wallpapers
-                        ? root.wallpapers.length
-                        : 0
-                    ) +
-                    " | Filtered: " +
-                    root.filteredWallpapers.length
-                   
-                    color: root.theme.fg1
-
-                font {
-                    family: root.theme.font
-                    pixelSize: 11
-                }
-            }
-
-// =============================================
-// WALLPAPER GRID
-// =============================================
-
-Item {
-    id: gridWrapper
-    width: parent.width
-    height: parent.height - headerRow.height - themeSelector.height - 70
-
-    GridView {
-        id: wallpaperGrid
-        
-        model: root.filteredWallpapers
-        
-        width: 872
-        height: parent.height
-
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        cellWidth: 215
-        cellHeight: 130
-        clip: true
-
-        boundsBehavior: Flickable.StopAtBounds
-        
-        topMargin: 4
-        bottomMargin: 4
-        
-        leftMargin: 6
-        rightMargin: 6
-
-        delegate: Rectangle {
-            id: wallpaperCard
-            property string wallpaperPath: modelData
-            width: 200; height: 110
-            radius: 10
-            color: root.theme.surface
-            
-            property bool hovered: wallpaperMouse.containsMouse
-            scale: hovered ? 1.04 : 1.0
-            border.width: hovered ? 2 : 0
-            border.color: root.theme.accent
-
-            Behavior on scale { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
-            Behavior on border.color { ColorAnimation { duration: 160 } }
-
-            // ============================================================
-            // MASKED IMAGE CONTAINER
-            // ============================================================
-            Item {
-                id: imageContainer
-                anchors.fill: parent
-                anchors.margins: wallpaperCard.border.width 
-
-                Image {
-                    id: wallpaperImage
-                    anchors.fill: parent
-                    source: "file://" + wallpaperCard.wallpaperPath
-                    fillMode: Image.PreserveAspectCrop
-                    asynchronous: true; cache: true; smooth: true
-                    visible: false 
-                }
-
-                Rectangle {
-                    id: roundedMask
-                    anchors.fill: parent
-                    radius: Math.max(0, wallpaperCard.radius - wallpaperCard.border.width)
-                    color: "black"
-                    visible: false
-                }
-
-                OpacityMask {
-                    anchors.fill: parent
-                    source: wallpaperImage
-                    maskSource: roundedMask
-                    layer.enabled: true
-                    visible: true 
-                }
-            }
-
-            MouseArea {
-                id: wallpaperMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                
-                onClicked: {
-                    root.applyWallpaper.command = [
-                        "awww", 
-                        "img", 
-                        modelData, 
-                        "--outputs", 
-                        root.currentMonitor, 
-                        "--transition-type", 
-                        "any"
-                    ]
-                    root.applyWallpaper.running = true
-                    root.closeRequested() 
-
-                    if (typeof root.islandState !== "undefined") {
-                        root.islandState = root.islandStateClosing
                     }
                 }
-            }
-        }
-    }
-}
 
+                Text {
+                    anchors.centerIn: parent
+                    visible: root.filteredWallpapers.length === 0
+                    text: "No wallpapers found"
+                    font.family: theme.font
+                    font.pixelSize: 14
+                    color: theme.textMuted
+                    opacity: 0.5
+                }
+            }
+
+            // ── Footer ──────────────────────────────────────────────
+            Text {
+                Layout.fillWidth: true
+                text: "Click to apply to " + root.currentMonitor + " · Esc to close"
+                font.family: theme.font
+                font.pixelSize: 12
+                color: theme.textMuted
+            }
         }
     }
 }

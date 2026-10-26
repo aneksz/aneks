@@ -52,7 +52,7 @@ Text {
             root.theme.font
 
         pixelSize:
-            16
+            18
     }
 
     Behavior on color {

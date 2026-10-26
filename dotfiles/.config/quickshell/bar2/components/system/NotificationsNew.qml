@@ -2,6 +2,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import "../singletons"
 
 Item {
     id: root
@@ -46,24 +47,73 @@ Item {
         return Math.floor(diff / 86400) + "d"
     }
 
+    function keyFor(item) {
+    if (item.historyKey) return item.historyKey
+    if (item.key) return item.key
+    return String(item.id || (item.summary + item.body))
+}
+
+    function truncate(str, maxLen) {
+    if (!str) return ""
+    return str.length > maxLen ? str.substring(0, maxLen).trim() + "…" : str
+}
+
     // ============================================================
-    // NOTIFICATION LIST
+    // NOTIFICATION LIST - merges live trackedNotifications (this
+    // session) with disk-persisted history (survives qs reloads).
+    // Where a key exists in both, the live object is used so
+    // dismiss() etc. still works normally; history-only entries
+    // are plain data and dismiss just removes them from disk.
     // ============================================================
 
-    readonly property var notificationList: {
-        if (!notifServer || !notifServer.trackedNotifications)
-            return []
-
-        var result = []
-        var values = notifServer.trackedNotifications.values
-
-        for (var i = 0; i < values.length; i++) {
-            var n = values[i]
-            if (n && !n.isSpotifyTransient)
-                result.push(n)
-        }
-        return result.reverse()
+   readonly property var notificationList: {
+    function toMs(t) {
+        if (t instanceof Date) return t.getTime()
+        if (typeof t === "number") return t
+        const ms = new Date(t).getTime()
+        return isNaN(ms) ? 0 : ms
     }
+
+    var liveByKey = {}
+    if (notifServer && notifServer.trackedNotifications) {
+        var liveValues = notifServer.trackedNotifications.values
+        for (var i = 0; i < liveValues.length; i++) {
+            var ln = liveValues[i]
+            if (!ln || ln.isSpotifyTransient) continue
+            liveByKey[keyFor(ln)] = ln
+        }
+    }
+
+    // Collect { item, ts } pairs so live objects sort by their history timestamp
+    var rows = []
+    var historyEntries = NotificationHistory.entries
+    for (var j = 0; j < historyEntries.length; j++) {
+        var entry = historyEntries[j]
+        var item = liveByKey[entry.key]
+        if (item) {
+            delete liveByKey[entry.key]
+        } else {
+            item = {
+                key: entry.key,
+                summary: entry.summary,
+                body: entry.body,
+                timestamp: entry.timestamp,
+                isHistorical: true
+            }
+        }
+       rows.push({ item: item, ts: toMs(item.timestamp) || toMs(entry.timestamp) })
+    }
+
+    // Live notifications not yet in history: treat as brand new if no timestamp
+    for (var remainingKey in liveByKey) {
+        var live = liveByKey[remainingKey]
+        rows.push({ item: live, ts: toMs(live.timestamp) || Date.now() })
+    }
+
+    // Newest first
+    rows.sort(function(a, b) { return b.ts - a.ts })
+    return rows.map(function(r) { return r.item })
+}
 
     readonly property int notificationCount: notificationList.length
     readonly property bool emptyState: notificationCount === 0
@@ -73,8 +123,7 @@ Item {
     // ============================================================
 
     width: parent ? parent.width : 0
-    height: emptyState ? 180 : Math.min(header.height + listView.contentHeight + 28, 240)
-    implicitHeight: height
+    
 
     // ============================================================
     // MAIN CARD
@@ -144,7 +193,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "󰎟"
-                        color: clearBtn.containsMouse ? theme.error : theme.inactive
+                        color: clearBtn.containsMouse ? theme.error : theme.fg1
                         font {
                             family: theme.font
                             pixelSize: 14
@@ -152,9 +201,11 @@ Item {
                     }
 
                     onClicked: {
-                        if (!notifServer || !notifServer.trackedNotifications) return
-                        const list = notifServer.trackedNotifications.values.slice()
-                        list.forEach(n => { if (n && n.dismiss) n.dismiss() })
+                        if (notifServer && notifServer.trackedNotifications) {
+                            const list = notifServer.trackedNotifications.values.slice()
+                            list.forEach(n => { if (n && n.dismiss) n.dismiss() })
+                        }
+                        NotificationHistory.clearAll()
                     }
                 }
             }
@@ -187,8 +238,10 @@ Item {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            if (modelData && modelData.dismiss)
+                            if (modelData && modelData.dismiss) {
                                 modelData.dismiss()
+                            }
+                            NotificationHistory.removeEntry(root.keyFor(modelData))
                         }
                     }
 
@@ -213,27 +266,27 @@ Item {
                             spacing: 1
 
                             Text {
-                                width: parent.width
-                                text: modelData.summary || "Notification"
-                                color: theme.fg
-                                elide: Text.ElideRight
-                                font {
-                                    family: theme.font
-                                    pixelSize: 12
-                                    weight: Font.Medium
-                                }
-                            }
+    width: parent.width
+    text: truncate(modelData.summary || "Notification", 28)
+    color: theme.fg
+    elide: Text.ElideRight
+    font {
+        family: theme.font
+        pixelSize: 12
+        weight: Font.Medium
+    }
+}
 
-                            Text {
-                                width: parent.width
-                                text: modelData.body || ""
-                                color: theme.inactive
-                                elide: Text.ElideRight
-                                font {
-                                    family: theme.font
-                                    pixelSize: 11
-                                }
-                            }
+Text {
+    width: parent.width
+    text: truncate(modelData.body || "", 50)
+    color: theme.fg0
+    elide: Text.ElideRight
+    font {
+        family: theme.font
+        pixelSize: 11
+    }
+}
                         }
 
                         Text {
@@ -241,7 +294,7 @@ Item {
                                 const t = timeAgo(modelData.timestamp)
                                 return t === "now" ? "now" : t + " ago"
                             }
-                            color: theme.inactive
+                            color: theme.fg1
                             font {
                                 family: theme.font
                                 pixelSize: 10
