@@ -381,8 +381,8 @@ Item {
 // --------------------------------------------------------
 
 Item {
-    width: 20
-    height: 20
+    width: 18
+    height: 18
     anchors.verticalCenter: parent.verticalCenter
     anchors.verticalCenterOffset: 1
 
@@ -390,10 +390,10 @@ Item {
     Text {
         anchors.centerIn: parent
         visible: !root.showHomePodSvg
-        text: root.muted ? "󰝟" : root.outputIcon
+        text: root.muted ? "" : root.outputIcon
         color: root.muted ? root.theme.fg3 : root.theme.accent
         font.family: root.theme.font
-        font.pixelSize: 16
+        font.pixelSize: 18
     }
 
     // HomePod mini SVG, tinted with the theme accent

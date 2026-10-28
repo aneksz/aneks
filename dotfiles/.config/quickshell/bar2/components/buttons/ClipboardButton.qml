@@ -1,4 +1,5 @@
 import QtQuick
+import ".." as Comp
 
 Rectangle {
     id: root
@@ -14,7 +15,7 @@ Rectangle {
     height: 30
     radius: height / 2
     anchors.verticalCenter: parent.verticalCenter
-    anchors.verticalCenterOffset: -1
+    anchors.verticalCenterOffset: 2
 
     color: sysMouse.containsMouse
         ? root.theme.surfaceAlt
@@ -24,22 +25,14 @@ Rectangle {
         ColorAnimation { duration: 120 }
     }
 
-    Text {
-        anchors.centerIn: parent
+    Comp.Icon {
+    anchors.centerIn: parent
+    name: "content_paste"
+    size: 18
 
-        text: "󰅍" 
-
-        color: sysMouse.containsMouse ? root.theme.accent : root.theme.fg
-
-        font {
-            family: root.theme.font
-            pixelSize: 18
-        }
-
-        Behavior on color {
-            ColorAnimation { duration: 120 }
-        }
-    }
+    color: sysMouse.containsMouse ? root.theme.accent : root.theme.fg
+    Behavior on color { ColorAnimation { duration: 120 } }
+}
 
     MouseArea {
         id: sysMouse

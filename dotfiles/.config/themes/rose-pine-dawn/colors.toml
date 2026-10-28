@@ -22,7 +22,7 @@ color15 = "#575279"
 
 # extra keys used only by hypr.lua
 bg0 = "#faf4ed"
-bg1 = "#fffaf3"
+bg1 = "#f2e9e1"
 bg2 = "#f2e9e1"
 bg3 = "#dfdad9"
 fg0 = "#575279"

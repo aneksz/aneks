@@ -1,4 +1,5 @@
 import QtQuick
+import ".." as Comp
 
 Rectangle {
     id: root
@@ -11,12 +12,12 @@ Rectangle {
 
     // Ordered empty -> full. Add or remove entries freely; thresholds adapt.
     readonly property var batteryIcons: [
-        "\uf244",   // empty
-        "\uf243",   // quarter
-        "\uf242",   // half
-        "\uf241",   // three quarters
-        "\uf240"    // full
-    ]
+    "battery_0_bar",   // empty
+    "battery_2_bar",   // quarter
+    "battery_4_bar",   // half
+    "battery_6_bar",   // three quarters
+    "battery_full"     // full
+]
 
     readonly property int iconIndex: Math.max(0, Math.min(
         batteryIcons.length - 1,
@@ -33,24 +34,21 @@ Rectangle {
     height: 30
     radius: height / 2
     anchors.verticalCenter: parent.verticalCenter
+    anchors.verticalCenterOffset: 1
 
     color: sysMouse.containsMouse ? theme.surfaceAlt : theme.bg
     Behavior on color { ColorAnimation { duration: 120 } }
 
-    Text {
-        anchors.centerIn: parent
-        text: root.batteryIcons[root.iconIndex]
+    Comp.Icon {
+    anchors.centerIn: parent
+    name: root.batteryIcons[root.iconIndex]
+    size: 18
 
-        color: root.critical ? root.theme.error
-             : sysMouse.containsMouse ? root.theme.accent
-             : root.theme.fg
-        Behavior on color { ColorAnimation { duration: 120 } }
-
-        font {
-            family: root.theme.font
-            pixelSize: 20
-        }
-    }
+    color: root.critical ? root.theme.error
+         : sysMouse.containsMouse ? root.theme.accent
+         : root.theme.fg
+    Behavior on color { ColorAnimation { duration: 120 } }
+}
 
     MouseArea {
         id: sysMouse

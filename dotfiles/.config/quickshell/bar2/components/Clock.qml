@@ -29,7 +29,7 @@ Item {
         id: clockText
 
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: 1
+        anchors.verticalCenterOffset: 2
 
 
         text:

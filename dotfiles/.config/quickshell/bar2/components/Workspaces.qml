@@ -109,6 +109,7 @@ Item {
         id: wsRow
 
         anchors.centerIn: parent
+        anchors.verticalCenterOffset: 1
         spacing: 8
 
         Repeater {
@@ -116,8 +117,8 @@ Item {
 
             delegate: Item {
                 id: wsItem
-                width: 24
-                height: 24
+                width: 18
+                height: 18
 
                 property int wsId: modelData
                 property bool isActive: root.activeWs === wsId
