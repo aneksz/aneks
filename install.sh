@@ -3,7 +3,7 @@
 #   git clone https://github.com/aneksz/aneks ~/aneks && cd ~/aneks && ./install.sh
 # Run as your normal user (not root). Safe to re-run.
 set -uo pipefail
-
+mkdir -p "$HOME/.config"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PKG="$DIR/packages"
 FAILED=()
