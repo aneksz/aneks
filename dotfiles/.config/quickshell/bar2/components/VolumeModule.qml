@@ -153,7 +153,7 @@ if (name.startsWith("alsa_output.")) {
         // FALLBACK
         // --------------------------------------------------------
 
-        return "󰕾"
+        return ""
     }
 
     // ============================================================
@@ -413,7 +413,7 @@ Item {
         color: iconBox.tint
         font {
             family: root.theme.font
-            pixelSize: 22
+            pixelSize: 20
         }
     }
 
@@ -421,8 +421,8 @@ Item {
     Image {
         id: homepodImg
         anchors.centerIn: parent
-        width: 20
-        height: 20
+        width: 22
+        height: 22
         visible: false
         source: Qt.resolvedUrl("../assets/homepod-mini.svg")
         sourceSize: Qt.size(width * 2, height * 2)
@@ -440,8 +440,8 @@ Item {
     Image {
         id: appleTvImg
         anchors.centerIn: parent
-        width: 26
-        height: 26
+        width: 30
+        height: 30
         visible: false
         source: Qt.resolvedUrl("../assets/appletv-logo.svg")
         sourceSize: Qt.size(width * 2, height * 2)
@@ -536,8 +536,8 @@ Item {
 
                                 text:
                                     rowRoot.isMuted
-                                    ? "󰝟"
-                                    : "󰕾"
+                                    ? ""
+                                    : ""
 
                                 color:
                                     rowRoot.isMuted
@@ -546,7 +546,7 @@ Item {
 
                                 font {
                                     family: root.theme.font
-                                    pixelSize: 16
+                                    pixelSize: 22
                                 }
                             }
 
@@ -613,7 +613,7 @@ Item {
                                     - height / 2
 
                                 implicitWidth: 200
-                                implicitHeight: 6
+                                implicitHeight: 10
 
                                 width:
                                     volSlider.availableWidth
@@ -621,7 +621,7 @@ Item {
                                 height:
                                     implicitHeight
 
-                                radius: 3
+                                radius: 6
 
                                 color:
                                     Qt.rgba(1, 1, 1, 0.08)
@@ -635,7 +635,7 @@ Item {
                                     height:
                                         parent.height
 
-                                    radius: 3
+                                    radius: 6
 
                                     color:
                                         root.theme.accent

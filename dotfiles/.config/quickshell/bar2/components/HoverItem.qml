@@ -14,6 +14,7 @@ Item {
     property real textSize: iconSize
     property real spacing: 4
     property real iconYOffset: 0
+    property string iconName: ""
 
     // Width of icon + label, for parents that size themselves to the content
     readonly property real contentWidth: row.implicitWidth
@@ -45,7 +46,17 @@ Item {
     Row {
         id: row
         anchors.centerIn: parent
-        spacing: root.iconPart !== "" && root.labelPart !== "" ? root.spacing : 0
+        spacing: (root.iconPart !== "" || root.iconName !== "") && root.labelPart !== "" ? root.spacing : 0
+
+        Icon {
+    anchors.verticalCenter: parent.verticalCenter
+    anchors.verticalCenterOffset: root.iconYOffset
+    visible: root.iconName !== ""
+    name: root.iconName
+    size: root.iconSize
+    color: root.currentColor
+    Behavior on color { ColorAnimation { duration: 120 } }
+}
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
@@ -55,7 +66,7 @@ Item {
             color: root.currentColor
             font {
                 family: root.theme.iconFont ?? root.theme.font
-                pixelSize: root.iconSize
+                pointSize: theme.fontSize
             }
             Behavior on color { ColorAnimation { duration: 120 } }
         }

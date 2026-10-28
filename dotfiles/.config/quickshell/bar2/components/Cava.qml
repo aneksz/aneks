@@ -61,7 +61,7 @@ Item {
     Row {
         id: cavaRow
         anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset: 1
+        anchors.verticalCenterOffset: 2
         spacing: 3
 
         Repeater {

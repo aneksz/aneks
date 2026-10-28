@@ -8,7 +8,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("awww restore")
     hl.exec_cmd("hyprsunset")
     hl.exec_cmd("hypridle")
-   -- hl.exec_cmd("/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1")
+    hl.exec_cmd("~/.config/hypr/scripts/homepod-volume.sh")
     hl.exec_cmd("quickshell -p ~/.config/quickshell/lock/shell.qml")
     hl.exec_cmd("~/.config/hypr/scripts/spotify-notify.sh")
 

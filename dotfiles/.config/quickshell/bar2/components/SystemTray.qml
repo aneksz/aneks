@@ -6,223 +6,110 @@ import Quickshell.Widgets
 import Quickshell.Services.SystemTray as QuickshellTray
 
 Item {
-id: trayRoot
+    id: trayRoot
 
+    // =================================================
+    // API
+    // =================================================
 
-// =================================================
-// API
-// =================================================
+    property var theme
 
-property var theme
+    // Per-app icon size in px, keyed by the tray item's id (lower-case).
+    // Apps not listed use defaultIconSize.
+    readonly property var iconSizes: ({
+        "spotify-client": 24,
+        "chrome_status_icon_1": 18
+    })
+    readonly property int defaultIconSize: 20
 
+    // Padding added around each icon to form its clickable slot
+    readonly property int slotPadding: 10
+    readonly property int menuYOffset: 11
 
-// =================================================
-// SIZE
-// =================================================
+    // =================================================
+    // SIZE
+    // =================================================
 
-implicitHeight:
-    30
+    implicitHeight: 30
+    implicitWidth: trayRow.implicitWidth
 
-implicitWidth:
-    trayRepeater.count > 0
-    ? (
-        trayRepeater.count * 24
-        +
-        (trayRepeater.count - 1) * 8
-    )
-    : 0
+    // =================================================
+    // TRAY ITEMS
+    // =================================================
 
+    Row {
+        id: trayRow
 
-// =================================================
-// TRAY ITEMS
-// =================================================
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 8
 
-Row {
-    id: trayRow
+        Repeater {
+            model: QuickshellTray.SystemTray.items
 
-    anchors.verticalCenter:
-        parent.verticalCenter
-
-    spacing:
-        8
-
-
-    Repeater {
-        id: trayRepeater
-
-        model:
-            QuickshellTray.SystemTray.items
-
-
-        delegate:
-            Item {
-
-                id:
-                    trayItem
-
+            delegate: Item {
+                id: trayItem
 
                 required property var modelData
 
+                readonly property int iconSize:
+                    trayRoot.iconSizes[(modelData.id ?? "").toLowerCase()]
+                    ?? trayRoot.defaultIconSize
 
-                width:
-                    30
-
-                height:
-                    30
-
+                width: iconSize + trayRoot.slotPadding
+                height: trayRoot.implicitHeight
 
                 // ---------------------------------
                 // ICON
                 // ---------------------------------
 
                 IconImage {
+                    anchors.centerIn: parent
 
-                    id:
-                        trayIcon
+                    source: trayItem.modelData.icon
+                    width: trayItem.iconSize
+                    height: trayItem.iconSize
+                    smooth: true
+                    mipmap: true
 
+                    opacity: trayMouse.containsMouse ? 1.0 : 0.85
+                    scale: trayMouse.containsMouse ? 1.08 : 1.0
 
-                    anchors.centerIn:
-                        parent
-
-
-                    source:
-                        modelData.icon
-
-
-                    implicitSize:
-                        22
-
-
-                    smooth:
-                        true
-
-
-                    opacity:
-                        trayMouse.containsMouse
-                        ? 1.0
-                        : 0.85
-
-
-                    scale:
-                        trayMouse.containsMouse
-                        ? 1.08
-                        : 1.0
-
-
-                    Behavior on opacity {
-
-                        NumberAnimation {
-
-                            duration:
-                                120
-                        }
-                    }
-
-
+                    Behavior on opacity { NumberAnimation { duration: 120 } }
                     Behavior on scale {
-
-                        NumberAnimation {
-
-                            duration:
-                                120
-
-
-                            easing.type:
-                                Easing.OutCubic
-                        }
+                        NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
                     }
                 }
-
 
                 // ---------------------------------
                 // INTERACTION
                 // ---------------------------------
 
                 MouseArea {
+                    id: trayMouse
 
-                    id:
-                        trayMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
 
+                    onClicked: function(mouse) {
+                        const item = trayItem.modelData
+                        const pos = trayItem.mapToItem(null, 0, trayItem.height)
 
-                    anchors.fill:
-                        parent
+                        const showMenu = () =>
+                            item.display(QsWindow.window, pos.x, pos.y + trayRoot.menuYOffset)
 
-
-                    hoverEnabled:
-                        true
-
-
-                    cursorShape:
-                        Qt.PointingHandCursor
-
-
-                    acceptedButtons:
-                        Qt.LeftButton |
-                        Qt.RightButton
-
-
-                    onClicked:
-                        function(mouse) {
-
-
-
-
-                            var parentWindow =
-                                QsWindow.window
-
-
-                            var iconBottom =
-                                trayItem.mapToItem(
-                                    null,
-                                    0,
-                                    trayItem.height
-                                )
-
-
-                            var yOffset =
-                                11
-
-
-                            if (
-                                mouse.button ===
-                                Qt.LeftButton
-                            ) {
-
-                                if (
-                                    modelData.onlyMenu &&
-                                    modelData.hasMenu
-                                ) {
-
-                                    modelData.display(
-                                        parentWindow,
-                                        iconBottom.x,
-                                        iconBottom.y +
-                                        yOffset
-                                    )
-
-                                } else {
-
-                                    modelData.activate()
-                                }
-                            }
-
-
-                            else if (
-                                mouse.button ===
-                                Qt.RightButton &&
-                                modelData.hasMenu
-                            ) {
-
-                                modelData.display(
-                                    parentWindow,
-                                    iconBottom.x,
-                                    iconBottom.y +
-                                    yOffset
-                                )
-                            }
+                        if (mouse.button === Qt.LeftButton) {
+                            if (item.onlyMenu && item.hasMenu)
+                                showMenu()
+                            else
+                                item.activate()
+                        } else if (mouse.button === Qt.RightButton && item.hasMenu) {
+                            showMenu()
                         }
+                    }
                 }
             }
+        }
     }
- }
 }

@@ -1,7 +1,7 @@
 return {
     -- Backgrounds
     bg0 = "0xfffaf4ed",
-    bg1 = "0xfffffaf3",
+    bg1 = "0xfff2e9e1",
     bg2 = "0xfff2e9e1",
     bg3 = "0xffdfdad9",
     -- Foreground

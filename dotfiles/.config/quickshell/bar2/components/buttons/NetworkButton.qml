@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Io
+import ".." as Comp
 
 Rectangle {
     id: root
@@ -18,7 +19,7 @@ Rectangle {
     radius: height / 2
 
     anchors.verticalCenter: parent.verticalCenter
-    anchors.verticalCenterOffset: 1
+    anchors.verticalCenterOffset: 2
 
     color: sysMouse.containsMouse
         ? root.theme.surfaceAlt
@@ -56,22 +57,17 @@ Rectangle {
     // ICON
     // ============================================================
 
-    Text {
-        anchors.centerIn: parent
-        text: root.connected ? "󰱓" : "󰅛"
-        color: {
-            if (!root.connected) return root.theme.error
-            return sysMouse.containsMouse ? root.theme.accent : root.theme.fg
-        }
-        font {
-            family: root.theme.font
-            pixelSize: 18
-        }
+    Comp.Icon {
+    anchors.centerIn: parent
+    name: root.connected ? "nest_wifi_pro" : "globe_2_cancel"
+    size: 18
 
-        Behavior on color {
-            ColorAnimation { duration: 120 }
-        }
+    color: {
+        if (!root.connected) return root.theme.error
+        return sysMouse.containsMouse ? root.theme.accent : root.theme.fg
     }
+    Behavior on color { ColorAnimation { duration: 120 } }
+}
 
     MouseArea {
         id: sysMouse

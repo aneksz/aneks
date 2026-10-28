@@ -4,6 +4,7 @@ local hl = _G.hl
 local terminal = "kitty --single-instance"
 local browser   = "firefox"
 local email = "thunderbird"
+local editor = "codium"
 
 
 -- Helper for exec (much cleaner)
@@ -19,6 +20,7 @@ bind_exec("SUPER + B", browser)
 bind_exec("SUPER + SHIFT + B", "firefox --private-window")
 bind_exec("SUPER + M", "spotify")
 bind_exec("SUPER + E", email)
+bind_exec("SUPER + SHIFT + V", editor)
 
 -- Scripts & Utilities
 bind_exec("SUPER + S", "~/.config/hypr/scripts/theme-selector.sh")

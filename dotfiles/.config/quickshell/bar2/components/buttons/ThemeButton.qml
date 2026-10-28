@@ -1,4 +1,5 @@
 import QtQuick
+import ".." as Comp
 
 Rectangle {
 id: root
@@ -33,34 +34,16 @@ color:
     ? root.theme.surfaceAlt
     : root.theme.bg
 
-Text {
-    anchors.centerIn:
-        parent
+Comp.Icon {
+    anchors.centerIn: parent
+    anchors.verticalCenterOffset: 2
+    name: "palette"
+    size: 18
 
-    text:
-        "󰏘"
-
-    color:
-        root.themeVisible
-        ? root.theme.accent
-        : themeMouse.containsMouse
-        ? root.theme.accent
-        : root.theme.fg
-
-    font {
-        family:
-            root.theme.font
-
-        pixelSize:
-            18
-    }
-
-    Behavior on color {
-        ColorAnimation {
-            duration:
-                120
-        }
-    }
+    color: root.themeVisible ? root.theme.accent
+         : themeMouse.containsMouse ? root.theme.accent
+         : root.theme.fg
+    Behavior on color { ColorAnimation { duration: 120 } }
 }
 
 MouseArea {

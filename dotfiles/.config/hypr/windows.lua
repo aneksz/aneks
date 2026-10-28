@@ -68,7 +68,7 @@ hl.layer_rule({
     ignore_alpha = 1.0,
 })
 hl.window_rule({
-  match = { class = "^(brave-browser|nwg-look|qemu|qemu-system-x86_64|Surfshark|vesktop|firefox|discord|org.mozilla.Thunderbird|org.gnome.Nautilus|mpv|codium|Spotify|org.qbittorrent.qBittorrent)$" },
+  match = { class = "^(brave-browser|brave-web.whatsapp.com__-Default|nwg-look|qemu|qemu-system-x86_64|Surfshark|vesktop|firefox|discord|org.mozilla.Thunderbird|org.gnome.Nautilus|mpv|codium|Spotify|org.qbittorrent.qBittorrent)$" },
   tag = "+hyprglass_disabled",
   no_blur = true,
   opacity = "1.0 override 1.0 override 1.0 override",

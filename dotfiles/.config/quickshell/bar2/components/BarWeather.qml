@@ -1,5 +1,6 @@
 import QtQuick
 
+
 Item {
     id: root
 
@@ -11,7 +12,24 @@ Item {
 
     property string icon: "\ue312"
     property string temperature: "--"
-
+    
+    // Nerd Font weather glyph (from the weather script) -> Material Symbols name
+readonly property var materialNames: ({
+    "\ue30d": "clear_day",             // clear, day
+    "\ue32b": "clear_night",           // clear, night
+    "\ue30c": "partly_cloudy_day",     // mainly clear, day
+    "\ue37e": "partly_cloudy_night",   // mainly clear, night
+    "\ue302": "partly_cloudy_day",     // partly cloudy, day
+    "\ue32e": "partly_cloudy_night",   // partly cloudy, night
+    "\ue312": "cloud",                 // overcast
+    "\ue313": "foggy",                 // fog
+    "\ue31b": "rainy_light",           // drizzle
+    "\ue318": "rainy",                 // rain
+    "\ue319": "rainy_heavy",           // showers
+    "\ue31a": "weather_snowy",         // snow
+    "\ue31d": "thunderstorm"           // thunderstorm
+})
+readonly property string materialName: materialNames[root.icon] ?? "cloud"
     signal clicked()
 
     // =====================================================
@@ -38,24 +56,18 @@ Item {
     anchors.verticalCenter: parent.verticalCenter
     anchors.verticalCenterOffset: 2
 
-    Text {
-        id: weatherIcon
-        anchors.centerIn: parent
-
-        text: root.icon
-        color: theme.accent
-
-        font {
-            family: theme.iconFont
-            pixelSize: 22
-        }
-    }
+    Icon {
+    anchors.centerIn: parent
+    name: root.materialName
+    size: 20
+    color: theme.accent
+}
 }
 
         Text {
     id: weatherTemp
     anchors.verticalCenter: parent.verticalCenter
-    anchors.verticalCenterOffset: 1
+    anchors.verticalCenterOffset: 2
 
     text: root.temperature + "°C"
     color: theme.accent

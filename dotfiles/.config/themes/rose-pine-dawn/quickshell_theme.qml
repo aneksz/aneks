@@ -4,7 +4,7 @@ import QtQuick
 QtObject {
     // ---- what the theme-engine (bar2/Colors.qml consumer) actually reads ----
     readonly property color bg:            "#faf4ed"
-    readonly property color bg1:           "#fffaf3"
+    readonly property color bg1:           "#f2e9e1"
     readonly property color fg0:           "#575279"
     readonly property color fg1:           "#797593"
     readonly property color fg2:           "#797593"
@@ -13,13 +13,13 @@ QtObject {
     readonly property color textSecondary: "#797593"
 
     readonly property color accent:      "#907aa9"
-    readonly property color accentHover: "#faf4ed"
+    readonly property color accentHover: "#dfdad9"
     readonly property color border:      "#907aa9"
     readonly property color activeWs:    "#907aa9"
     readonly property color inactive:    "#9893a5"
 
     readonly property color surface:    "#f2e9e1"
-    readonly property color surfaceAlt: "#faf4ed"
+    readonly property color surfaceAlt: "#f2e9e1"
 
     readonly property color green:   "#56949f"
     readonly property color red:     "#b4637a"

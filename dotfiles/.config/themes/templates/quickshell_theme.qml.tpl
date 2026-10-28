@@ -13,13 +13,13 @@ QtObject {
     readonly property color textSecondary: "{{ fg1 }}"
 
     readonly property color accent:      "{{ accent }}"
-    readonly property color accentHover: "{{ background }}"
+    readonly property color accentHover: "{{ bg3 }}"
     readonly property color border:      "{{ accent }}"
     readonly property color activeWs:    "{{ accent }}"
     readonly property color inactive:    "{{ color8 }}"
 
     readonly property color surface:    "{{ color0 }}"
-    readonly property color surfaceAlt: "{{ background }}"
+    readonly property color surfaceAlt: "{{ bg2 }}"
 
     readonly property color green:   "{{ color2 }}"
     readonly property color red:     "{{ color1 }}"

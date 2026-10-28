@@ -25,7 +25,7 @@ Item {
     signal hoverEntered
     signal hoverExited
 
-    property string label: "󰅢 " + root.updateCount
+    property string label: root.updateCount
 
     property int count: parseInt(root.updateCount)
     property color textColor:
@@ -42,11 +42,13 @@ HoverItem {
     id: hoverItem
     anchors.fill: parent
     textValue: root.label
+    iconName: "directory_sync"
     theme: root.theme
     hovered: mouseArea.containsMouse
     overrideColor: root.textColor
-    iconSize: 22
-    textSize: 18
+    iconSize: 18
+    textSize: 17
+    iconYOffset: 0
 }
 
     MouseArea {

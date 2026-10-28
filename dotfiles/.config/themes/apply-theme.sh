@@ -31,7 +31,6 @@ while IFS='=' read -r key value || [[ -n "$key" ]]; do
   fi
 done < "$COLORS_FILE"
 
-# border is optional: fall back to color8
 if [[ -z ${COLORS[border]:-} ]]; then
   COLORS[border]="${COLORS[color8]}"
   printf 's|{{ border }}|%s|g\n' "${COLORS[border]}" >> "$sed_script"
@@ -89,15 +88,22 @@ gsettings set org.gnome.desktop.interface gtk-theme "${COLORS[gtk_theme]}"
 gsettings set org.gnome.desktop.interface icon-theme "${COLORS[icon_theme]}"
 gsettings set org.gnome.desktop.interface color-scheme "$SCHEME"
 
+# GTK3/portal dialogs (save/open) read settings.ini, not gtk.css
+dark=1; [[ $SCHEME == prefer-light ]] && dark=0
+for v in gtk-3.0 gtk-4.0; do
+  ini="$CFG/$v/settings.ini"
+  [[ -f $ini ]] || continue
+  sed -i -e "s/^gtk-application-prefer-dark-theme=.*/gtk-application-prefer-dark-theme=$dark/" \
+         -e "s/^gtk-theme-name=.*/gtk-theme-name=${COLORS[gtk_theme]}/" \
+         -e "s/^gtk-icon-theme-name=.*/gtk-icon-theme-name=${COLORS[icon_theme]}/" "$ini"
+done
+
 # ---------- wallpapers ----------
 for pair in DP-1:wallpaper_dp1 DP-3:wallpaper_dp3; do
   awww img "$THEME_DIR/wallpapers/${COLORS[${pair#*:}]}" --outputs "${pair%%:*}" --transition-type any
 done
 ln -sf "$THEME_DIR/wallpapers/${COLORS[wallpaper_dp1]}" "$HYPR/background/current.png"
 
-# CenterPanel blurred backdrop: wait for the awww transition, then crop (coords = panel position)
-mkdir -p "$QS/bar2/assets"; sleep 1.5
-grim -g "2214,71 292x497" "$QS/bar2/assets/centerpanel-bg-crop.png"
 
 # ---------- VSCodium ----------
 VSC="$CFG/VSCodium/User/settings.json"

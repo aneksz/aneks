@@ -16,7 +16,7 @@ Item {
     readonly property bool hovered: interactionZone.containsMouse
 
     // Icon size you can tweak independently
-    property int iconSize: 16
+    property int iconSize: 18
     // Text size
     property int textSize: 15
 
@@ -51,7 +51,7 @@ Item {
 
         font {
             family: root.theme && root.theme.font ? root.theme.font : "JetBrainsMono Nerd Font Propo"
-            pixelSize: root.textSize
+            pointSize: theme.fontSize
             weight: theme ? theme.fontWeight : Font.Normal
         }
 
