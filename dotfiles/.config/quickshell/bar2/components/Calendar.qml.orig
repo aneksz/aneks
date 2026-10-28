@@ -1,0 +1,452 @@
+// components/Calendar.qml
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Shapes
+
+Item {
+    id: root
+
+    // =====================================================
+    // CONFIGURATION & STYLING API
+    // =====================================================
+
+    property var theme
+
+    signal clicked()
+
+    // =====================================================
+    // CURRENT DATE
+    // =====================================================
+
+    readonly property date todayDate: new Date()
+
+    property int displayMonth: todayDate.getMonth()
+    property int displayYear: todayDate.getFullYear()
+
+    property int selectedDay: todayDate.getDate()
+    property int selectedMonth: todayDate.getMonth()
+    property int selectedYear: todayDate.getFullYear()
+
+    // Live clock + hourly progress (0 → 1 within the current hour)
+    property string currentHour:   Qt.formatDateTime(new Date(), "HH")
+    property string currentMinute: Qt.formatDateTime(new Date(), "mm")
+    property real   hourProgress:  0.0
+
+    function updateClock() {
+        var now = new Date()
+        currentHour   = Qt.formatDateTime(now, "HH")
+        currentMinute = Qt.formatDateTime(now, "mm")
+
+        // Progress through the current hour (resets every :00)
+        var secondsIntoHour = now.getMinutes() * 60 + now.getSeconds()
+        hourProgress = secondsIntoHour / 3600.0
+    }
+
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: updateClock()
+        Component.onCompleted: updateClock()
+    }
+
+    // =====================================================
+    // SIZE
+    // =====================================================
+
+    implicitWidth: 320
+    implicitHeight: 440
+
+    // =====================================================
+    // NAVIGATION
+    // =====================================================
+
+    function previousMonth() {
+        if (root.displayMonth === 0) {
+            root.displayMonth = 11
+            root.displayYear--
+        } else {
+            root.displayMonth--
+        }
+    }
+
+    function nextMonth() {
+        if (root.displayMonth === 11) {
+            root.displayMonth = 0
+            root.displayYear++
+        } else {
+            root.displayMonth++
+        }
+    }
+
+    function goToToday() {
+        root.displayMonth = todayDate.getMonth()
+        root.displayYear  = todayDate.getFullYear()
+
+        root.selectedDay   = todayDate.getDate()
+        root.selectedMonth = todayDate.getMonth()
+        root.selectedYear  = todayDate.getFullYear()
+    }
+
+
+    // =====================================================
+    // MAIN COLUMN
+    // =====================================================
+
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.leftMargin: 12
+        anchors.rightMargin: 12
+        anchors.topMargin: 8
+        anchors.bottomMargin: 16
+
+        spacing: 10
+
+        // =================================================
+        // TOP DATE BANNER
+        // =================================================
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 72
+
+            radius: 18
+            color: theme.accent
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 20
+                anchors.rightMargin: 16
+                spacing: 12
+
+                // Day + Month / Year
+                Row {
+                    spacing: 8
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: root.selectedDay
+                        color: theme.bg
+                        font {
+                            family: theme.font
+                            pixelSize: 42
+                            weight: Font.Bold
+                        }
+                    }
+
+                    Column {
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: -2
+
+                        Text {
+                            text: Qt.formatDate(
+                                      new Date(root.selectedYear, root.selectedMonth, 1),
+                                      "MMMM"
+                                  ).toUpperCase()
+                            color: theme.bg
+                            font {
+                                family: theme.font
+                                pixelSize: 20
+                                weight: Font.Bold
+                                letterSpacing: 0.5
+                            }
+                        }
+
+                        Text {
+                            text: root.selectedYear
+                            color: theme.bg
+                            font {
+                                family: theme.font
+                                pixelSize: 14
+                                weight: Font.DemiBold
+                            }
+                        }
+                    }
+                }
+
+                // =================================================
+                // TIME + HOURLY PROGRESS RING
+                // =================================================
+
+                Item {
+                    Layout.preferredWidth: 48
+                    Layout.preferredHeight: 48
+                    Layout.alignment: Qt.AlignVCenter
+
+                    // Background track
+                    Shape {
+                        anchors.fill: parent
+                        preferredRendererType: Shape.CurveRenderer
+
+                        ShapePath {
+                            strokeWidth: 2.5
+                            strokeColor: Qt.rgba(0.15, 0.1, 0.25, 0.25)
+                            fillColor: "transparent"
+                            capStyle: ShapePath.RoundCap
+
+                            PathAngleArc {
+                                centerX: 24; centerY: 24
+                                radiusX: 21; radiusY: 21
+                                startAngle: -90
+                                sweepAngle: 360
+                            }
+                        }
+                    }
+
+                    // Progress arc (fills during the hour, resets at :00)
+                    Shape {
+                        anchors.fill: parent
+                        preferredRendererType: Shape.CurveRenderer
+
+                        ShapePath {
+                            strokeWidth: 2.5
+                            strokeColor: theme.bg
+                            fillColor: "transparent"
+                            capStyle: ShapePath.RoundCap
+
+                            PathAngleArc {
+                                centerX: 24; centerY: 24
+                                radiusX: 21; radiusY: 21
+                                startAngle: -90
+                                sweepAngle: root.hourProgress * 360
+                            }
+                        }
+                    }
+
+                    // Time text
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: -1
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: root.currentHour
+                            color: theme.bg
+                            font {
+                                family: theme.font
+                                pixelSize: 13
+                                weight: Font.Bold
+                            }
+                        }
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: root.currentMinute
+                            color: theme.bg
+                            font {
+                                family: theme.font
+                                pixelSize: 13
+                                weight: Font.Bold
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // =================================================
+        // CALENDAR PANEL
+        // =================================================
+
+        Rectangle {
+            id: calendarPanel
+
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            radius: 20
+            color: theme.surface
+            border.width: 1
+            border.color: Qt.rgba(1, 1, 1, 0.06)
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 14
+
+                // Month header
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 32
+                    spacing: 8
+
+                    Text {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        verticalAlignment: Text.AlignVCenter
+
+                        text: Qt.formatDate(
+                                  new Date(root.displayYear, root.displayMonth, 1),
+                                  "MMMM yyyy"
+                              ).toUpperCase()
+
+                        color: theme.fg
+                        font {
+                            family: theme.font
+                            pixelSize: 14
+                            letterSpacing: 0.8
+                            weight: Font.DemiBold
+                        }
+                    }
+
+                    Repeater {
+                        model: [
+                            { icon: "", action: root.previousMonth },
+                            { icon: "󰃭", action: root.goToToday },
+                            { icon: "", action: root.nextMonth }
+                        ]
+
+                        Rectangle {
+                            Layout.preferredWidth: 28
+                            Layout.preferredHeight: 28
+
+                            radius: width / 2
+                            color: "transparent"
+                            border.width: 1
+                            border.color: Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, 0.45)
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: modelData.icon
+                                color: theme.accent
+                                font {
+                                    family: theme.font
+                                    pixelSize: 12
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: modelData.action()
+
+                                onContainsMouseChanged: {
+                                    parent.border.color = containsMouse
+                                        ? theme.accent
+                                        : Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, 0.45)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Weekday header
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 18
+                    spacing: 0
+
+                    Repeater {
+                        model: ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
+
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+
+                            text: modelData
+                            color: Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, 0.65)
+                            font {
+                                family: theme.font
+                                pixelSize: 11
+                                letterSpacing: 0.6
+                                weight: Font.Bold
+                            }
+                        }
+                    }
+                }
+
+                // Calendar grid
+                MonthGrid {
+                    id: calendarGrid
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    month: root.displayMonth
+                    year: root.displayYear
+                    locale: Qt.locale("en_AU")
+
+                    spacing: 4
+
+                    delegate: Item {
+                        implicitWidth: 36
+                        implicitHeight: 36
+
+                        property bool isSelected:
+                            model.day === root.selectedDay &&
+                            model.month === root.selectedMonth &&
+                            model.year === root.selectedYear
+
+                        property bool isCurrentMonth:
+                            model.month === root.displayMonth &&
+                            model.year === root.displayYear
+
+                        property bool isWeekend:
+                            model.weekday === 0 || model.weekday === 6
+
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 32
+                            height: 32
+                            radius: width / 2
+
+                            color: {
+                                if (isSelected)
+                                    return theme.warning
+                                if (model.today)
+                                    return Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, 0.18)
+                                return "transparent"
+                            }
+
+                            border.width: dayMouse.containsMouse && !isSelected ? 1 : 0
+                            border.color: Qt.rgba(1, 1, 1, 0.12)
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: model.day
+
+                            color: {
+                                if (isSelected)
+                                    return "#1a1a1a"
+                                if (model.today)
+                                    return theme.accent
+                                if (!isCurrentMonth)
+                                    return Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.28)
+                                if (isWeekend)
+                                    return Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.75)
+                                return theme.fg
+                            }
+
+                            font {
+                                family: theme.font
+                                pixelSize: 13
+                                weight: (model.today || isSelected) ? Font.DemiBold : Font.Normal
+                            }
+                        }
+
+                        MouseArea {
+                            id: dayMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+
+                            onClicked: {
+                                root.selectedDay   = model.day
+                                root.selectedMonth = model.month
+                                root.selectedYear  = model.year
+                                root.clicked()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

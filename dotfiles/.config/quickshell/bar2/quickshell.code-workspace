@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../themes"
+		},
+		{
+			"path": "../../hypr"
+		},
+		{
+			"path": "../../../Downloads"
+		},
+		{
+			"path": "../../../.local/share"
+		},
+		{
+			"path": "../../waybar"
+		},
+		{
+			"path": "../../../Pictures/Wallpapers"
+		}
+	],
+	"settings": {}
+}
