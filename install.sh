@@ -3,7 +3,10 @@
 # git clone https://github.com/aneksz/aneks ~/Projects/aneks && cd ~/Projects/aneks && ./install.sh
 # Run as your normal user (not root). Safe to re-run.
 set -uo pipefail
-mkdir -p "$HOME/.config"
+# Create these first so stow links inside them instead of linking the folders themselves
+mkdir -p "$HOME/.config" "$HOME/.local/share/fonts"
+# Log everything to ~/install.log as well as the screen
+exec > >(tee -a "$HOME/install.log") 2>&1
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PKG="$DIR/packages"
 FAILED=()
@@ -37,12 +40,16 @@ sudo pacman -S --needed --noconfirm "${ok[@]}"
 
 # ---------------------------------------------------------------------------
 msg "Installing yay"
+# Build with all CPU cores (makepkg defaults to one, which makes AUR builds crawl)
+sudo sed -i 's/^#\?MAKEFLAGS=.*/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
 if ! command -v yay &>/dev/null; then
+    sudo pacman -S --needed --noconfirm git base-devel
     tmp="$(mktemp -d)"
     git clone https://aur.archlinux.org/yay-bin.git "$tmp/yay-bin"
     (cd "$tmp/yay-bin" && makepkg -si --noconfirm)
     rm -rf "$tmp"
 fi
+command -v yay &>/dev/null || { echo "yay failed to install, see above"; exit 1; }
 
 # ---------------------------------------------------------------------------
 msg "Installing AUR packages"
@@ -139,6 +146,10 @@ while IFS= read -r -d '' src; do
 done < <(find "$DIR/dotfiles/.config" -mindepth 1 -maxdepth 1 -print0)
 stow -d "$DIR" -t "$HOME" --restow dotfiles && echo "  dotfiles linked"
 [[ -d "$backup" ]] && warn "old configs saved in $backup"
+
+# The lock screen and wall.sh expect a current wallpaper link (not tracked in git)
+bg="$HOME/.config/hypr/background"
+[[ -e "$bg/current.png" ]] || ln -s "$bg/catppuccin.png" "$bg/current.png"
 
 msg "Applying default theme"
 "$HOME/.config/themes/apply-theme.sh" catppuccin || warn "theme apply failed, run it again after logging in"
