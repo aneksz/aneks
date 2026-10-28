@@ -79,14 +79,12 @@ fi
 SERVICES=(
     NetworkManager        # also pulls in -dispatcher and -wait-online
     bluetooth
-    liquidctl             # custom unit, from system/ above
     virtqemud.socket      # libvirt for QEMU VMs (the -ro/-admin sockets come along)
     virtnetworkd.socket
     virtstoraged.socket
     avahi-daemon          # mDNS, needed to find the HomePods
     systemd-resolved
     systemd-timesyncd
-    auto-cpufreq
     grub-btrfsd
     ufw
     # Media stack: drop these once it lives on the media server
@@ -95,6 +93,14 @@ SERVICES=(
     radarr
     sonarr
 )
+
+# Hardware-specific services: pointless (or failing) inside a VM
+if systemd-detect-virt -q; then
+    warn "running in a VM, skipping hardware services"
+else
+    SERVICES+=(liquidctl)
+fi
+
 for svc in "${SERVICES[@]}"; do
     sudo systemctl enable --now "$svc" 2>/dev/null || { warn "couldn't enable $svc"; FAILED+=("service:$svc"); }
 done
