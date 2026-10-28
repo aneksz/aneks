@@ -33,7 +33,6 @@ papirus-folders-catppuccin-git
 plex-media-server
 python-pywal
 python-pywalfox
-qt5-webengine
 quickshell-git
 radarr-bin
 rose-pine-gtk-theme-full
