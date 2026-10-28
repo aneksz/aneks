@@ -14,7 +14,6 @@ gtk4-live-css-debug
 hyprqt6engine
 image-roll-bin
 imv-rs-bin
-jellyfin-server-bin
 kvantum-theme-catppuccin-git
 kvantum-theme-gruvbox-git
 libayatana-appindicator-glib
@@ -26,13 +25,10 @@ onlyoffice-bin
 ookla-speedtest-bin
 openshot-bin
 papirus-folders-catppuccin-git
-plex-media-server
 python-pywal
 python-pywalfox
 quickshell-git
-radarr-bin
 rose-pine-gtk-theme-full
-sonarr-bin
 spicetify-themes-git
 spotify
 themix-gui-git
