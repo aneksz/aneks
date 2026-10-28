@@ -94,11 +94,6 @@ SERVICES=(
     systemd-timesyncd
     grub-btrfsd
     ufw
-    # Media stack: drop these once it lives on the media server
-    plexmediaserver
-    jellyfin
-    radarr
-    sonarr
 )
 
 # Hardware-specific services: pointless (or failing) inside a VM
