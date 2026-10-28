@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Fresh Arch bootstrap for aneksz/aneks
-#   git clone https://github.com/aneksz/aneks ~/aneks && cd ~/aneks && ./install.sh
+# git clone https://github.com/aneksz/aneks ~/Projects/aneks && cd ~/Projects/aneks && ./install.sh
 # Run as your normal user (not root). Safe to re-run.
 set -uo pipefail
 mkdir -p "$HOME/.config"
