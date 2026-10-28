@@ -134,6 +134,9 @@ done < <(find "$DIR/dotfiles/.config" -mindepth 1 -maxdepth 1 -print0)
 stow -d "$DIR" -t "$HOME" --restow dotfiles && echo "  dotfiles linked"
 [[ -d "$backup" ]] && warn "old configs saved in $backup"
 
+msg "Applying default theme"
+"$HOME/.config/themes/apply-theme.sh" catppuccin || warn "theme apply failed, run it again after logging in"
+
 # ---------------------------------------------------------------------------
 msg "Shell"
 if [[ "$(getent passwd "$USER" | cut -d: -f7)" != "$(command -v zsh)" ]]; then
