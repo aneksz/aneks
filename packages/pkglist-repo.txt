@@ -52,7 +52,6 @@ inetutils
 inotify-tools
 irssi
 iwd
-jellyfin-web
 jq
 kitty
 kvantum
