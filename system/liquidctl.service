@@ -1,0 +1,13 @@
+[Unit]
+Description=liquidctl configuration
+After=systemd-udev-settle.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/liquidctl initialize all
+ExecStart=/usr/bin/liquidctl set ring color spectrum-wave
+ExecStart=/usr/bin/liquidctl set logo color fixed a020f0
+
+[Install]
+WantedBy=multi-user.target
