@@ -65,6 +65,23 @@ PersistentProperties {
 }
 
 // ===========================================================
+// PERSISTENT BAR STATE: keeps the pin across reloads (e.g. theme changes)
+// ===========================================================
+PersistentProperties {
+    id: barState
+    reloadableId: "barPinState"
+
+    property bool pinned: false
+
+    onReloaded: {
+        if (pinned) {
+            detector.isPinned = true
+            detector.activeHover = true
+        }
+    }
+}
+
+// ===========================================================
 // Notifications Server
 // ===========================================================
 
@@ -485,6 +502,7 @@ Item {
     // STATE
     // -------------------------------------------------
     property bool isPinned: false
+    onIsPinnedChanged: barState.pinned = isPinned
     property bool childHovered: false
     property bool activeHover: false
     property bool volumeHovered: false
@@ -1343,7 +1361,7 @@ Item {
         !root.updateAuthVisible
 
     visible: shown
-    width: shown ? cavaLoader.width + 16 : 0
+    width: shown ? cavaLoader.width + 8 : 0
     height: 42
 
     readonly property var levels: cavaLoader.item ? cavaLoader.item.levels : []
