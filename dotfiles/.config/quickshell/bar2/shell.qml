@@ -46,7 +46,8 @@ PanelWindow {
     root.volumeVisible ||
     root.batteryVisible ||
     root.clipboardVisible ||
-    root.torrentsVisible
+    root.torrentsVisible ||
+    root.gitVisible
     mask: Region { item: clickAwayDismissMask.enabled ? clickAwayDismissMask : island }
 
     Connections { target: root.theme }
@@ -185,7 +186,8 @@ NotificationServer {
     root.volumeVisible || 
     root.batteryVisible ||
     root.clipboardVisible ||
-    root.torrentsVisible
+    root.torrentsVisible ||
+    root.gitVisible
 
     z: -1
 
@@ -204,6 +206,7 @@ NotificationServer {
         root.batteryVisible = false
         root.clipboardVisible = false
         root.torrentsVisible = false
+        root.gitVisible = false
         
     }
 }
@@ -242,6 +245,9 @@ NotificationServer {
     property bool batteryVisible: false
     property bool clipboardVisible: false
     property bool torrentsVisible: false
+    property bool gitVisible: false
+    property int gitChanges: 0      // uncommitted changes in the dotfiles repo
+    property int gitAhead: 0        // commits not yet pushed
     property bool dndEnabled: false
     property bool caffeineEnabled: false
     property var currentNotif: null
@@ -269,8 +275,15 @@ NotificationServer {
     readonly property bool otherPanelOpen:
         launcherVisible || panelVisible || mediaVisible || weatherVisible || themeVisible ||
         wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
-        clipboardVisible || torrentsVisible || updateAuthVisible
+        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible
     onOtherPanelOpenChanged: { if (otherPanelOpen) hubVisible = false }
+
+    // Opening any other panel closes the git panel, so other buttons don't need to know about it
+    readonly property bool nonGitPanelOpen:
+        hubVisible || calendarVisible || launcherVisible || panelVisible || mediaVisible || weatherVisible ||
+        themeVisible || wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
+        clipboardVisible || torrentsVisible || updateAuthVisible
+    onNonGitPanelOpenChanged: { if (nonGitPanelOpen) gitVisible = false }
 
     readonly property bool systemTabOpen: hubVisible && hubTab === "system"
     onSystemTabOpenChanged: { if (systemTabOpen) statsPoller.triggered() }
@@ -325,7 +338,8 @@ NotificationServer {
     batteryVisible ||
     wallpaperVisible ||
     clipboardVisible ||
-    torrentsVisible
+    torrentsVisible ||
+    gitVisible
 
     property bool showHoverModules:
     detector.activeHover &&
@@ -339,7 +353,8 @@ NotificationServer {
     !root.batteryVisible &&
     !root.wallpaperVisible &&
     !root.clipboardVisible &&
-    !root.torrentsVisible
+    !root.torrentsVisible &&
+    !root.gitVisible
 
     property var bar: root
     property var globalClock: clock
@@ -376,6 +391,25 @@ NotificationServer {
     Component.onCompleted: {scanWallpapers(); root.checkAllUpdates()} 
 
     function scanWallpapers() { wallpaperProc.command = ["sh", "-c", `find "$HOME/Pictures/Wallpapers/${root.currentResolutionFolder}" -type f \\( -iname '*.jpeg' -o -iname '*.jpg' -o -iname '*.png' -o -iname '*.webp' \\)`]; wallpaperProc.running = true }
+
+    // ---------- git: keep the bar button's dot current ----------
+    function checkGit() { gitPoll.running = true }
+    Process {
+        id: gitPoll
+        command: ["bash", "-c",
+            'cd "$HOME/Projects/aneks" 2>/dev/null || exit 0\n' +
+            'git status --porcelain | wc -l\n' +
+            'git rev-list --count @{u}..HEAD 2>/dev/null || echo 0']
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const v = text.trim().split("\n")
+                root.gitChanges = parseInt(v[0]) || 0
+                root.gitAhead = parseInt(v[1]) || 0
+            }
+        }
+    }
+    Timer { interval: 30000; running: true; repeat: true; triggeredOnStart: true; onTriggered: root.checkGit() }
+    onGitVisibleChanged: if (!gitVisible) checkGit()
 
     function tsNow() {
     return Qt.formatTime(new Date(), "hh:mm:ss")
@@ -518,6 +552,7 @@ Item {
     property bool batteryHovered: false
     property bool clipboardHovered: false
     property bool torrentsHovered: false
+    property bool gitHovered: false
 
     // -------------------------------------------------
     // PINNED: return to expanded once every panel has closed
@@ -537,7 +572,8 @@ Item {
         root.volumeVisible ||
         root.batteryVisible ||
         root.clipboardVisible ||
-        root.torrentsVisible
+        root.torrentsVisible ||
+        root.gitVisible
 
     onAnyPanelOpenChanged: {
         if (!anyPanelOpen && isPinned) {
@@ -556,7 +592,7 @@ Timer {
 
     onTriggered: {
 
-       if (root.hubVisible || root.calendarVisible || root.updateAuthVisible || root.networkVisible || root.clipboardVisible || root.volumeVisible || root.updatesVisible || root.batteryVisible) { if (root.hubVisible || root.calendarVisible || root.updateAuthVisible) detector.activeHover = false; return; }
+       if (root.hubVisible || root.calendarVisible || root.updateAuthVisible || root.networkVisible || root.clipboardVisible || root.volumeVisible || root.updatesVisible || root.batteryVisible || root.gitVisible) { if (root.hubVisible || root.calendarVisible || root.updateAuthVisible) detector.activeHover = false; return; }
        let workspacesHovered = !!(workspaceLoader?.item?.masterWorkspaceMouse?.containsMouse);
 
         if (
@@ -573,6 +609,7 @@ Timer {
             !detector.batteryHovered &&
             !detector.clipboardHovered &&
             !detector.torrentsHovered &&
+            !detector.gitHovered &&
             !detector.isPinned
         ) {
             detector.activeHover = false
@@ -602,7 +639,8 @@ Timer {
         root.volumeVisible ||
         root.batteryVisible ||
         root.clipboardVisible ||
-        root.torrentsVisible
+        root.torrentsVisible ||
+        root.gitVisible
 
     Keys.onEscapePressed: function(event) {
     root.hubVisible = false
@@ -619,6 +657,7 @@ Timer {
     root.batteryVisible = false
     root.clipboardVisible = false
     root.torrentsVisible = false
+    root.gitVisible = false
 
     if (root.timerOsdVisible) {
         root.timerOsdVisible = false
@@ -667,6 +706,12 @@ Item {
             }
 
             if (root.torrentsVisible) {
+                detector.activeHover = false
+                hoverDebounceTimer.stop()
+                return
+            }
+
+            if (root.gitVisible) {
                 detector.activeHover = false
                 hoverDebounceTimer.stop()
                 return
@@ -1050,6 +1095,16 @@ Loader {
     Binding { target: clipboardLoader.item; property: "theme"; value: root.theme; when: clipboardLoader.status === Loader.Ready }
 }
 // =====================================================
+// GIT MODULE
+// =====================================================
+LocalComponents.GitModule {
+    id: gitLoader
+    anchors { fill: parent; margins: 14 }
+    visible: root.gitVisible
+    theme: root.theme
+    onRefreshed: root.checkGit()
+}
+// =====================================================
 // BATTERY MODULE
 // =====================================================
 LocalComponents.BatteryModule {
@@ -1120,6 +1175,8 @@ width:
 
     : root.torrentsVisible ? 560
 
+    : root.gitVisible ? 560
+
     : (detector.activeHover || detector.timerHovered || detector.volumeHovered || detector.themeHovered || detector.calendarHovered || detector.networkHovered || detector.authHovered || root.spotifyTrack !== "")
 
     ? (topBarHeader.width + 32)
@@ -1166,6 +1223,8 @@ height:
     : root.clipboardVisible ? 520
 
     : root.torrentsVisible ? 480
+
+    : root.gitVisible ? 600
 
     : root.volumeVisible ? volumeLoader.requiredHeight
 
@@ -1469,6 +1528,29 @@ Buttons.ClipboardButton {
 }
 
 // ========================================================
+// GIT BUTTON
+// ========================================================
+Buttons.GitButton {
+    id: gitButton
+    visible: root.showHoverModules && !root.gitVisible && !root.mediaVisible
+    theme: root.theme
+    detector: detector
+    changes: root.gitChanges
+    ahead: root.gitAhead
+
+    onHoverEntered: {
+        detector.gitHovered = true
+        detector.activeHover = true
+        hoverDebounceTimer.stop()
+    }
+    onHoverExited: {
+        detector.gitHovered = false
+        if (!detector.isPinned) hoverDebounceTimer.start()
+    }
+    onClicked: root.gitVisible = !root.gitVisible
+}
+
+// ========================================================
 // THEME BUTTON
 // ========================================================
 
@@ -1746,7 +1828,8 @@ Loader {
              !root.updateAuthVisible &&
              !root.batteryVisible &&
              !root.clipboardVisible &&
-             !root.torrentsVisible
+             !root.torrentsVisible &&
+             !root.gitVisible
 
     width: visible && item ? item.implicitWidth : 0
     height: 42
