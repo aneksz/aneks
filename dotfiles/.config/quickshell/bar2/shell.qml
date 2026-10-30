@@ -47,7 +47,7 @@ PanelWindow {
     root.batteryVisible ||
     root.clipboardVisible ||
     root.torrentsVisible
-    mask: Region { item: island }
+    mask: Region { item: clickAwayDismissMask.enabled ? clickAwayDismissMask : island }
 
     Connections { target: root.theme }
 
@@ -629,8 +629,7 @@ Timer {
         })
     }
 
-    detector.isPinned = false
-    detector.activeHover = false
+   
 
     event.accepted = true
 }
@@ -1010,7 +1009,7 @@ LocalComponents.UpdatesModule {
     id: updatesLoader
 
     anchors.fill: parent
-    anchors.margins: 14
+    anchors.margins: 12
 
     visible: root.updatesVisible
     theme: root.theme
@@ -1032,7 +1031,7 @@ LocalComponents.NetworkModule {
     id: networkLoader
     
     anchors.fill: parent
-    anchors.margins: 14
+    anchors.margins: 12
 
     visible: root.networkVisible
     theme: root.theme
