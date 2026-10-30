@@ -1138,8 +1138,8 @@ height:
     // ============================================================
     // ANIMATIONS (Perfect Frame-Rate Synchronization)
     // ============================================================
-Behavior on width  { NumberAnimation { duration: 380; easing.type: Easing.OutCubic } }
-Behavior on height { NumberAnimation { duration: 450; easing.type: Easing.OutCubic } }
+Behavior on width  { NumberAnimation { duration: 380; easing.type: Easing.OutBack } }
+Behavior on height { NumberAnimation { duration: 450; easing.type: Easing.OutBack } }
 Behavior on radius { NumberAnimation { duration: 550; easing.type: Easing.OutQuad } }
 Behavior on scale  { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
 
@@ -1284,7 +1284,6 @@ Loader {
              !root.weatherVisible &&
              !root.themeVisible
 
-    width: 184          
     height: 30
     opacity: visible ? 1 : 0   
 
@@ -1296,7 +1295,7 @@ Loader {
             item.detector = detector
         }
     }
-}   
+}
  
 // ========================================================
 // CAVA 
@@ -1304,7 +1303,20 @@ Loader {
 
 Item {
     id: cavaWrapper
-    width: cavaLoader.visible ? cavaLoader.width + 16 : 0
+
+    // Hidden entirely when not playing, so the Row skips its spacing
+    readonly property bool shown:
+        cavaLoader.item &&
+        cavaLoader.item.active &&
+        !root.islandExpanded &&
+        !root.weatherVisible &&
+        !root.themeVisible &&
+        !root.calendarVisible &&
+        !root.hubVisible &&
+        !root.updateAuthVisible
+
+    visible: shown
+    width: shown ? cavaLoader.width + 16 : 0
     height: 42
 
     readonly property var levels: cavaLoader.item ? cavaLoader.item.levels : []
@@ -1314,20 +1326,9 @@ Item {
         id: cavaLoader
 
         active: true
-
         source: "components/Cava.qml"
 
-        visible:
-            item &&
-            item.active &&
-            !root.islandExpanded &&
-            !root.weatherVisible &&
-            !root.themeVisible &&
-            !root.calendarVisible &&
-            !root.hubVisible &&
-            !root.updateAuthVisible
-
-        width: visible && item ? item.visualWidth : 0
+        width: cavaWrapper.shown && item ? item.visualWidth : 0
         height: 42
 
         anchors {
@@ -1336,9 +1337,9 @@ Item {
             leftMargin: 8
         }
 
-        Behavior on width { NumberAnimation { duration: 250 }}
+        Behavior on width { NumberAnimation { duration: 250 } }
     }
-} 
+}
 
 // ========================================================
 // BATTERY BUTTON
@@ -1769,6 +1770,7 @@ Loader {
     active: true
     source: "components/SystemTray.qml"
     visible:
+        item && item.implicitWidth > 0 &&
         detector.activeHover &&
         !root.islandExpanded &&
         !root.weatherVisible &&

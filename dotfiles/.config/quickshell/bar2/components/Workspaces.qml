@@ -13,7 +13,7 @@ Item {
     // Workspace labels, indexed by (workspace id - 1)
     readonly property var kanji: ["一", "二", "三", "四", "五", "六"]
 
-    width: 184
+    width: 148
     height: 30
 
     // ============================================================

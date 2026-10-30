@@ -20,7 +20,7 @@ Item {
 
     property bool hovered: false
 
-    implicitWidth: volumeRow.implicitWidth + 12
+    implicitWidth: volumeRow.implicitWidth
     implicitHeight: 30
     height: 30
 
