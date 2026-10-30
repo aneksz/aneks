@@ -500,6 +500,33 @@ Item {
     property bool batteryHovered: false
     property bool clipboardHovered: false
     property bool torrentsHovered: false
+
+    // -------------------------------------------------
+    // PINNED: return to expanded once every panel has closed
+    // -------------------------------------------------
+    readonly property bool anyPanelOpen:
+        root.hubVisible ||
+        root.launcherVisible ||
+        root.panelVisible ||
+        root.mediaVisible ||
+        root.weatherVisible ||
+        root.themeVisible ||
+        root.wallpaperVisible ||
+        root.calendarVisible ||
+        root.networkVisible ||
+        root.updatesVisible ||
+        root.updateAuthVisible ||
+        root.volumeVisible ||
+        root.batteryVisible ||
+        root.clipboardVisible ||
+        root.torrentsVisible
+
+    onAnyPanelOpenChanged: {
+        if (!anyPanelOpen && isPinned) {
+            activeHover = true
+            hoverDebounceTimer.stop()
+        }
+    }    
     
 // -------------------------------------------------
 // EXIT DEBOUNCE - FIXED FOR WORKSPACE HOVER
@@ -1138,9 +1165,9 @@ height:
     // ============================================================
     // ANIMATIONS (Perfect Frame-Rate Synchronization)
     // ============================================================
-Behavior on width  { NumberAnimation { duration: 380; easing.type: Easing.OutBack } }
-Behavior on height { NumberAnimation { duration: 450; easing.type: Easing.OutBack } }
-Behavior on radius { NumberAnimation { duration: 550; easing.type: Easing.OutQuad } }
+Behavior on width  { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+Behavior on height { NumberAnimation { duration: 550; easing.type: Easing.OutCubic } }
+Behavior on radius { NumberAnimation { duration: 650; easing.type: Easing.OutQuad } }
 Behavior on scale  { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
 
 
