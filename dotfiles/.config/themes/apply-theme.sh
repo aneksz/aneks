@@ -57,8 +57,9 @@ cp "$THEME_DIR/${THEME}.p10k.zsh" "$HOME/.p10k.zsh"
 (sleep 0.6 && notify-send "Theme Updated" "Applied Theme: $THEME") &
 
 for d in "$QS" "$QS/bar1" "$QS/bar2"; do cp "$THEME_DIR/quickshell_theme.qml" "$d/Colors.qml"; done
-cp "$THEME_DIR/hypr.lua"  "$HYPR/colors.lua"
+cp "$THEME_DIR/hypr.lua"  "$HYPR/modules/colors.lua"
 cp "$THEME_DIR/hypr.conf" "$HYPR/colors.conf"
+
 
 # ---------- kitty ----------
 KITTY_CONF="$THEME_DIR/kitty/${THEME}.colors.conf"
