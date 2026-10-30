@@ -913,6 +913,8 @@ Loader {
             root.updatesVisible = false
             root.volumeVisible = false
             root.batteryVisible = false
+            root.gitVisible = false
+            root.clipboardVisible = false
 
             root.osdMode = "toast"
             toastHideTimer.restart()
@@ -1103,7 +1105,12 @@ LocalComponents.GitModule {
     visible: root.gitVisible
     theme: root.theme
     onRefreshed: root.checkGit()
+
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
 }
+
 // =====================================================
 // BATTERY MODULE
 // =====================================================
