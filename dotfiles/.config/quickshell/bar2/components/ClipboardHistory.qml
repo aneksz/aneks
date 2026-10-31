@@ -94,7 +94,7 @@ Item {
         width: 670
         height: 480
         radius: 24
-        color: root.theme.bg
+        color: "transparent"
     
         Column {
             anchors.fill: parent

@@ -40,7 +40,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: 24
-        color: theme.bg
+        color: "transparent"
       
 
         ColumnLayout {
@@ -57,7 +57,7 @@ Item {
                     Layout.preferredWidth: 44
                     Layout.preferredHeight: 44
                     radius: 12
-                    color: theme.surfaceAlt
+                    color: "transparent"
                     Text {
                         anchors.centerIn: parent
                         text: "󰸉"

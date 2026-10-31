@@ -31,8 +31,8 @@ visible:
 
 color:
     themeMouse.containsMouse
-    ? root.theme.surfaceAlt
-    : root.theme.bg
+    ? "transparent"
+    : "transparent"
 
 Comp.Icon {
     anchors.centerIn: parent
@@ -65,4 +65,8 @@ MouseArea {
         root.clicked()
     }
 }
+
+    // Grow slightly on hover
+    scale: themeMouse.containsMouse ? 1.1 : 1.0
+    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 }

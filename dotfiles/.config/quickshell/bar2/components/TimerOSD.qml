@@ -79,7 +79,7 @@ FocusScope {
         radius: 16
         antialiasing: true
 
-        color: root.theme.bg
+        color: "transparent"
 
         // ========================================================
         // CONTENT

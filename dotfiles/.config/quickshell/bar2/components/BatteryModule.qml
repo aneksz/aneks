@@ -242,8 +242,8 @@ Process {
             Layout.fillWidth: true
             height: 76
             radius: 8
-            color: root.theme.bgAlt
-            border.width: 1
+            color: "transparent"
+            border.width: 0
             border.color: Qt.rgba(1, 1, 1, 0.05)
 
             GridLayout {

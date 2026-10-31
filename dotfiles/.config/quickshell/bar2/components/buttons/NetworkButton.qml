@@ -23,8 +23,8 @@ Rectangle {
     anchors.verticalCenterOffset: 2
 
     color: sysMouse.containsMouse
-        ? root.theme.surfaceAlt
-        : root.theme.bg
+        ? "transparent"
+        : "transparent"
 
     Behavior on color {
         ColorAnimation { duration: 120 }
@@ -105,4 +105,8 @@ ColorOverlay {
             root.clicked()
         }
     }
+
+    // Grow slightly on hover
+    scale: sysMouse.containsMouse ? 1.1 : 1.0
+    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 }

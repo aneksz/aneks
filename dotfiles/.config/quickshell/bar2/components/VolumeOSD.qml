@@ -118,7 +118,7 @@ Item {
         id: mainRect
         anchors.fill: parent
         radius: 16
-        color: root.theme.bg
+        color: "transparent"
 
 // ========================================================
 // ANIMATION
