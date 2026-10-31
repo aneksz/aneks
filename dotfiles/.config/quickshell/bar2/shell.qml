@@ -47,7 +47,8 @@ PanelWindow {
     root.batteryVisible ||
     root.clipboardVisible ||
     root.torrentsVisible ||
-    root.gitVisible
+    root.gitVisible ||
+    root.powerVisible
     mask: Region { item: clickAwayDismissMask.enabled ? clickAwayDismissMask : island }
 
     Connections { target: root.theme }
@@ -187,7 +188,8 @@ NotificationServer {
     root.batteryVisible ||
     root.clipboardVisible ||
     root.torrentsVisible ||
-    root.gitVisible
+    root.gitVisible ||
+    root.powerVisible
 
     z: -1
 
@@ -207,6 +209,7 @@ NotificationServer {
         root.clipboardVisible = false
         root.torrentsVisible = false
         root.gitVisible = false
+        root.powerVisible = false
         
     }
 }
@@ -246,6 +249,7 @@ NotificationServer {
     property bool clipboardVisible: false
     property bool torrentsVisible: false
     property bool gitVisible: false
+    property bool powerVisible: false
     property int gitChanges: 0      // uncommitted changes in the dotfiles repo
     property int gitAhead: 0        // commits not yet pushed
     property bool dndEnabled: false
@@ -275,14 +279,19 @@ NotificationServer {
     readonly property bool otherPanelOpen:
         launcherVisible || panelVisible || mediaVisible || weatherVisible || themeVisible ||
         wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
-        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible
+        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible || powerVisible
     onOtherPanelOpenChanged: { if (otherPanelOpen) hubVisible = false }
+
+    readonly property bool panelTakesOver:
+        hubVisible || calendarVisible || launcherVisible || panelVisible || weatherVisible ||
+        themeVisible || wallpaperVisible || networkVisible || updatesVisible || updateAuthVisible ||
+        volumeVisible || batteryVisible || clipboardVisible || torrentsVisible || gitVisible || powerVisible
 
     // Opening any other panel closes the git panel, so other buttons don't need to know about it
     readonly property bool nonGitPanelOpen:
         hubVisible || calendarVisible || launcherVisible || panelVisible || mediaVisible || weatherVisible ||
         themeVisible || wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
-        clipboardVisible || torrentsVisible || updateAuthVisible
+        clipboardVisible || torrentsVisible || updateAuthVisible || powerVisible
     onNonGitPanelOpenChanged: { if (nonGitPanelOpen) gitVisible = false }
 
     readonly property bool systemTabOpen: hubVisible && hubTab === "system"
@@ -339,7 +348,8 @@ NotificationServer {
     wallpaperVisible ||
     clipboardVisible ||
     torrentsVisible ||
-    gitVisible
+    gitVisible ||
+    powerVisible
 
     property bool showHoverModules:
     detector.activeHover &&
@@ -354,7 +364,8 @@ NotificationServer {
     !root.wallpaperVisible &&
     !root.clipboardVisible &&
     !root.torrentsVisible &&
-    !root.gitVisible
+    !root.gitVisible &&
+    !root.powerVisible
 
     property var bar: root
     property var globalClock: clock
@@ -496,6 +507,19 @@ Timer { id: toastCloseTimer; interval: 300; repeat: false; onTriggered: { root.c
 
 IpcHandler { target: "launcher"; function toggle() { root.launcherVisible = !root.launcherVisible; if (root.launcherVisible) launcher.openLauncher(); } }
 IpcHandler { target: "timer"; function open() { root.timerOsdVisible = true }}
+IpcHandler {
+    target: "power"
+    function toggle() {
+        if (root.powerVisible) { root.powerVisible = false; return }
+        // close anything else first so the menu gets the whole island
+        root.hubVisible = false; root.launcherVisible = false; root.panelVisible = false
+        root.mediaVisible = false; root.weatherVisible = false; root.themeVisible = false
+        root.wallpaperVisible = false; root.calendarVisible = false; root.networkVisible = false
+        root.updatesVisible = false; root.volumeVisible = false; root.batteryVisible = false
+        root.clipboardVisible = false; root.torrentsVisible = false; root.gitVisible = false
+        root.powerVisible = true
+    }
+}
 
 // =====================================================
 // STATIC HOVER & CLICK ZONE
@@ -573,7 +597,8 @@ Item {
         root.batteryVisible ||
         root.clipboardVisible ||
         root.torrentsVisible ||
-        root.gitVisible
+        root.gitVisible ||
+        root.powerVisible
 
     onAnyPanelOpenChanged: {
         if (!anyPanelOpen && isPinned) {
@@ -592,7 +617,7 @@ Timer {
 
     onTriggered: {
 
-       if (root.hubVisible || root.calendarVisible || root.updateAuthVisible || root.networkVisible || root.clipboardVisible || root.volumeVisible || root.updatesVisible || root.batteryVisible || root.gitVisible) { if (root.hubVisible || root.calendarVisible || root.updateAuthVisible) detector.activeHover = false; return; }
+       if (root.hubVisible || root.calendarVisible || root.updateAuthVisible || root.networkVisible || root.clipboardVisible || root.volumeVisible || root.updatesVisible || root.batteryVisible || root.gitVisible || root.powerVisible) { if (root.hubVisible || root.calendarVisible || root.updateAuthVisible) detector.activeHover = false; return; }
        let workspacesHovered = !!(workspaceLoader?.item?.masterWorkspaceMouse?.containsMouse);
 
         if (
@@ -640,7 +665,8 @@ Timer {
         root.batteryVisible ||
         root.clipboardVisible ||
         root.torrentsVisible ||
-        root.gitVisible
+        root.gitVisible ||
+        root.powerVisible
 
     Keys.onEscapePressed: function(event) {
     root.hubVisible = false
@@ -658,6 +684,7 @@ Timer {
     root.clipboardVisible = false
     root.torrentsVisible = false
     root.gitVisible = false
+    root.powerVisible = false
 
     if (root.timerOsdVisible) {
         root.timerOsdVisible = false
@@ -712,6 +739,12 @@ Item {
             }
 
             if (root.gitVisible) {
+                detector.activeHover = false
+                hoverDebounceTimer.stop()
+                return
+            }
+
+            if (root.powerVisible) {
                 detector.activeHover = false
                 hoverDebounceTimer.stop()
                 return
@@ -914,6 +947,7 @@ Loader {
             root.volumeVisible = false
             root.batteryVisible = false
             root.gitVisible = false
+            root.powerVisible = false
             root.clipboardVisible = false
 
             root.osdMode = "toast"
@@ -1110,6 +1144,16 @@ LocalComponents.GitModule {
     enabled: root.osdMode === ""
     Behavior on opacity { NumberAnimation { duration: 150 } }
 }
+// =====================================================
+// POWER MODULE (SUPER+P, no bar button)
+// =====================================================
+LocalComponents.PowerModule {
+    id: powerModule
+    anchors { fill: parent; margins: 14 }
+    visible: root.powerVisible
+    theme: root.theme
+    onCloseRequested: root.powerVisible = false
+}
 
 // =====================================================
 // BATTERY MODULE
@@ -1184,6 +1228,8 @@ width:
 
     : root.gitVisible ? 560
 
+    : root.powerVisible ? 588
+
     : (detector.activeHover || detector.timerHovered || detector.volumeHovered || detector.themeHovered || detector.calendarHovered || detector.networkHovered || detector.authHovered || root.spotifyTrack !== "")
 
     ? (topBarHeader.width + 32)
@@ -1231,7 +1277,9 @@ height:
 
     : root.torrentsVisible ? 480
 
-    : root.gitVisible ? 600
+    : root.gitVisible ? 556
+
+    : root.powerVisible ? 154
 
     : root.volumeVisible ? volumeLoader.requiredHeight
 
@@ -1306,7 +1354,7 @@ Item {
     }
 
     width: mainRow.width
-    height: 42
+    height: root.panelTakesOver ? 0 : 42
 
     z: 100
 
@@ -1369,7 +1417,7 @@ Loader {
 
     height: 42
     spacing: 10
-    visible: root.osdMode === "" && !root.wallpaperVisible && !root.timerOsdVisible
+    visible: root.osdMode === "" && !root.wallpaperVisible && !root.timerOsdVisible && !root.panelTakesOver
     
     // ============================
     // LEFT SIDE
@@ -1836,7 +1884,8 @@ Loader {
              !root.batteryVisible &&
              !root.clipboardVisible &&
              !root.torrentsVisible &&
-             !root.gitVisible
+             !root.gitVisible &&
+             !root.powerVisible
 
     width: visible && item ? item.implicitWidth : 0
     height: 42
