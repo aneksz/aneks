@@ -28,10 +28,10 @@ Item {
     }
 
     // Every time the menu opens: start on Lock (the harmless one) and grab the keyboard
-    onVisibleChanged: {
+        onVisibleChanged: {
         if (visible) {
             selected = 0
-            forceActiveFocus()
+            Qt.callLater(() => root.forceActiveFocus())
         }
     }
 
