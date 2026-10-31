@@ -14,6 +14,9 @@ Item {
 
     property var theme
 
+    // Asks shell.qml to open the themed tray menu for this item
+    signal menuRequested(var item)
+
     // Per-app icon size in px, keyed by the tray item's id (lower-case).
     // Apps not listed use defaultIconSize.
     readonly property var iconSizes: ({
@@ -94,10 +97,9 @@ Item {
 
                     onClicked: function(mouse) {
                         const item = trayItem.modelData
-                        const pos = trayItem.mapToItem(null, 0, trayItem.height)
 
-                        const showMenu = () =>
-                            item.display(QsWindow.window, pos.x, pos.y + trayRoot.menuYOffset)
+                        // Themed menu drawn in the island (see TrayMenu.qml) instead of a native Qt menu
+                        const showMenu = () => trayRoot.menuRequested(item)
 
                         if (mouse.button === Qt.LeftButton) {
                             if (item.onlyMenu && item.hasMenu)
