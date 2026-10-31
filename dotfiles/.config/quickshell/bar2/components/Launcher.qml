@@ -270,7 +270,7 @@ Item {
         anchors.fill: parent
         visible: root.launcherVisible
         radius: 24
-        color: theme.bg
+        color: "transparent"
         clip: true
 
         ColumnLayout {
@@ -395,7 +395,7 @@ Item {
                                 Layout.preferredWidth: root.showSubtitle ? 40 : 32
                                 Layout.preferredHeight: root.showSubtitle ? 40 : 32
                                 radius: 10
-                                color: theme.surface
+                                color: "transparent"
 
                                 Image {
                                     anchors.centerIn: parent

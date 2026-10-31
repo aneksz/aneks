@@ -87,8 +87,8 @@ hl.layer_rule({
         namespace = "quickshell",
     },
 
-    blur = false,
-    ignore_alpha = 1.0,
+    blur = true,
+    ignore_alpha = 0.5,
 })
 hl.window_rule({
   match = { class = "^(brave-browser|brave-web.whatsapp.com__-Default|nwg-look|qemu|qemu-system-x86_64|Surfshark|vesktop|firefox|discord|org.mozilla.Thunderbird|org.gnome.Nautilus|mpv|codium|Spotify|org.qbittorrent.qBittorrent)$" },

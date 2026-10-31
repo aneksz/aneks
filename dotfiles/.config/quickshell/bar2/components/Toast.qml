@@ -112,7 +112,7 @@ Item {
         id: mainRect
         anchors.fill: parent
         radius: 16
-        color: root.theme.bg
+        color: "transparent"
 
         opacity: root.active ? 1.0 : 1.0
 
@@ -299,7 +299,7 @@ function isOn() {
                 Rectangle {
                     anchors.fill: parent
                     radius: 10
-                    color: theme.bg
+                    color: "transparent"
                     clip: true
 
                     // ---------- Spotify art / app icon ----------

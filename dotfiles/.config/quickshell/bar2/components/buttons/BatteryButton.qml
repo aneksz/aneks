@@ -36,7 +36,7 @@ Rectangle {
     anchors.verticalCenter: parent.verticalCenter
     anchors.verticalCenterOffset: 1
 
-    color: sysMouse.containsMouse ? theme.surfaceAlt : theme.bg
+    color: sysMouse.containsMouse ? "transparent" : "transparent"
     Behavior on color { ColorAnimation { duration: 120 } }
 
     Comp.Icon {
@@ -66,4 +66,8 @@ Rectangle {
         }
         onClicked: root.clicked()
     }
+
+    // Grow slightly on hover
+    scale: sysMouse.containsMouse ? 1.1 : 1.0
+    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 }

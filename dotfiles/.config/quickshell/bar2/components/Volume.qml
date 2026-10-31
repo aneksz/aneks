@@ -353,8 +353,8 @@ Item {
 
         color:
             volumeMouseArea.containsMouse
-                ? root.theme.surfaceAlt
-                : root.theme.bg
+                ? "transparent"
+                : "transparent"
 
         Behavior on color {
             ColorAnimation {
@@ -507,4 +507,8 @@ Item {
             root.clicked()
         }
     }
+
+    // Grow slightly on hover
+    scale: volumeMouseArea.containsMouse ? 1.05 : 1.0
+    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 }

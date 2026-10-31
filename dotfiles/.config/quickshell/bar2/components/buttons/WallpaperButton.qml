@@ -22,7 +22,7 @@ Rectangle {
 
     color:
         wallpaperMouse.containsMouse
-        ? root.theme.surfaceAlt
+        ? "transparent"
         : "transparent"
 
     Text {
@@ -68,4 +68,8 @@ Rectangle {
         onClicked:
             root.clicked()
     }
+
+    // Grow slightly on hover
+    scale: wallpaperMouse.containsMouse ? 1.1 : 1.0
+    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 }

@@ -67,7 +67,7 @@ hl.bind("SUPER + V", hl.dsp.send_shortcut({ mods = "SHIFT", key = "Insert" }))
 -- Caps Lock
 
 
-hl.bind("Caps_Lock", hl.dsp.exec_cmd("qs ipc -p /home/igor/.config/quickshell/bar2 call caps_osd toggle"))
+hl.bind("Caps_Lock", hl.dsp.exec_cmd("qs ipc -p /home/igor/.config/quickshell/bar2 call caps_osd toggle"), { ignore_mods = true })
 
 
 -- Volume

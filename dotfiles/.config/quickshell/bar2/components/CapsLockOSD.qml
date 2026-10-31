@@ -94,7 +94,7 @@ Item {
         radius: 16
         antialiasing: true
 
-        color: root.theme.bg
+        color: "transparent"
 
         opacity: root.active ? 1.0 : 0.0
 

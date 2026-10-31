@@ -23,8 +23,8 @@ Rectangle {
     anchors.verticalCenterOffset: 2
 
     color: gitMouse.containsMouse
-        ? root.theme.surfaceAlt
-        : root.theme.bg
+        ? "transparent"
+        : "transparent"
 
     Behavior on color {
         ColorAnimation { duration: 120 }
@@ -68,4 +68,8 @@ Rectangle {
 
         onClicked: root.clicked()
     }
+
+    // Grow slightly on hover
+    scale: gitMouse.containsMouse ? 1.1 : 1.0
+    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 }
