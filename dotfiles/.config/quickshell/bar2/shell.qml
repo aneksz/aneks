@@ -1277,7 +1277,7 @@ height:
 
     : root.torrentsVisible ? 480
 
-    : root.gitVisible ? 556
+    : root.gitVisible ? 590
 
     : root.powerVisible ? 120
 

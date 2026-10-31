@@ -319,7 +319,6 @@ Item {
         // ---------- status ----------
         Text {
             Layout.fillWidth: true
-            visible: root.statusText.length > 0
             text: root.statusText
             elide: Text.ElideRight
             color: root.statusError ? root.theme.error : root.theme.success
