@@ -20,12 +20,14 @@ Item {
     // Text size
     property int textSize: 15
 
-    implicitWidth: Math.max(22, iconText.width + spotifyText.width + (iconText.visible ? 6 : 0))
+    readonly property int padding: 6
+    implicitWidth: Math.max(22, iconText.width + spotifyText.width + (iconText.visible ? 6 : 0)) + padding * 2
 
     // Icon
     Text {
         id: iconText
         anchors.left: parent.left
+        anchors.leftMargin: root.padding
         anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: 1
         visible: root.icon !== ""
@@ -43,7 +45,7 @@ Item {
     Text {
         id: spotifyText
         anchors.left: iconText.visible ? iconText.right : parent.left
-        anchors.leftMargin: iconText.visible ? 6 : 0
+        anchors.leftMargin: iconText.visible ? 6 : root.padding
         anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: 1
         text: root.track

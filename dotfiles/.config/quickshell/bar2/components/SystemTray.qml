@@ -44,7 +44,7 @@ Item {
         id: trayRow
 
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 8
+        spacing: 4
 
         Repeater {
             model: QuickshellTray.SystemTray.items

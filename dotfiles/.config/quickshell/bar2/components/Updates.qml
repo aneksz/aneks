@@ -36,7 +36,7 @@ Item {
 
    
 
-    width: hoverItem.contentWidth + 10
+    width: hoverItem.contentWidth + 4
 
 HoverItem {
     id: hoverItem
