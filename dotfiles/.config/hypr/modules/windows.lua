@@ -39,6 +39,22 @@ hl.window_rule({
     workspace = "5 silent",
 })
 
+-- Email
+
+hl.window_rule({
+    match     = { class = "org.mozilla.Thunderbird" },
+    workspace = "6 silent",
+    opacity   = "1.0 1.0",         -- string
+})
+
+-- Codium
+
+hl.window_rule({
+    match     = { class = "codium" },
+    workspace = "2 silent",
+    opacity   = "1.0 1.0",         -- string
+})
+
 -- Spotify
 hl.window_rule({
     match     = { class = "Spotify" },
@@ -46,9 +62,9 @@ hl.window_rule({
     opacity   = "1.0 1.0",         -- string
 })
 
--- Brave
+-- Firefox
 hl.window_rule({
-    match     = { class = "brave-browser" },
+    match     = { class = "firefox" },
     workspace = "3 silent",
     opacity   = "1.0 1.0",         -- string
     no_blur   = false,

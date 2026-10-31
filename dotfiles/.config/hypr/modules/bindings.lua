@@ -21,6 +21,7 @@ bind_exec("SUPER + SHIFT + B", "firefox --private-window")
 bind_exec("SUPER + M", "spotify")
 bind_exec("SUPER + E", email)
 bind_exec("SUPER + SHIFT + V", editor)
+bind_exec("SUPER + P", "qs ipc -c ~/.config/quickshell/bar2 call power toggle")
 
 -- Scripts & Utilities
 bind_exec("SUPER + S", "~/.config/hypr/scripts/theme-selector.sh")
