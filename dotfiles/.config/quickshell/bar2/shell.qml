@@ -48,7 +48,8 @@ PanelWindow {
     root.clipboardVisible ||
     root.torrentsVisible ||
     root.gitVisible ||
-    root.powerVisible
+    root.powerVisible ||
+    root.trayMenuVisible
     mask: Region { item: clickAwayDismissMask.enabled ? clickAwayDismissMask : island }
 
     Connections { target: root.theme }
@@ -189,7 +190,8 @@ NotificationServer {
     root.clipboardVisible ||
     root.torrentsVisible ||
     root.gitVisible ||
-    root.powerVisible
+    root.powerVisible ||
+    root.trayMenuVisible
 
     z: -1
 
@@ -210,6 +212,7 @@ NotificationServer {
         root.torrentsVisible = false
         root.gitVisible = false
         root.powerVisible = false
+        root.trayMenuVisible = false
         
     }
 }
@@ -250,6 +253,8 @@ NotificationServer {
     property bool torrentsVisible: false
     property bool gitVisible: false
     property bool powerVisible: false
+    property bool trayMenuVisible: false
+    property var trayMenuItem: null   // tray app whose menu is open
     property int gitChanges: 0      // uncommitted changes in the dotfiles repo
     property int gitAhead: 0        // commits not yet pushed
     property bool dndEnabled: false
@@ -279,19 +284,19 @@ NotificationServer {
     readonly property bool otherPanelOpen:
         launcherVisible || panelVisible || mediaVisible || weatherVisible || themeVisible ||
         wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
-        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible || powerVisible
+        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible || powerVisible || trayMenuVisible
     onOtherPanelOpenChanged: { if (otherPanelOpen) hubVisible = false }
 
     readonly property bool panelTakesOver:
         hubVisible || calendarVisible || launcherVisible || panelVisible || weatherVisible ||
         themeVisible || wallpaperVisible || networkVisible || updatesVisible || updateAuthVisible ||
-        volumeVisible || batteryVisible || clipboardVisible || torrentsVisible || gitVisible || powerVisible
+        volumeVisible || batteryVisible || clipboardVisible || torrentsVisible || gitVisible || powerVisible || trayMenuVisible
 
     // Opening any other panel closes the git panel, so other buttons don't need to know about it
     readonly property bool nonGitPanelOpen:
         hubVisible || calendarVisible || launcherVisible || panelVisible || mediaVisible || weatherVisible ||
         themeVisible || wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
-        clipboardVisible || torrentsVisible || updateAuthVisible || powerVisible
+        clipboardVisible || torrentsVisible || updateAuthVisible || powerVisible || trayMenuVisible
     onNonGitPanelOpenChanged: { if (nonGitPanelOpen) gitVisible = false }
 
     readonly property bool systemTabOpen: hubVisible && hubTab === "system"
@@ -349,7 +354,8 @@ NotificationServer {
     clipboardVisible ||
     torrentsVisible ||
     gitVisible ||
-    powerVisible
+    powerVisible ||
+    trayMenuVisible
 
     property bool showHoverModules:
     detector.activeHover &&
@@ -365,7 +371,8 @@ NotificationServer {
     !root.clipboardVisible &&
     !root.torrentsVisible &&
     !root.gitVisible &&
-    !root.powerVisible
+    !root.powerVisible &&
+    !root.trayMenuVisible
 
     property var bar: root
     property var globalClock: clock
@@ -516,7 +523,7 @@ IpcHandler {
         root.mediaVisible = false; root.weatherVisible = false; root.themeVisible = false
         root.wallpaperVisible = false; root.calendarVisible = false; root.networkVisible = false
         root.updatesVisible = false; root.volumeVisible = false; root.batteryVisible = false
-        root.clipboardVisible = false; root.torrentsVisible = false; root.gitVisible = false
+        root.clipboardVisible = false; root.torrentsVisible = false; root.gitVisible = false; root.trayMenuVisible = false
         root.powerVisible = true
     }
 }
@@ -598,7 +605,8 @@ Item {
         root.clipboardVisible ||
         root.torrentsVisible ||
         root.gitVisible ||
-        root.powerVisible
+        root.powerVisible ||
+        root.trayMenuVisible
 
     onAnyPanelOpenChanged: {
         if (!anyPanelOpen && isPinned) {
@@ -617,7 +625,7 @@ Timer {
 
     onTriggered: {
 
-       if (root.hubVisible || root.calendarVisible || root.updateAuthVisible || root.networkVisible || root.clipboardVisible || root.volumeVisible || root.updatesVisible || root.batteryVisible || root.gitVisible || root.powerVisible) { if (root.hubVisible || root.calendarVisible || root.updateAuthVisible) detector.activeHover = false; return; }
+       if (root.hubVisible || root.calendarVisible || root.updateAuthVisible || root.networkVisible || root.clipboardVisible || root.volumeVisible || root.updatesVisible || root.batteryVisible || root.gitVisible || root.powerVisible || root.trayMenuVisible) { if (root.hubVisible || root.calendarVisible || root.updateAuthVisible) detector.activeHover = false; return; }
        let workspacesHovered = !!(workspaceLoader?.item?.masterWorkspaceMouse?.containsMouse);
 
         if (
@@ -666,7 +674,8 @@ Timer {
         root.clipboardVisible ||
         root.torrentsVisible ||
         root.gitVisible ||
-        root.powerVisible
+        root.powerVisible ||
+        root.trayMenuVisible
 
     Keys.onEscapePressed: function(event) {
     root.hubVisible = false
@@ -685,6 +694,7 @@ Timer {
     root.torrentsVisible = false
     root.gitVisible = false
     root.powerVisible = false
+    root.trayMenuVisible = false
 
     if (root.timerOsdVisible) {
         root.timerOsdVisible = false
@@ -745,6 +755,12 @@ Item {
             }
 
             if (root.powerVisible) {
+                detector.activeHover = false
+                hoverDebounceTimer.stop()
+                return
+            }
+
+            if (root.trayMenuVisible) {
                 detector.activeHover = false
                 hoverDebounceTimer.stop()
                 return
@@ -948,6 +964,7 @@ Loader {
             root.batteryVisible = false
             root.gitVisible = false
             root.powerVisible = false
+            root.trayMenuVisible = false
             root.clipboardVisible = false
 
             root.osdMode = "toast"
@@ -1154,6 +1171,17 @@ LocalComponents.PowerModule {
     theme: root.theme
     onCloseRequested: root.powerVisible = false
 }
+// =====================================================
+// TRAY MENU (themed replacement for native tray menus)
+// =====================================================
+LocalComponents.TrayMenu {
+    id: trayMenu
+    anchors { fill: parent; margins: 14 }
+    visible: root.trayMenuVisible
+    theme: root.theme
+    trayItem: root.trayMenuItem
+    onCloseRequested: root.trayMenuVisible = false
+}
 
 // =====================================================
 // BATTERY MODULE
@@ -1230,6 +1258,8 @@ width:
 
     : root.powerVisible ? 588
 
+    : root.trayMenuVisible ? 300
+
     : (detector.activeHover || detector.timerHovered || detector.volumeHovered || detector.themeHovered || detector.calendarHovered || detector.networkHovered || detector.authHovered || root.spotifyTrack !== "")
 
     ? (topBarHeader.width + 32)
@@ -1280,6 +1310,8 @@ height:
     : root.gitVisible ? 590
 
     : root.powerVisible ? 120
+
+    : root.trayMenuVisible ? trayMenu.implicitHeight + 28
 
     : root.volumeVisible ? volumeLoader.requiredHeight
 
@@ -1885,7 +1917,8 @@ Loader {
              !root.clipboardVisible &&
              !root.torrentsVisible &&
              !root.gitVisible &&
-             !root.powerVisible
+             !root.powerVisible &&
+             !root.trayMenuVisible
 
     width: visible && item ? item.implicitWidth : 0
     height: 42
@@ -1966,6 +1999,14 @@ Loader {
     height: 30
     anchors.verticalCenter: parent.verticalCenter
     onLoaded: { item.theme = theme }
+
+    Connections {
+        target: systemTrayLoader.item
+        function onMenuRequested(item) {
+            root.trayMenuItem = item
+            root.trayMenuVisible = true
+        }
+    }
 
     Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic }}
         }
