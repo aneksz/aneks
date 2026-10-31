@@ -70,6 +70,13 @@ hl.window_rule({
     no_blur   = false,
 })
 
+-- Vesktop
+
+hl.window_rule({
+    match     = { class = "vesktop" },
+    workspace = "7 silent",
+    opacity   = "1.0 1.0",         -- string
+})
 
 -- =========================================================
 -- Layer Rules
