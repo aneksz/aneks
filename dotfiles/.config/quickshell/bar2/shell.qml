@@ -1267,7 +1267,7 @@ height:
 
     : root.updateAuthVisible ? 280
 
-    : root.networkVisible ? networkLoader.implicitHeight + 28
+    : root.networkVisible ? networkLoader.implicitHeight 
 
     : root.updatesVisible ? 400
 
@@ -1279,7 +1279,7 @@ height:
 
     : root.gitVisible ? 556
 
-    : root.powerVisible ? 154
+    : root.powerVisible ? 120
 
     : root.volumeVisible ? volumeLoader.requiredHeight
 

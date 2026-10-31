@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Io
+import Qt5Compat.GraphicalEffects
 import ".." as Comp
 
 Rectangle {
@@ -57,16 +58,31 @@ Rectangle {
     // ICON
     // ============================================================
 
-    Comp.Icon {
+    // Connected: font icon as before
+Comp.Icon {
     anchors.centerIn: parent
-    name: root.connected ? "nest_wifi_pro" : "globe_2_cancel"
+    visible: root.connected
+    name: "language"
     size: 18
-
-    color: {
-        if (!root.connected) return root.theme.error
-        return sysMouse.containsMouse ? root.theme.accent : root.theme.fg
-    }
+    color: sysMouse.containsMouse ? root.theme.accent : root.theme.fg
     Behavior on color { ColorAnimation { duration: 120 } }
+}
+
+// Disconnected: SVG (not in the installed font yet), tinted with the theme's error colour
+Image {
+    id: offlineIcon
+    anchors.centerIn: parent
+    visible: false                       // drawn by the overlay below instead
+    source: Qt.resolvedUrl("../../assets/globe_2_cancel.svg")
+    sourceSize: Qt.size(18, 18)
+    width: 18
+    height: 18
+}
+ColorOverlay {
+    anchors.fill: offlineIcon
+    source: offlineIcon
+    color: root.theme.error
+    visible: !root.connected
 }
 
     MouseArea {
