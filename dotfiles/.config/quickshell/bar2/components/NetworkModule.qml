@@ -267,9 +267,7 @@ Item {
             }
             Item { Layout.fillWidth: true }
 
-            // ---- SPEED TEST BUTTON ----
-            // Glyph is a best guess (nerd-font "speedometer") — swap if it
-            // doesn't render correctly in your font.
+                      // ---- SPEED TEST BUTTON ----
             MouseArea {
                 id: speedTestBtn
                 width: 36
@@ -279,19 +277,15 @@ Item {
                 enabled: !root.speedTestRunning
                 onClicked: root.runSpeedTest()
 
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 8
-                    color: speedTestBtn.containsMouse ? root.theme.surfaceAlt : "transparent"
-                    border.width: 1
-                    border.color: Qt.rgba(1, 1, 1, 0.12)
-                }
-
                 Text {
                     anchors.centerIn: parent
                     text: "󰾆"
                     color: root.speedTestRunning ? root.theme.fg3 : root.theme.accent
                     font { family: root.theme.font; pixelSize: 18 }
+
+                    // Same hover as the bar buttons: grow slightly, no background
+                    scale: speedTestBtn.containsMouse ? 1.1 : 1.0
+                    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
 
                     RotationAnimation on rotation {
                         running: root.speedTestRunning
@@ -299,6 +293,7 @@ Item {
                         from: 0
                         to: 360
                         duration: 900
+                        onStopped: parent.rotation = 0
                     }
                 }
             }

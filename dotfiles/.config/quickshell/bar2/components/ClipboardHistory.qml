@@ -115,7 +115,7 @@ Item {
                         width: 44
                         height: 44
                         radius: 12
-                        color: root.theme.surfaceAlt
+                        color: "transparent"
 
                         Text {
                             anchors.centerIn: parent
