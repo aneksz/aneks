@@ -1,7 +1,8 @@
 { config, pkgs, ... }:
 
 {
-  # ---------- Audio (PipeWire, as on Arch) ----------
+  # ---------- Audio  ----------
+
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -12,12 +13,14 @@
   };
 
   # ---------- Desktop services your bar uses ----------
+
   hardware.bluetooth.enable = true;          # Bluetooth panel
   services.upower.enable = true;             # battery info
   security.polkit.enable = true;             # the bar's own password prompt (pkexec)
   services.gnome.gnome-keyring.enable = true;
   hardware.i2c.enable = true;                # monitor panel (ddcutil); adds the i2c group
   programs.dconf.enable = true;
+
   # File-picker / screenshot portals (Hyprland's own comes with programs.hyprland)
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   
@@ -42,6 +45,8 @@
     fsType = "ntfs3";
     options = [ "nofail" "nosuid" "nodev" "uid=1000" "gid=100" "iocharset=utf8" ];
   };
+
+  
   
   # ---------- Packages ----------
   environment.systemPackages = with pkgs; [
@@ -53,6 +58,26 @@
     qt6.qtimageformats
     glib
     gsettings-desktop-schemas
+    gnome-themes-extra
+
+    # GTK themes
+    gnome-themes-extra          # Adwaita-dark
+    magnetic-catppuccin-gtk     # Fausto's Catppuccin (was catppuccin-gtk-theme-mocha)
+    dracula-theme
+    tokyonight-gtk-theme
+    everforest-gtk-theme
+    gruvbox-gtk-theme
+    materia-theme
+
+    # Icons
+    adwaita-icon-theme
+    yaru-theme
+    tela-icon-theme
+    tela-circle-icon-theme
+    reversal-icon-theme
+    nordzy-icon-theme
+    gruvbox-plus-icons
+    catppuccin-papirus-folders
 
     # Hyprland helpers from your autostart and binds
     hypridle hyprlock hyprsunset hyprshot hyprpolkitagent

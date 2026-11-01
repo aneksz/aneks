@@ -1,0 +1,40 @@
+// Inspired by Catnap
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "type": "kitty",
+        "source": "~/Downloads/images/anime-girl.png",
+        "width": 20,
+        "height": 8,
+        "padding": { "top": 1 }
+    },
+    "display": {
+        "separator": " "
+    },
+    "modules": [
+        { "type": "custom",   "key": "╭───────────╮" },
+
+        { "type": "title",    "key": "│ {#31}\uf007 user    {#keys}│", "format": "{user-name}" },
+        { "type": "title",    "key": "│ {#32}󰇅 hname   {#keys}│", "format": "{host-name}" },
+        { "type": "uptime",   "key": "│ {#33}󰅐 uptime  {#keys}│" },
+        {
+            "type": "command",
+            "key": "│ {#36}󱦟 os age  {#keys}│",
+            "text": "echo $(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days"
+        },
+        { "type": "os",       "key": "│ {#34}{icon} distro  {#keys}│" },
+        { "type": "wm",       "key": "│ {#36}󰇄 wm      {#keys}│" },
+        { "type": "kernel",   "key": "│ {#35}\uf013 kernel  {#keys}│" },
+        { "type": "terminal", "key": "│ {#31}\uf120 term    {#keys}│" },
+        { "type": "shell",    "key": "│ {#32}\uf489 shell   {#keys}│" },
+        { "type": "cpu",      "key": "│ {#33}󰍛 cpu     {#keys}│", "showPeCoreCount": true },
+        { "type": "disk",     "key": "│ {#34}󰉉 disk    {#keys}│", "folders": "/" },
+        { "type": "disk",     "key": "│ {#34}󰉉 data    {#keys}│", "folders": "/mnt/data" },
+        { "type": "memory",   "key": "│ {#35}\uf2db memory  {#keys}│" },
+        { "type": "localip",  "key": "│ {#36}󰩟 network {#keys}│", "format": "{ipv4} ({ifname})" },
+
+        { "type": "custom",   "key": "├───────────┤" },
+        { "type": "colors",   "key": "│ {#39}\uf1fc colors  {#keys}│", "symbol": "circle" },
+        { "type": "custom",   "key": "╰───────────╯" }
+    ]
+}

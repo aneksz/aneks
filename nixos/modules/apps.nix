@@ -3,19 +3,22 @@
 {
   programs.firefox.enable = true;
 
+
   environment.systemPackages = with pkgs; [   
     bat       
     bibata-cursors
-    pywalfox-native
+    fastfetch
     git
     gh
     kitty
     nautilus
     nwg-look
+    pywalfox-native
     spicetify-cli
     spotify
     vesktop
     vscodium
+    zsh-completions
     
   ];
 }

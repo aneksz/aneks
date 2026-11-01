@@ -102,6 +102,13 @@ for v in gtk-3.0 gtk-4.0; do
          -e "s/^gtk-icon-theme-name=.*/gtk-icon-theme-name=${COLORS[icon_theme]}/" "$ini"
 done
 
+# Stock GTK4 only reads gtk.css at startup, and Nautilus keeps running in the
+# background after its window closes. Without the live-reload patch (e.g. on
+# NixOS), quit it so the next launch picks up the new colours.
+if ! pacman -Q gtk4-live-css &>/dev/null; then
+  command -v nautilus >/dev/null && nautilus -q 2>/dev/null
+fi
+
 # ---------- wallpapers ----------
 for pair in DP-1:wallpaper_dp1 DP-3:wallpaper_dp3; do
   awww img "$WALL_DIR/${COLORS[${pair#*:}]}" --outputs "${pair%%:*}" --transition-type any
