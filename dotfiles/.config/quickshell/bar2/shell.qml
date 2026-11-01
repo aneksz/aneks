@@ -48,6 +48,7 @@ PanelWindow {
     root.clipboardVisible ||
     root.torrentsVisible ||
     root.gitVisible ||
+    root.monitorVisible ||
     root.powerVisible ||
     root.trayMenuVisible
     mask: Region { item: clickAwayDismissMask.enabled ? clickAwayDismissMask : island }
@@ -190,6 +191,7 @@ NotificationServer {
     root.clipboardVisible ||
     root.torrentsVisible ||
     root.gitVisible ||
+    root.monitorVisible ||
     root.powerVisible ||
     root.trayMenuVisible
 
@@ -211,6 +213,7 @@ NotificationServer {
         root.clipboardVisible = false
         root.torrentsVisible = false
         root.gitVisible = false
+        root.monitorVisible = false
         root.powerVisible = false
         root.trayMenuVisible = false
         
@@ -252,6 +255,7 @@ NotificationServer {
     property bool clipboardVisible: false
     property bool torrentsVisible: false
     property bool gitVisible: false
+    property bool monitorVisible: false
     property bool powerVisible: false
     property bool trayMenuVisible: false
     property var trayMenuItem: null   // tray app whose menu is open
@@ -284,20 +288,27 @@ NotificationServer {
     readonly property bool otherPanelOpen:
         launcherVisible || panelVisible || mediaVisible || weatherVisible || themeVisible ||
         wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
-        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible || powerVisible || trayMenuVisible
+        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible || monitorVisible || powerVisible || trayMenuVisible
     onOtherPanelOpenChanged: { if (otherPanelOpen) hubVisible = false }
 
     readonly property bool panelTakesOver:
         hubVisible || calendarVisible || launcherVisible || panelVisible || weatherVisible ||
         themeVisible || wallpaperVisible || networkVisible || updatesVisible || updateAuthVisible ||
-        volumeVisible || batteryVisible || clipboardVisible || torrentsVisible || gitVisible || powerVisible || trayMenuVisible
+        volumeVisible || batteryVisible || clipboardVisible || torrentsVisible || gitVisible || monitorVisible || powerVisible || trayMenuVisible
 
     // Opening any other panel closes the git panel, so other buttons don't need to know about it
     readonly property bool nonGitPanelOpen:
         hubVisible || calendarVisible || launcherVisible || panelVisible || mediaVisible || weatherVisible ||
         themeVisible || wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
-        clipboardVisible || torrentsVisible || updateAuthVisible || powerVisible || trayMenuVisible
+        clipboardVisible || torrentsVisible || updateAuthVisible || powerVisible || trayMenuVisible || monitorVisible
     onNonGitPanelOpenChanged: { if (nonGitPanelOpen) gitVisible = false }
+
+    // Same for the monitor panel: any other panel opening closes it
+    readonly property bool nonMonitorPanelOpen:
+        hubVisible || calendarVisible || launcherVisible || panelVisible || mediaVisible || weatherVisible ||
+        themeVisible || wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
+        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible || powerVisible || trayMenuVisible
+    onNonMonitorPanelOpenChanged: { if (nonMonitorPanelOpen) monitorVisible = false }
 
     readonly property bool systemTabOpen: hubVisible && hubTab === "system"
     onSystemTabOpenChanged: { if (systemTabOpen) statsPoller.triggered() }
@@ -354,6 +365,7 @@ NotificationServer {
     clipboardVisible ||
     torrentsVisible ||
     gitVisible ||
+    monitorVisible ||
     powerVisible ||
     trayMenuVisible
 
@@ -371,6 +383,7 @@ NotificationServer {
     !root.clipboardVisible &&
     !root.torrentsVisible &&
     !root.gitVisible &&
+    !root.monitorVisible &&
     !root.powerVisible &&
     !root.trayMenuVisible
 
@@ -523,7 +536,7 @@ IpcHandler {
         root.mediaVisible = false; root.weatherVisible = false; root.themeVisible = false
         root.wallpaperVisible = false; root.calendarVisible = false; root.networkVisible = false
         root.updatesVisible = false; root.volumeVisible = false; root.batteryVisible = false
-        root.clipboardVisible = false; root.torrentsVisible = false; root.gitVisible = false; root.trayMenuVisible = false
+        root.clipboardVisible = false; root.torrentsVisible = false; root.gitVisible = false; root.monitorVisible = false; root.trayMenuVisible = false
         root.powerVisible = true
     }
 }
@@ -584,6 +597,7 @@ Item {
     property bool clipboardHovered: false
     property bool torrentsHovered: false
     property bool gitHovered: false
+    property bool monitorHovered: false
 
     // -------------------------------------------------
     // PINNED: return to expanded once every panel has closed
@@ -605,6 +619,7 @@ Item {
         root.clipboardVisible ||
         root.torrentsVisible ||
         root.gitVisible ||
+        root.monitorVisible ||
         root.powerVisible ||
         root.trayMenuVisible
 
@@ -625,7 +640,7 @@ Timer {
 
     onTriggered: {
 
-       if (root.hubVisible || root.calendarVisible || root.updateAuthVisible || root.networkVisible || root.clipboardVisible || root.volumeVisible || root.updatesVisible || root.batteryVisible || root.gitVisible || root.powerVisible || root.trayMenuVisible) { if (root.hubVisible || root.calendarVisible || root.updateAuthVisible) detector.activeHover = false; return; }
+       if (root.hubVisible || root.calendarVisible || root.updateAuthVisible || root.networkVisible || root.clipboardVisible || root.volumeVisible || root.updatesVisible || root.batteryVisible || root.gitVisible || root.monitorVisible || root.powerVisible || root.trayMenuVisible) { if (root.hubVisible || root.calendarVisible || root.updateAuthVisible) detector.activeHover = false; return; }
        let workspacesHovered = !!(workspaceLoader?.item?.masterWorkspaceMouse?.containsMouse);
 
         if (
@@ -643,6 +658,7 @@ Timer {
             !detector.clipboardHovered &&
             !detector.torrentsHovered &&
             !detector.gitHovered &&
+            !detector.monitorHovered &&
             !detector.isPinned
         ) {
             detector.activeHover = false
@@ -674,6 +690,7 @@ Timer {
         root.clipboardVisible ||
         root.torrentsVisible ||
         root.gitVisible ||
+        root.monitorVisible ||
         root.powerVisible ||
         root.trayMenuVisible
 
@@ -693,6 +710,7 @@ Timer {
     root.clipboardVisible = false
     root.torrentsVisible = false
     root.gitVisible = false
+    root.monitorVisible = false
     root.powerVisible = false
     root.trayMenuVisible = false
 
@@ -749,6 +767,12 @@ Item {
             }
 
             if (root.gitVisible) {
+                detector.activeHover = false
+                hoverDebounceTimer.stop()
+                return
+            }
+
+            if (root.monitorVisible) {
                 detector.activeHover = false
                 hoverDebounceTimer.stop()
                 return
@@ -963,6 +987,7 @@ Loader {
             root.volumeVisible = false
             root.batteryVisible = false
             root.gitVisible = false
+            root.monitorVisible = false
             root.powerVisible = false
             root.trayMenuVisible = false
             root.clipboardVisible = false
@@ -1162,6 +1187,20 @@ LocalComponents.GitModule {
     Behavior on opacity { NumberAnimation { duration: 150 } }
 }
 // =====================================================
+// MONITOR MODULE (DDC/CI via ddcutil)
+// =====================================================
+LocalComponents.MonitorModule {
+    id: monitorModule
+    anchors { fill: parent; margins: 14 }
+    visible: root.monitorVisible
+    theme: root.theme
+
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
+}
+// =====================================================
 // POWER MODULE (SUPER+P, no bar button)
 // =====================================================
 LocalComponents.PowerModule {
@@ -1256,6 +1295,8 @@ width:
 
     : root.gitVisible ? 560
 
+    : root.monitorVisible ? 480
+
     : root.powerVisible ? 588
 
     : root.trayMenuVisible ? 300
@@ -1308,6 +1349,8 @@ height:
     : root.torrentsVisible ? 480
 
     : root.gitVisible ? 590
+
+    : root.monitorVisible ? 500
 
     : root.powerVisible ? 120
 
@@ -1640,6 +1683,27 @@ Buttons.GitButton {
 }
 
 // ========================================================
+// MONITOR BUTTON
+// ========================================================
+Buttons.MonitorButton {
+    id: monitorButton
+    visible: root.showHoverModules && !root.monitorVisible && !root.mediaVisible
+    theme: root.theme
+    detector: detector
+
+    onHoverEntered: {
+        detector.monitorHovered = true
+        detector.activeHover = true
+        hoverDebounceTimer.stop()
+    }
+    onHoverExited: {
+        detector.monitorHovered = false
+        if (!detector.isPinned) hoverDebounceTimer.start()
+    }
+    onClicked: root.monitorVisible = !root.monitorVisible
+}
+
+// ========================================================
 // THEME BUTTON
 // ========================================================
 
@@ -1919,6 +1983,7 @@ Loader {
              !root.clipboardVisible &&
              !root.torrentsVisible &&
              !root.gitVisible &&
+             !root.monitorVisible &&
              !root.powerVisible &&
              !root.trayMenuVisible
 
