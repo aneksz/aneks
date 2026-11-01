@@ -124,7 +124,7 @@ Item {
                     icon: "󰂯"
                     accent: theme.accent
                     onClicked: {
-                        runner.command = ["kitty", "-e", "bluetui"]
+                        runner.command = ["qs", "ipc", "-c", Quickshell.env("HOME") + "/.config/quickshell/bar2", "call", "bluetooth", "open"]
                         runner.running = true
                     }
                 }

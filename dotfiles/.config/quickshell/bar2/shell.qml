@@ -49,6 +49,7 @@ PanelWindow {
     root.torrentsVisible ||
     root.gitVisible ||
     root.monitorVisible ||
+    root.bluetoothVisible ||
     root.powerVisible ||
     root.trayMenuVisible
     mask: Region { item: clickAwayDismissMask.enabled ? clickAwayDismissMask : island }
@@ -192,6 +193,7 @@ NotificationServer {
     root.torrentsVisible ||
     root.gitVisible ||
     root.monitorVisible ||
+    root.bluetoothVisible ||
     root.powerVisible ||
     root.trayMenuVisible
 
@@ -214,6 +216,7 @@ NotificationServer {
         root.torrentsVisible = false
         root.gitVisible = false
         root.monitorVisible = false
+        root.bluetoothVisible = false
         root.powerVisible = false
         root.trayMenuVisible = false
         
@@ -256,6 +259,7 @@ NotificationServer {
     property bool torrentsVisible: false
     property bool gitVisible: false
     property bool monitorVisible: false
+    property bool bluetoothVisible: false
     property bool powerVisible: false
     property bool trayMenuVisible: false
     property var trayMenuItem: null   // tray app whose menu is open
@@ -288,26 +292,26 @@ NotificationServer {
     readonly property bool otherPanelOpen:
         launcherVisible || panelVisible || mediaVisible || weatherVisible || themeVisible ||
         wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
-        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible || monitorVisible || powerVisible || trayMenuVisible
+        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible || monitorVisible || bluetoothVisible || powerVisible || trayMenuVisible
     onOtherPanelOpenChanged: { if (otherPanelOpen) hubVisible = false }
 
     readonly property bool panelTakesOver:
         hubVisible || calendarVisible || launcherVisible || panelVisible || weatherVisible ||
         themeVisible || wallpaperVisible || networkVisible || updatesVisible || updateAuthVisible ||
-        volumeVisible || batteryVisible || clipboardVisible || torrentsVisible || gitVisible || monitorVisible || powerVisible || trayMenuVisible
+        volumeVisible || batteryVisible || clipboardVisible || torrentsVisible || gitVisible || monitorVisible || bluetoothVisible || powerVisible || trayMenuVisible
 
     // Opening any other panel closes the git panel, so other buttons don't need to know about it
     readonly property bool nonGitPanelOpen:
         hubVisible || calendarVisible || launcherVisible || panelVisible || mediaVisible || weatherVisible ||
         themeVisible || wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
-        clipboardVisible || torrentsVisible || updateAuthVisible || powerVisible || trayMenuVisible || monitorVisible
+        clipboardVisible || torrentsVisible || updateAuthVisible || powerVisible || trayMenuVisible || monitorVisible || bluetoothVisible
     onNonGitPanelOpenChanged: { if (nonGitPanelOpen) gitVisible = false }
 
     // Same for the monitor panel: any other panel opening closes it
     readonly property bool nonMonitorPanelOpen:
         hubVisible || calendarVisible || launcherVisible || panelVisible || mediaVisible || weatherVisible ||
         themeVisible || wallpaperVisible || networkVisible || updatesVisible || volumeVisible || batteryVisible ||
-        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible || powerVisible || trayMenuVisible
+        clipboardVisible || torrentsVisible || updateAuthVisible || gitVisible || powerVisible || trayMenuVisible || bluetoothVisible
     onNonMonitorPanelOpenChanged: { if (nonMonitorPanelOpen) monitorVisible = false }
 
     readonly property bool systemTabOpen: hubVisible && hubTab === "system"
@@ -366,6 +370,7 @@ NotificationServer {
     torrentsVisible ||
     gitVisible ||
     monitorVisible ||
+    bluetoothVisible ||
     powerVisible ||
     trayMenuVisible
 
@@ -384,6 +389,7 @@ NotificationServer {
     !root.torrentsVisible &&
     !root.gitVisible &&
     !root.monitorVisible &&
+    !root.bluetoothVisible &&
     !root.powerVisible &&
     !root.trayMenuVisible
 
@@ -527,6 +533,12 @@ Timer { id: toastCloseTimer; interval: 300; repeat: false; onTriggered: { root.c
 
 IpcHandler { target: "launcher"; function toggle() { root.launcherVisible = !root.launcherVisible; if (root.launcherVisible) launcher.openLauncher(); } }
 IpcHandler { target: "timer"; function open() { root.timerOsdVisible = true }}
+// Bluetooth panel: opened from the hub's Bluetooth button (or a keybind)
+IpcHandler {
+    target: "bluetooth"
+    function open() { root.bluetoothVisible = true }       // the hub closes itself when another panel opens
+    function toggle() { root.bluetoothVisible = !root.bluetoothVisible }
+}
 IpcHandler {
     target: "power"
     function toggle() {
@@ -536,7 +548,7 @@ IpcHandler {
         root.mediaVisible = false; root.weatherVisible = false; root.themeVisible = false
         root.wallpaperVisible = false; root.calendarVisible = false; root.networkVisible = false
         root.updatesVisible = false; root.volumeVisible = false; root.batteryVisible = false
-        root.clipboardVisible = false; root.torrentsVisible = false; root.gitVisible = false; root.monitorVisible = false; root.trayMenuVisible = false
+        root.clipboardVisible = false; root.torrentsVisible = false; root.gitVisible = false; root.monitorVisible = false; root.bluetoothVisible = false; root.trayMenuVisible = false
         root.powerVisible = true
     }
 }
@@ -620,6 +632,7 @@ Item {
         root.torrentsVisible ||
         root.gitVisible ||
         root.monitorVisible ||
+        root.bluetoothVisible ||
         root.powerVisible ||
         root.trayMenuVisible
 
@@ -640,7 +653,7 @@ Timer {
 
     onTriggered: {
 
-       if (root.hubVisible || root.calendarVisible || root.updateAuthVisible || root.networkVisible || root.clipboardVisible || root.volumeVisible || root.updatesVisible || root.batteryVisible || root.gitVisible || root.monitorVisible || root.powerVisible || root.trayMenuVisible) { if (root.hubVisible || root.calendarVisible || root.updateAuthVisible) detector.activeHover = false; return; }
+       if (root.hubVisible || root.calendarVisible || root.updateAuthVisible || root.networkVisible || root.clipboardVisible || root.volumeVisible || root.updatesVisible || root.batteryVisible || root.gitVisible || root.monitorVisible || root.bluetoothVisible || root.powerVisible || root.trayMenuVisible) { if (root.hubVisible || root.calendarVisible || root.updateAuthVisible) detector.activeHover = false; return; }
        let workspacesHovered = !!(workspaceLoader?.item?.masterWorkspaceMouse?.containsMouse);
 
         if (
@@ -691,6 +704,7 @@ Timer {
         root.torrentsVisible ||
         root.gitVisible ||
         root.monitorVisible ||
+        root.bluetoothVisible ||
         root.powerVisible ||
         root.trayMenuVisible
 
@@ -711,6 +725,7 @@ Timer {
     root.torrentsVisible = false
     root.gitVisible = false
     root.monitorVisible = false
+    root.bluetoothVisible = false
     root.powerVisible = false
     root.trayMenuVisible = false
 
@@ -773,6 +788,12 @@ Item {
             }
 
             if (root.monitorVisible) {
+                detector.activeHover = false
+                hoverDebounceTimer.stop()
+                return
+            }
+
+            if (root.bluetoothVisible) {
                 detector.activeHover = false
                 hoverDebounceTimer.stop()
                 return
@@ -988,6 +1009,7 @@ Loader {
             root.batteryVisible = false
             root.gitVisible = false
             root.monitorVisible = false
+            root.bluetoothVisible = false
             root.powerVisible = false
             root.trayMenuVisible = false
             root.clipboardVisible = false
@@ -1201,6 +1223,20 @@ LocalComponents.MonitorModule {
     Behavior on opacity { NumberAnimation { duration: 150 } }
 }
 // =====================================================
+// BLUETOOTH MODULE (opened over IPC from the hub)
+// =====================================================
+LocalComponents.BluetoothModule {
+    id: bluetoothModule
+    anchors { fill: parent; margins: 14 }
+    visible: root.bluetoothVisible
+    theme: root.theme
+
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
+}
+// =====================================================
 // POWER MODULE (SUPER+P, no bar button)
 // =====================================================
 LocalComponents.PowerModule {
@@ -1297,6 +1333,8 @@ width:
 
     : root.monitorVisible ? 480
 
+    : root.bluetoothVisible ? 440
+
     : root.powerVisible ? 588
 
     : root.trayMenuVisible ? 300
@@ -1351,6 +1389,8 @@ height:
     : root.gitVisible ? 590
 
     : root.monitorVisible ? 500
+
+    : root.bluetoothVisible ? 460
 
     : root.powerVisible ? 120
 
@@ -1984,6 +2024,7 @@ Loader {
              !root.torrentsVisible &&
              !root.gitVisible &&
              !root.monitorVisible &&
+             !root.bluetoothVisible &&
              !root.powerVisible &&
              !root.trayMenuVisible
 
