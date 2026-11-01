@@ -41,7 +41,7 @@ inactive  = "#7bc3ff"
 # non-color, per-theme metadata - fill these in yourself
 gtk_theme = "Adwaita-dark"
 icon_theme      = "Tela-dark"
-vscode_theme    = "One Dark"
+vscode_theme    = "One Dark Pro"
 spicetify_theme = "OneDark"
 brave_accent    = "#1e2127"
 wallpaper_dp1   = "one-dark.png"

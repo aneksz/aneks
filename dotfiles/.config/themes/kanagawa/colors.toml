@@ -40,7 +40,7 @@ accent_ws  = "#9cabca"
 # non-color, per-theme metadata - fill these in yourself
 gtk_theme = "Adwaita-dark"
 icon_theme      = "Kanagawa"
-vscode_theme    = "Nightingale"
+vscode_theme    = "Kanagawa Pretty"
 spicetify_theme = "Kanagawa"
 brave_accent    = "#1f1f28"
 wallpaper_dp1   = "kanagawa1.png"

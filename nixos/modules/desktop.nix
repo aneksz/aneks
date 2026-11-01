@@ -21,6 +21,13 @@
   # File-picker / screenshot portals (Hyprland's own comes with programs.hyprland)
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   
+  # Logitech receivers: installs solaar plus the device permissions it needs
+  hardware.logitech.wireless.enable = true;
+  programs.solaar.enable = true;
+  
+  services.gvfs.enable = true;      # Trash, network shares in Nautilus
+  services.udisks2.enable = true;   # USB drive mounting (Nautilus sidebar)  
+ 
   # gsettings 
   environment.sessionVariables.GSETTINGS_SCHEMA_DIR =
   "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}/glib-2.0/schemas";
@@ -35,7 +42,7 @@
     fsType = "ntfs3";
     options = [ "nofail" "nosuid" "nodev" "uid=1000" "gid=100" "iocharset=utf8" ];
   };
-
+  
   # ---------- Packages ----------
   environment.systemPackages = with pkgs; [
     # Bar and the Qt modules it imports

@@ -41,7 +41,7 @@ inactive  = "#86abdc"
 # non-color, per-theme metadata - fill these in yourself
 gtk_theme = "Adwaita-dark"
 icon_theme      = "Tela-blue-dark"
-vscode_theme    = "Duskfox"
+vscode_theme    = "Nightfox"
 spicetify_theme = "Nightfox"
 brave_accent    = "#192330"
 wallpaper_dp1   = "night1.png"

@@ -140,7 +140,9 @@ spicetify apply -n >/dev/null 2>&1 || true
 pgrep -x spotify >/dev/null && (spicetify watch -s 2>&1 | sed "/Reloaded Spotify/q") &
 
 # ---------- Starship (base + generated palette) ----------
-{ cat "$CFG/starship/base.toml"; render starship-palette.tpl; } > "$CFG/starship.toml"
+if [[ -f "$CFG/starship/base.toml" ]]; then
+  { cat "$CFG/starship/base.toml"; render starship-palette.tpl; } > "$CFG/starship.toml"
+fi
 
 # ---------- Vesktop (base layout + generated colours) ----------
 VBASE="$CFG/vesktop/system24-base.css"

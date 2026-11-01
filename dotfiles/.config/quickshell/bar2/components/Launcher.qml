@@ -161,6 +161,9 @@ Item {
             `
             for dir in \
                 "/usr/share/applications" \
+                "/run/current-system/sw/share/applications" \
+                "/etc/profiles/per-user/$USER/share/applications" \
+                "$HOME/.nix-profile/share/applications" \
                 "$HOME/.local/share/applications" \
                 "/var/lib/flatpak/exports/share/applications" \
                 "$HOME/.local/share/flatpak/exports/share/applications"
