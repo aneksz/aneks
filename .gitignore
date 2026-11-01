@@ -8,3 +8,4 @@ dotfiles/.config/kitty/colors.conf
 dotfiles/.config/quickshell/Colors.qml
 dotfiles/.config/quickshell/bar1/Colors.qml
 dotfiles/.config/quickshell/bar2/Colors.qml
+face*.png
