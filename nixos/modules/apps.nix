@@ -14,6 +14,7 @@
     nwg-look
     spicetify-cli
     spotify
+    vesktop
     vscodium
     
   ];
