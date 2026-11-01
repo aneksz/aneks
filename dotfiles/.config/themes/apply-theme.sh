@@ -5,6 +5,7 @@ export PATH="$HOME/.spicetify:$HOME/.local/bin:/usr/local/bin:$PATH"
 THEME="${1:?Usage: apply-theme.sh <theme-name>}"
 CFG="$HOME/.config"
 THEME_DIR="$CFG/themes/$THEME"
+WALL_DIR="$HOME/Pictures/Wallpapers/themes/$THEME"
 TPL="$CFG/themes/templates"
 QS="$CFG/quickshell"
 HYPR="$CFG/hypr"
@@ -101,9 +102,9 @@ done
 
 # ---------- wallpapers ----------
 for pair in DP-1:wallpaper_dp1 DP-3:wallpaper_dp3; do
-  awww img "$THEME_DIR/wallpapers/${COLORS[${pair#*:}]}" --outputs "${pair%%:*}" --transition-type any
+  awww img "$WALL_DIR/${COLORS[${pair#*:}]}" --outputs "${pair%%:*}" --transition-type any
 done
-ln -sf "$THEME_DIR/wallpapers/${COLORS[wallpaper_dp1]}" "$HYPR/background/current.png"
+ln -sf "$WALL_DIR/${COLORS[wallpaper_dp1]}" "$HYPR/background/current.png"
 
 
 # ---------- VSCodium ----------
@@ -114,7 +115,7 @@ VSC="$CFG/VSCodium/User/settings.json"
 if command -v pywalfox >/dev/null 2>&1; then
   WAL="$HOME/.cache/wal"; mkdir -p "$WAL"
   {
-    printf '{\n  "wallpaper": "%s",\n  "alpha": "100",\n' "$THEME_DIR/wallpapers/${COLORS[wallpaper_dp1]:-}"
+    printf '{\n  "wallpaper": "%s",\n  "alpha": "100",\n' "$WALL_DIR/${COLORS[wallpaper_dp1]:-}"
     printf '  "special": {\n    "background": "%s",\n    "foreground": "%s",\n    "cursor": "%s"\n  },\n' \
       "${COLORS[background]}" "${COLORS[foreground]}" "${COLORS[cursor]:-${COLORS[foreground]}}"
     printf '  "colors": {\n'

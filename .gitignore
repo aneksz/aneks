@@ -9,3 +9,8 @@ dotfiles/.config/quickshell/Colors.qml
 dotfiles/.config/quickshell/bar1/Colors.qml
 dotfiles/.config/quickshell/bar2/Colors.qml
 face*.png
+# Wallpapers live on /mnt/data/Wallpapers (linked from ~/Pictures/Wallpapers)
+dotfiles/.config/Wallpapers/
+dotfiles/.config/themes/*/wallpapers/
+dotfiles/.config/hypr/background/*
+!dotfiles/.config/hypr/background/avatar*.png
