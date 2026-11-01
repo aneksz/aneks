@@ -131,6 +131,7 @@ timeshift
 tree
 ttf-bitstream-vera-mono-nerd
 ttf-cascadia-mono-nerd
+ttf-ibmplex-mono-nerd
 ttf-iosevka-nerd
 ttf-jetbrains-mono-nerd
 ttf-material-symbols-variable

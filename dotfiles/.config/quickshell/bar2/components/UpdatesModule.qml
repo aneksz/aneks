@@ -128,7 +128,10 @@ Item {
     Process {
         id: updateProc
         command: ["kitty", "-e", "bash", "-c",
-            "yay -Syu; echo; flatpak update; echo; read -n1 -rsp 'Done. Press any key to close…'"]
+            "pkexec pacman -Syu; echo; " +
+            "yay -Sua --sudo pkexec; echo; " +
+            "flatpak update; echo; " +
+            "read -n1 -rsp 'Done. Press any key to close…'"]
         onExited: {
             root.updating = false
             root.refresh()

@@ -10,7 +10,6 @@ elephant-desktopapplications
 elephant-providerlist
 full-dracula-theme-git
 gtk4-live-css
-gtk4-live-css-debug
 hyprqt6engine
 image-roll-bin
 imv-rs-bin
