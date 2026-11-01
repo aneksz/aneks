@@ -1,4 +1,6 @@
 // components/UpdatesModule.qml
+// Single-card update center: pending updates grouped into System / AUR / Flatpak,
+// with package versions, last system upgrade and one "Update now" button.
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -9,9 +11,10 @@ Item {
     focus: false
     signal closePanel()
     signal updatesFinished()
-    
+
     required property var theme
 
+    // Still passed in by shell.qml (the bar's counter); kept so the wiring there doesn't change
     property int archCount: 0
     property int aurCount: 0
     property int flatpakCount: 0
@@ -21,33 +24,117 @@ Item {
     property bool checking: false
     property var checkAll: null
 
-    readonly property int totalCount: archCount + aurCount + flatpakCount
+    // Detailed lists: [{ name, from, to }]
+    property var systemList: []
+    property var aurList: []
+    property var flatpakList: []
+    property int pendingChecks: 0
+    readonly property bool busy: pendingChecks > 0
+    readonly property int total: systemList.length + aurList.length + flatpakList.length
 
-    onVisibleChanged: {
-    if (visible && root.checkAll) {
-        root.checkAll()
+    property string lastChecked: "—"
+    property var lastUpgrade: null          // Date of the last full system upgrade
+    property bool updating: false
+
+    // Which sections are collapsed (sections with updates start open)
+    property var collapsed: ({})
+    function toggle(key) {
+        const c = Object.assign({}, collapsed)
+        c[key] = !c[key]
+        collapsed = c
     }
-}
 
-// ============================================================
-// ACTIONS
-// ============================================================
+    onVisibleChanged: if (visible) refresh()
 
-Process { id: archUpdateProcess; command: ["kitty", "-e", "pkexec", "bash", "-c", "pacman -Syu"]; onExited: { root.checkAll(); root.updatesFinished() } }
-Process { id: aurUpdateProcess; command: ["kitty", "-e", "bash", "-c", "yay -Syu --aur"]; onExited: { root.checkAll(); root.updatesFinished() } }
-Process { id: flatpakUpdateProcess; command: ["kitty", "-e", "bash", "-c", "flatpak update"]; onExited: { root.checkAll(); root.updatesFinished() } }
+    function refresh() {
+        if (busy) return
+        pendingChecks = 3
+        systemProc.running = true
+        aurProc.running = true
+        flatpakProc.running = true
+        lastUpgradeProc.running = true
+        if (root.checkAll) root.checkAll()      // keep the bar's number in step
+    }
 
-function updateArch() {
-    archUpdateProcess.running = true
-}
+    function finishCheck() {
+        pendingChecks = Math.max(0, pendingChecks - 1)
+        if (pendingChecks === 0) lastChecked = Qt.formatTime(new Date(), "hh:mm")
+    }
 
-function updateAur() {
-    aurUpdateProcess.running = true
-}
+    // "pkg 1.0-1 -> 1.1-1" lines (checkupdates / yay -Qua)
+    function parseArrowList(text) {
+        return text.split("\n").map(l => l.trim()).filter(l => l.length > 0).map(function(l) {
+            const p = l.split(/\s+/)
+            return { name: p[0], from: p[1] || "", to: p[3] || "" }
+        })
+    }
 
-function updateFlatpak() {
-    flatpakUpdateProcess.running = true
-}
+    function timeAgo(d) {
+        if (!d) return "—"
+        const s = Math.floor((Date.now() - d.getTime()) / 1000)
+        if (s < 3600) return "just now"
+        if (s < 86400) { const h = Math.floor(s / 3600); return h + (h === 1 ? " hour ago" : " hours ago") }
+        const days = Math.floor(s / 86400)
+        return days + (days === 1 ? " day ago" : " days ago")
+    }
+
+    // ============================================================
+    // CHECKS
+    // ============================================================
+
+    Process {
+        id: systemProc
+        command: ["sh", "-c", "checkupdates 2>/dev/null"]
+        stdout: StdioCollector { onStreamFinished: root.systemList = root.parseArrowList(text) }
+        onExited: root.finishCheck()
+    }
+
+    Process {
+        id: aurProc
+        command: ["sh", "-c", "yay -Qua 2>/dev/null"]
+        stdout: StdioCollector { onStreamFinished: root.aurList = root.parseArrowList(text) }
+        onExited: root.finishCheck()
+    }
+
+    // Flatpak only reports the new version, so "from" stays empty
+    Process {
+        id: flatpakProc
+        command: ["sh", "-c", "flatpak remote-ls --updates --columns=name,version 2>/dev/null"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.flatpakList = text.split("\n").filter(l => l.trim().length > 0).map(function(l) {
+                    const p = l.split("\t")
+                    return { name: (p[0] || "").trim(), from: "", to: (p[1] || "").trim() }
+                })
+            }
+        }
+        onExited: root.finishCheck()
+    }
+
+    // Time of the last "pacman -Syu" (or yay -Syu), from pacman's log
+    Process {
+        id: lastUpgradeProc
+        command: ["sh", "-c", "grep 'starting full system upgrade' /var/log/pacman.log | tail -n1 | sed -E 's/^\\[([^]]+)\\].*/\\1/'"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                // pacman writes "+1100"; JavaScript dates need "+11:00"
+                const d = new Date(text.trim().replace(/([+-]\d\d)(\d\d)$/, "$1:$2"))
+                root.lastUpgrade = isNaN(d.getTime()) ? null : d
+            }
+        }
+    }
+
+    // One terminal for everything: yay does repo + AUR, then Flatpak
+    Process {
+        id: updateProc
+        command: ["kitty", "-e", "bash", "-c",
+            "yay -Syu; echo; flatpak update; echo; read -n1 -rsp 'Done. Press any key to close…'"]
+        onExited: {
+            root.updating = false
+            root.refresh()
+            root.updatesFinished()
+        }
+    }
 
     // ============================================================
     // UI
@@ -55,147 +142,248 @@ function updateFlatpak() {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 24
-        spacing: 20
+        anchors.margins: 20
+        spacing: 14
 
+        // ---------- header ----------
         RowLayout {
             Layout.fillWidth: true
+            spacing: 12
 
             Text {
-                text: "󰅢 System Updates"
-                color: root.theme.fg
-                font { family: root.theme.font; pixelSize: 22; bold: true }
+                id: headerIcon
+                text: "sync"
+                color: root.theme.accent
+                font { family: "Material Symbols Outlined"; pixelSize: 30 }
+                RotationAnimation on rotation {
+                    running: root.busy
+                    loops: Animation.Infinite
+                    from: 0; to: 360; duration: 1000
+                    onStopped: headerIcon.rotation = 0
+                }
+            }
+
+            ColumnLayout {
+                spacing: 2
+                Text {
+                    text: "Update Center"
+                    color: root.theme.fg
+                    font { family: root.theme.font; pixelSize: 20; bold: true }
+                }
+                Text {
+                    text: root.busy ? "CHECKING…"
+                        : root.total === 0 ? "UP TO DATE"
+                        : root.total + (root.total === 1 ? " UPDATE WAITING" : " UPDATES WAITING")
+                    color: root.total > 0 ? root.theme.accent : root.theme.fg3
+                    font { family: root.theme.font; pixelSize: 11; bold: true; letterSpacing: 1.5 }
+                }
             }
 
             Item { Layout.fillWidth: true }
 
             MouseArea {
-                width: refreshText.implicitWidth
-                height: refreshText.implicitHeight
+                id: refreshBtn
+                Layout.preferredWidth: 28
+                Layout.preferredHeight: 28
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.checkAll()
+                enabled: !root.busy
+                onClicked: root.refresh()
 
                 Text {
-                    id: refreshText
-                    text: root.checking ? "Checking…" : "Refresh"
-                    color: parent.containsMouse ? root.theme.accent : root.theme.fg3
-                    font { family: root.theme.font; pixelSize: 14 }
+                    anchors.centerIn: parent
+                    text: "refresh"
+                    color: refreshBtn.containsMouse ? root.theme.accent : root.theme.fg3
+                    font { family: "Material Symbols Outlined"; pixelSize: 20 }
+                    scale: refreshBtn.containsMouse ? 1.1 : 1.0
+                    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
                 }
             }
         }
 
-        ColumnLayout {
+        // ---------- last upgrade ----------
+        RowLayout {
             Layout.fillWidth: true
-            spacing: 12
-
-            component UpdateRow: Rectangle {
-                id: rowRoot
-                property string icon: ""
-                property string name: ""
-                property int count: 0
-                property string checkedAt: "—"
-                property var onUpdateClicked: null
-
-                Layout.fillWidth: true
-                height: 64
-                radius: 12
-                color: root.theme.bgAlt
-                border.width: 1
-                border.color: Qt.rgba(1, 1, 1, 0.06)
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: 14
-                    spacing: 12
-
-                    Text {
-                        text: rowRoot.icon
-                        color: root.theme.fg
-                        font { family: root.theme.font; pixelSize: 22 }
-                    }
-
-                    ColumnLayout {
-                        spacing: 2
-                        Text {
-                            text: rowRoot.name
-                            color: root.theme.fg
-                            font { family: root.theme.font; pixelSize: 15; bold: true }
-                        }
-                        Text {
-                            text: (rowRoot.count === 0
-                                    ? "Up to date"
-                                    : rowRoot.count + " update" + (rowRoot.count === 1 ? "" : "s"))
-                                  + "  ·  Checked " + rowRoot.checkedAt
-                            color: rowRoot.count > 0 ? root.theme.warning : root.theme.fg3
-                            font { family: root.theme.font; pixelSize: 12 }
-                        }
-                    }
-
-                    Item { Layout.fillWidth: true }
-
-                    Rectangle {
-                        width: 90
-                        height: 34
-                        radius: 8
-                        color: updateMouse.containsMouse
-                               ? Qt.rgba(root.theme.accent.r, root.theme.accent.g, root.theme.accent.b, 0.25)
-                               : Qt.rgba(root.theme.accent.r, root.theme.accent.g, root.theme.accent.b, 0.15)
-                        border.width: 1
-                        border.color: root.theme.accent
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "Update"
-                            color: root.theme.accent
-                            font { family: root.theme.font; pixelSize: 13; bold: true }
-                        }
-
-                        MouseArea {
-                            id: updateMouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: if (rowRoot.onUpdateClicked) rowRoot.onUpdateClicked()
-                        }
-                    }
-                }
+            Text {
+                text: "Last updated"
+                color: root.theme.fg3
+                font { family: root.theme.font; pixelSize: 13 }
             }
-
-            UpdateRow {
-                icon: "󰣇"
-                name: "Arch"
-                count: root.archCount
-                checkedAt: root.archChecked
-                onUpdateClicked: root.updateArch
-            }
-
-            UpdateRow {
-                icon: "󰮯"
-                name: "AUR"
-                count: root.aurCount
-                checkedAt: root.aurChecked
-                onUpdateClicked: root.updateAur
-            }
-
-            UpdateRow {
-                icon: "󰏓"
-                name: "Flatpak"
-                count: root.flatpakCount
-                checkedAt: root.flatpakChecked
-                onUpdateClicked: root.updateFlatpak
+            Item { Layout.fillWidth: true }
+            Text {
+                text: root.timeAgo(root.lastUpgrade)
+                color: root.theme.fg
+                font { family: root.theme.font; pixelSize: 13 }
             }
         }
 
-        Item { Layout.fillHeight: true }
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: Qt.rgba(root.theme.fg.r, root.theme.fg.g, root.theme.fg.b, 0.1)
+        }
 
         Text {
-            Layout.alignment: Qt.AlignHCenter
-            text: root.totalCount === 0
-                  ? "System is up to date."
-                  : root.totalCount + " update" + (root.totalCount === 1 ? "" : "s") + " available."
+            text: "PENDING"
             color: root.theme.fg3
-            font { family: root.theme.font; pixelSize: 13 }
+            font { family: root.theme.font; pixelSize: 11; bold: true; letterSpacing: 1.5 }
+        }
+
+        // ---------- sections (scroll if long) ----------
+        Flickable {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            contentHeight: sections.implicitHeight
+            boundsBehavior: Flickable.StopAtBounds
+
+            ColumnLayout {
+                id: sections
+                width: parent.width
+                spacing: 6
+
+                component Section: ColumnLayout {
+                    id: sec
+                    property string key: ""
+                    property string label: ""
+                    property var list: []
+                    readonly property bool open: list.length > 0 && !root.collapsed[key]
+
+                    Layout.fillWidth: true
+                    spacing: 2
+
+                    // section header: arrow, name, count (or "up to date")
+                    MouseArea {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 30
+                        hoverEnabled: true
+                        cursorShape: sec.list.length ? Qt.PointingHandCursor : Qt.ArrowCursor
+                        onClicked: if (sec.list.length) root.toggle(sec.key)
+
+                        RowLayout {
+                            anchors.fill: parent
+                            spacing: 8
+
+                            Text {
+                                Layout.preferredWidth: 16
+                                text: "chevron_right"
+                                visible: sec.list.length > 0
+                                color: root.theme.fg3
+                                rotation: sec.open ? 90 : 0
+                                Behavior on rotation { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                                font { family: "Material Symbols Outlined"; pixelSize: 16 }
+                            }
+                            Item { Layout.preferredWidth: 16; visible: sec.list.length === 0 }
+
+                            Text {
+                                text: sec.label
+                                color: root.theme.fg
+                                font { family: root.theme.font; pixelSize: 15; bold: true }
+                            }
+                            Item { Layout.fillWidth: true }
+                            Text {
+                                text: sec.list.length > 0 ? sec.list.length : "up to date"
+                                color: sec.list.length > 0 ? root.theme.fg : root.theme.fg3
+                                font { family: root.theme.font; pixelSize: 13 }
+                            }
+                        }
+                    }
+
+                    // package rows
+                    Repeater {
+                        model: sec.open ? sec.list : []
+                        delegate: RowLayout {
+                            required property var modelData
+                            Layout.fillWidth: true
+                            Layout.leftMargin: 24
+                            spacing: 12
+
+                            Text {
+                                text: modelData.name
+                                color: root.theme.fg
+                                elide: Text.ElideRight
+                                Layout.maximumWidth: 170
+                                font { family: root.theme.font; pixelSize: 13 }
+                            }
+                            Item { Layout.fillWidth: true }
+                            Text {
+                                text: modelData.from ? modelData.from + "  →  " + modelData.to : "→  " + modelData.to
+                                color: root.theme.fg3
+                                elide: Text.ElideLeft
+                                Layout.maximumWidth: 230
+                                font { family: root.theme.font; pixelSize: 12 }
+                            }
+                        }
+                    }
+                }
+
+                Section { key: "system";  label: "System";  list: root.systemList }
+                Section { key: "aur";     label: "AUR";     list: root.aurList }
+                Section { key: "flatpak"; label: "Flatpak"; list: root.flatpakList }
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: Qt.rgba(root.theme.fg.r, root.theme.fg.g, root.theme.fg.b, 0.1)
+        }
+
+        // ---------- footer ----------
+        RowLayout {
+            Layout.fillWidth: true
+
+            Text {
+                text: "Last checked " + root.lastChecked
+                color: root.theme.fg3
+                font { family: root.theme.font; pixelSize: 12 }
+            }
+
+            Item { Layout.fillWidth: true }
+
+            Rectangle {
+                id: updateBtn
+                readonly property bool usable: root.total > 0 && !root.updating && !root.busy
+                Layout.preferredWidth: updateRow.implicitWidth + 28
+                Layout.preferredHeight: 38
+                radius: 10
+                opacity: usable ? 1 : 0.4
+                color: Qt.rgba(root.theme.accent.r, root.theme.accent.g, root.theme.accent.b,
+                               updateMouse.containsMouse && usable ? 0.25 : 0.15)
+                border.width: 1
+                border.color: root.theme.accent
+                Behavior on color { ColorAnimation { duration: 120 } }
+
+                Row {
+                    id: updateRow
+                    anchors.centerIn: parent
+                    spacing: 8
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "sync"
+                        color: root.theme.accent
+                        font { family: "Material Symbols Outlined"; pixelSize: 18 }
+                    }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: root.updating ? "Updating…" : "Update now"
+                        color: root.theme.accent
+                        font { family: root.theme.font; pixelSize: 13; bold: true }
+                    }
+                }
+
+                MouseArea {
+                    id: updateMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: updateBtn.usable ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    onClicked: {
+                        if (!updateBtn.usable) return
+                        root.updating = true
+                        updateProc.running = true
+                    }
+                }
+            }
         }
     }
 }
