@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # 1. Save the current window address
 PREV_ADDR=$(hyprctl activewindow -j | jq -r '.address')

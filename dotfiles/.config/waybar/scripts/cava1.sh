@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 export PATH=$PATH:/usr/bin:/usr/local/bin
 export XDG_RUNTIME_DIR=/run/user/$(id -u)
 

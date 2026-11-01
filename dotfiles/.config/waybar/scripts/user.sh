@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 USER_NAME=$(whoami | tr '[:upper:]' '[:lower:]')
 HOST_NAME=$(hostname)

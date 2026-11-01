@@ -3,10 +3,10 @@
 {
   programs.firefox.enable = true;
 
-  environment.systemPackages = with pkgs; [
-    kitty
+  environment.systemPackages = with pkgs; [          
     git
     gh
+    kitty
     nwg-look
     
   ];

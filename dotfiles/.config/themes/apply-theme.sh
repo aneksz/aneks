@@ -51,8 +51,10 @@ render kitty.colors.conf.tpl    > "$THEME_DIR/kitty/${THEME}.colors.conf"
 render quickshell_theme.qml.tpl > "$THEME_DIR/quickshell_theme.qml"
 
 # ---------- simple installs ----------
-sed -i "s/^color_theme *= *.*/color_theme = \"$THEME\"/" "$CFG/btop/btop.conf"
-pgrep -x btop >/dev/null && pkill -x -USR2 btop || true
+if [[ -f "$CFG/btop/btop.conf" ]]; then
+  sed -i "s/^color_theme *= *.*/color_theme = \"$THEME\"/" "$CFG/btop/btop.conf"
+  pgrep -x btop >/dev/null && pkill -x -USR2 btop || true
+fi
 
 cp "$THEME_DIR/${THEME}.p10k.zsh" "$HOME/.p10k.zsh"
 (sleep 0.6 && notify-send "Theme Updated" "Applied Theme: $THEME") &
@@ -75,8 +77,8 @@ for sock in "$CFG"/kitty/kitty.sock-*; do
 done
 
 # ---------- brave ----------
-sudo /usr/local/bin/set-brave-theme "${COLORS[brave_accent]}" "$BRAVE_MODE"
-pgrep -x brave >/dev/null && brave --refresh-platform-policy --no-startup-window &>/dev/null &
+#sudo /usr/local/bin/set-brave-theme "${COLORS[brave_accent]}" "$BRAVE_MODE"
+#pgrep -x brave >/dev/null && brave --refresh-platform-policy --no-startup-window &>/dev/null &
 
 # ---------- GTK4 (generated libadwaita colours) ----------
 G="$CFG/gtk-4.0"

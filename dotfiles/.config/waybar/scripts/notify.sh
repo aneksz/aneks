@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # notifications.sh
 # Shows the number of active mako notifications next to the bell
 

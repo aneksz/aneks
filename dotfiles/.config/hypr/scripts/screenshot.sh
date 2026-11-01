@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 DIR="$HOME/Pictures/Screenshots"
 mkdir -p "$DIR"
 TS=$(date +%Y-%m-%d_%H-%M-%S)

@@ -11,6 +11,7 @@
       ./hardware-configuration.nix
       ./modules/apps.nix
       ./modules/fonts.nix
+      ./modules/desktop.nix
     ];
 
   nixpkgs.config.allowUnfree = true;
@@ -60,7 +61,7 @@
   users.users."igor" = {
     isNormalUser = true;
     description = "igor";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "i2c" ];
     packages = with pkgs; [];
   };
   

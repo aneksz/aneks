@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 LAST=""
 START_TIME=$(date +%s)

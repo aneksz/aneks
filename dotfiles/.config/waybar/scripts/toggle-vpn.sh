@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 iface="ash-b16"
 DNS_BACKUP="/home/igor/.vpn-dns-backup"
