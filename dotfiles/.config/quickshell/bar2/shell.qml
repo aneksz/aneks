@@ -1323,7 +1323,7 @@ height:
 
     // Frosted glass: light themes need more opacity, or the blurred wallpaper shows through as grey
     readonly property real bgLuminance: 0.2126 * root.theme.bg.r + 0.7152 * root.theme.bg.g + 0.0722 * root.theme.bg.b
-    color: Qt.rgba(root.theme.bg.r, root.theme.bg.g, root.theme.bg.b, bgLuminance > 0.5 ? 0.8 : 0.8)
+    color: Qt.rgba(root.theme.bg.r, root.theme.bg.g, root.theme.bg.b, bgLuminance > 0.5 ? 0.8 : 0.7)
 
     Connections { target: root; function onSpotifyTrackChanged() {}}
 

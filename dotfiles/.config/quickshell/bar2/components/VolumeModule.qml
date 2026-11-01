@@ -525,7 +525,7 @@ Item {
                                   )
                                 : "transparent"
 
-                            border.width: 1
+                            border.width: 0
 
                             border.color:
                                 Qt.rgba(1, 1, 1, 0.08)
