@@ -17,6 +17,7 @@ cliphist
 cmake
 cpio
 dart-sass
+ddcutil
 devtools
 discord
 dkms
@@ -30,6 +31,7 @@ flatpak
 fuse2
 ghostty
 git
+git-filter-repo
 github-cli
 gnome-boxes
 gnome-disk-utility
