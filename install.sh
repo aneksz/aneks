@@ -66,6 +66,23 @@ if ! yay -S --needed --noconfirm --answerdiff None --answerclean None "${aur[@]}
 fi
 
 # ---------------------------------------------------------------------------
+msg "Building gtk4-live-css (GTK4 that reloads gtk.css live, for theme switching)"
+GTKLC="$HOME/build/gtk4-live-css"
+[[ -d "$GTKLC" ]] || git clone -q https://github.com/saneaspect/gtk4-live-css "$GTKLC"
+# GTK4's build tools, read from the project's own PKGBUILD
+mapfile -t gtk_makedeps < <(cd "$GTKLC" && bash -c 'source PKGBUILD >/dev/null 2>&1; printf "%s\n" "${makedepends[@]}"')
+sudo pacman -S --needed --noconfirm --asdeps "${gtk_makedeps[@]}"
+if (cd "$GTKLC" && ./build.sh latest); then
+    pkg=$(ls -1 "$GTKLC"/gtk4-live-css-*.pkg.tar.zst | grep -v -- '-debug-' | tail -1)
+    # It replaces gtk4, so take the stock one out first (pacman -U --noconfirm won't answer the swap question)
+    pacman -Q gtk4 &>/dev/null && sudo pacman -Rdd --noconfirm gtk4
+    sudo pacman -U --noconfirm "$pkg"
+else
+    warn "gtk4-live-css build failed, GTK4 apps won't follow theme changes live"
+    FAILED+=("local:gtk4-live-css")
+fi
+
+# ---------------------------------------------------------------------------
 if [[ -s "$PKG/pkglist-flatpak.txt" ]]; then
     msg "Installing Flatpaks"
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
