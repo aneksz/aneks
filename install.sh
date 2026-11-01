@@ -142,9 +142,22 @@ done < <(find "$DIR/dotfiles/.config" -mindepth 1 -maxdepth 1 -print0)
 stow -d "$DIR" -t "$HOME" --restow dotfiles && echo "  dotfiles linked"
 [[ -d "$backup" ]] && warn "old configs saved in $backup"
 
-# The lock screen and wall.sh expect a current wallpaper link (not tracked in git)
-bg="$HOME/.config/hypr/background"
-[[ -e "$bg/current.png" ]] || ln -s "$bg/catppuccin.png" "$bg/current.png"
+# Wallpapers live on the data drive, not in git. Mount it and link ~/Pictures/Wallpapers to it.
+DATA_UUID=320EF8150EF7CFB9
+if ! grep -q "$DATA_UUID" /etc/fstab; then
+    sudo mkdir -p /mnt/data
+    echo "/dev/disk/by-uuid/$DATA_UUID /mnt/data auto nosuid,nodev,nofail,x-gvfs-show 0 0" | sudo tee -a /etc/fstab >/dev/null
+    sudo systemctl daemon-reload
+    sudo mount /mnt/data 2>/dev/null || true
+fi
+
+if [[ -d /mnt/data/Wallpapers ]]; then
+    mkdir -p "$HOME/Pictures"
+    [[ -L "$HOME/Pictures/Wallpapers" ]] || ln -s /mnt/data/Wallpapers "$HOME/Pictures/Wallpapers"
+    echo "  wallpapers linked from /mnt/data"
+else
+    warn "data drive not found, wallpapers missing (theme apply will warn too)"
+fi
 
 msg "Applying default theme"
 "$HOME/.config/themes/apply-theme.sh" catppuccin || warn "theme apply failed, run it again after logging in"
