@@ -113,12 +113,14 @@ Item {
             spacing: 16
 
             // --------------------------------------------------
-            // TOGGLES ROW
+            // TOGGLES ROW 
             // --------------------------------------------------
 
-            Row {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 16
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 0
+
+                Item { Layout.fillWidth: true }
 
                 ToggleButton {
                     icon: "󰂯"
@@ -128,6 +130,8 @@ Item {
                         runner.running = true
                     }
                 }
+
+                Item { Layout.fillWidth: true }
 
                 ToggleButton {
                     icon: "󰖨"
@@ -146,6 +150,8 @@ Item {
                     }
                 }
 
+                Item { Layout.fillWidth: true }
+
                 ToggleButton {
                     icon: "󰂚"
                     activeIcon: "󰂛"
@@ -156,6 +162,8 @@ Item {
                         root.dndToggled(root.dndEnabled)
                     }
                 }
+
+                Item { Layout.fillWidth: true }
 
                 ToggleButton {
                     icon: "󰅶"
@@ -170,16 +178,8 @@ Item {
                     }
                 }
 
-                ToggleButton {
-                    icon: "󰕾"
-                    accent: theme.accent
-                    onClicked: {
-                        runner.command = ["kitty", "-e", "wiremix"]
-                        runner.running = true
-                    }
-                }
+                Item { Layout.fillWidth: true }
             }
-
             // --------------------------------------------------
             // DIVIDER
             // --------------------------------------------------
