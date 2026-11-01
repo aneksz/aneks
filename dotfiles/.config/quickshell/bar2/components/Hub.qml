@@ -155,7 +155,7 @@ Item {
                         theme: root.theme
                     }
 
-                    NotificationsNew {
+                    Notifications {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         theme: root.theme

@@ -31,8 +31,8 @@ Item {
     property color textColor:
         count > 50 ? theme.error :
         count > 10 ? theme.warning :
-        count > 0  ? theme.activeWs :
-                     theme.inactive
+        count > 0  ? theme.inactive :
+                     theme.activeWs
 
    
 

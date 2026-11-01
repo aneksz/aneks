@@ -2,557 +2,467 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import "../singletons"
 
 Item {
-id: root
+    id: root
 
+    // ============================================================
+    // PUBLIC API
+    // ============================================================
 
-SystemClock {
-    id: listClock
-    precision: SystemClock.Seconds
-}
+    property var theme
+    property bool dndEnabled: false
+    property var notifServer
+    property var notifications: []         
 
-Connections {
-    target: root.notifServer
-    function onTrackedNotificationsChanged() {
+    signal requestClose()
+
+    // ============================================================
+    // CLOCK (for relative time)
+    // ============================================================
+
+    SystemClock {
+        id: listClock
+        precision: SystemClock.Seconds
     }
+
+    // ============================================================
+    // HELPERS
+    // ============================================================
+
+    function timeAgo(ts) {
+        if (!ts) return "—"
+
+        const arrival = new Date(ts)
+        const now = listClock.date
+
+        if (isNaN(arrival.getTime())) return "err"
+
+        const diff = Math.floor((now.getTime() - arrival.getTime()) / 1000)
+
+        if (diff < 60) return "now"
+        if (diff < 3600) return Math.floor(diff / 60) + "m"
+        if (diff < 86400) return Math.floor(diff / 3600) + "h"
+        return Math.floor(diff / 86400) + "d"
+    }
+
+    function keyFor(item) {
+    if (item.historyKey) return item.historyKey
+    if (item.key) return item.key
+    return String(item.id || (item.summary + item.body))
 }
 
-    // ========================================================
-    // HELPERS (PORTED FROM YOUR OTHER BAR)
-    // ========================================================
-    QtObject {
-        id: helpers
+        function truncate(str, maxLen) {
+        if (!str) return ""
+        str = String(str).replace(/\s*\n+\s*/g, " ")   
+        return str.length > maxLen ? str.substring(0, maxLen).trim() + "…" : str
+    }
 
-        function timeAgo(ts, now) {
-            if (!ts) return "—"
+    // ============================================================
+    // NOTIFICATION LIST - merges live trackedNotifications (this
+    // session) with disk-persisted history (survives qs reloads).
+    // Where a key exists in both, the live object is used so
+    // dismiss() etc. still works normally; history-only entries
+    // are plain data and dismiss just removes them from disk.
+    // ============================================================
 
-            const arrival = new Date(ts)
-            // Use the provided 'now' date or fallback safely to a live instance
-            const current = (now instanceof Date && !isNaN(now.getTime())) ? now : new Date()
+   readonly property var notificationList: {
+    function toMs(t) {
+        if (t instanceof Date) return t.getTime()
+        if (typeof t === "number") return t
+        const ms = new Date(t).getTime()
+        return isNaN(ms) ? 0 : ms
+    }
 
-            if (isNaN(arrival.getTime())) return "err"
-
-            const diff = Math.floor((current.getTime() - arrival.getTime()) / 1000)
-
-            if (diff < 60) return "now"
-            if (diff < 3600) return Math.floor(diff / 60) + "m"
-            if (diff < 86400) return Math.floor(diff / 3600) + "h"
-            return Math.floor(diff / 86400) + "d"
+    var liveByKey = {}
+    if (notifServer && notifServer.trackedNotifications) {
+        var liveValues = notifServer.trackedNotifications.values
+        for (var i = 0; i < liveValues.length; i++) {
+            var ln = liveValues[i]
+            if (!ln || ln.isSpotifyTransient) continue
+            liveByKey[keyFor(ln)] = ln
         }
     }
 
-// ============================================================
-// PUBLIC API
-// ============================================================
-
-property var theme
-property bool dndEnabled: false
-property var notifServer
-property var currentNotif: null
-
-signal requestClose()
-
-// ============================================================
-// NOTIFICATION DATA (In notifications.qml)
-// ============================================================
-
-readonly property var notificationList: {
-    // Safely check if the notification server is active
-    if (!notificationServer || !notificationServer.trackedNotifications) {
-        return [];
-    }
-
-    var rawArray = [];
-    var valuesList = notificationServer.trackedNotifications.values;
-    for (var i = 0; i < valuesList.length; i++) {
-        var notif = valuesList[i];
-        if (notif) {
-            // FIXED EXTRACTION FILTER:
-            // Checks the boolean flag we just set inside your shell.qml server block.
-            // If it is true, it drops it from the panel layout list completely.
-            if (!notif.isSpotifyTransient) {
-                rawArray.push(notif);
+    // Collect { item, ts } pairs so live objects sort by their history timestamp
+    var rows = []
+    var historyEntries = NotificationHistory.entries
+    for (var j = 0; j < historyEntries.length; j++) {
+        var entry = historyEntries[j]
+        var item = liveByKey[entry.key]
+        if (item) {
+            delete liveByKey[entry.key]
+        } else {
+            item = {
+                key: entry.key,
+                summary: entry.summary,
+                body: entry.body,
+                timestamp: entry.timestamp,
+                isHistorical: true
             }
         }
+       rows.push({ item: item, ts: toMs(item.timestamp) || toMs(entry.timestamp) })
     }
-    return rawArray;
+
+    // Live notifications not yet in history: treat as brand new if no timestamp
+    for (var remainingKey in liveByKey) {
+        var live = liveByKey[remainingKey]
+        rows.push({ item: live, ts: toMs(live.timestamp) || Date.now() })
+    }
+
+    // Newest first
+    rows.sort(function(a, b) { return b.ts - a.ts })
+    return rows.map(function(r) { return r.item })
 }
 
-readonly property int notificationCount: notificationList.length
-readonly property bool emptyState: root.notificationCount === 0
+    readonly property int notificationCount: notificationList.length
+    readonly property bool emptyState: notificationCount === 0
 
-// ============================================================
-// SIZE
-// ============================================================
+    // ============================================================
+    // GROUPING - notifications with the same title (e.g. several
+    // "Theme Updated") collapse into one row that expands on click.
+    // ============================================================
 
-width:
-    parent
-    ? parent.width
-    : 0
+    property var expandedGroups: ({})      // group title -> true when expanded
 
-height:
-    root.emptyState
-    ? 60
-    : Math.min(
-        headerRow.height +
-        contentColumn.spacing +
-        notificationListView.contentHeight,
-        220
-    )
-
-implicitHeight: height
-
-// ============================================================
-// EMPTY STATE PULSE
-// ============================================================
-
-SequentialAnimation {
-    id: pulseAnimation
-
-    NumberAnimation {
-        target: bellIcon
-        property: "scale"
-        to: 1.15
-        duration: 120
+    function toggleGroup(key) {
+        const next = Object.assign({}, expandedGroups)
+        next[key] = !next[key]
+        expandedGroups = next              // reassign so the list rebuilds
     }
 
-    NumberAnimation {
-        target: bellIcon
-        property: "scale"
-        to: 1.0
-        duration: 180
-    }
-}
-
-onEmptyStateChanged: {
-    if (root.emptyState)
-        pulseAnimation.restart()
-}
-
-// ============================================================
-// CONTENT
-// ============================================================
-
-Column {
-    id: contentColumn
-
-    anchors {
-        left: parent.left
-        right: parent.right
+    function dismissItem(item) {
+        if (item && item.dismiss) item.dismiss()
+        NotificationHistory.removeEntry(root.keyFor(item))
     }
 
-    spacing: 12
+    function dismissGroup(items) {
+        items.slice().forEach(function(it) { root.dismissItem(it) })
+    }
 
-    // ========================================================
-    // HEADER
-    // ========================================================
-
-    RowLayout {
-        id: headerRow
-
-        width: parent.width
-        height: 30
-
-        spacing: 10
-
-        Text {
-            text: "Notifications"
-
-            color:
-                root.theme
-                ? root.theme.fg1
-                : "white"
-
-            font {
-                family:
-                    root.theme
-                    ? root.theme.font
-                    : "sans"
-
-                pointSize: 9
-                bold: true
+    // Rows for the list: { type: "single" | "group" | "child", ... }
+    readonly property var displayRows: {
+        var groups = []
+        var byTitle = {}
+        for (var i = 0; i < notificationList.length; i++) {
+            var n = notificationList[i]
+            var title = n.summary || "Notification"
+            if (!byTitle[title]) {
+                byTitle[title] = { title: title, items: [] }
+                groups.push(byTitle[title])          // keeps newest-first order
             }
+            byTitle[title].items.push(n)
         }
 
-        Text {
-            visible: root.notificationCount > 0
-
-            text:
-                "(" +
-                root.notificationCount +
-                ")"
-
-            color:
-                root.theme
-                ? root.theme.accent
-                : "blue"
-
-            font {
-                family:
-                    root.theme
-                    ? root.theme.font
-                    : "sans"
-
-                pointSize: 8
+        var rows = []
+        for (var g = 0; g < groups.length; g++) {
+            var grp = groups[g]
+            if (grp.items.length === 1) {
+                rows.push({ type: "single", item: grp.items[0] })
+                continue
             }
+            var open = !!expandedGroups[grp.title]
+            rows.push({ type: "group", title: grp.title, items: grp.items, item: grp.items[0], expanded: open })
+            if (open)
+                for (var c = 0; c < grp.items.length; c++)
+                    rows.push({ type: "child", item: grp.items[c] })
         }
+        return rows
+    }
 
-        Item {
-            Layout.fillWidth: true
-        }
+    // ============================================================
+    // SIZE
+    // ============================================================
 
-        RowLayout {
-             spacing: 6
+    width: parent ? parent.width : 0
+    
 
-// ------------------------------------------------
-// CLEAR ALL
-// ------------------------------------------------
-
-MouseArea {
-    id: clearAllButton
-
-    width: 26
-    height: 26
-
-    visible:
-        root.notificationCount > 0
-
-    hoverEnabled: true
-    cursorShape: Qt.PointingHandCursor
+    // ============================================================
+    // MAIN CARD
+    // ============================================================
 
     Rectangle {
         anchors.fill: parent
-        radius: width / 2
+        radius: 16
+        color: theme.surface
+        border.width: 1
+        border.color: Qt.rgba(1, 1, 1, 0.06)
 
-        color:
-            clearAllButton.containsMouse
-            ? root.theme.surfaceAlt
-            : "transparent"
-    }
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 14
+            spacing: 10
 
-    Text {
-        anchors.centerIn: parent
+            // ====================================================
+            // HEADER
+            // ====================================================
 
-        text: "󰎟"
+            RowLayout {
+                id: header
+                Layout.fillWidth: true
+                spacing: 8
 
-        color:
-            clearAllButton.containsMouse
-            ? root.theme.error
-            : root.theme.inactive
-
-        font {
-            family:
-                root.theme
-                    ? root.theme.font
-                    : "sans"
-
-            pixelSize: 14
-        }
-
-        scale:
-            clearAllButton.pressed
-            ? 0.9
-            : (
-                clearAllButton.containsMouse
-                ? 1.15
-                : 1.0
-            )
-
-        Behavior on scale { NumberAnimation { duration: 120 }}
-        Behavior on color {ColorAnimation { duration: 120 }}
-    }
-
-    onClicked: {
-        const notifications =
-            root.notifServer &&
-            root.notifServer.trackedNotifications &&
-            root.notifServer.trackedNotifications.values
-            ? root.notifServer.trackedNotifications.values.slice()
-            : []
-
-        notifications.forEach(
-            notification => {
-                if (
-                    notification &&
-                    notification.dismiss
-                ) {
-                    notification.dismiss()
-                }
-            }
-        )
-    }
-}
-// ------------------------------------------------
-// DO NOT DISTURB
-// ------------------------------------------------
-
-MouseArea {
-    id: dndButton
-
-    width: 26
-    height: 26
-
-    hoverEnabled: true
-    cursorShape: Qt.PointingHandCursor
-
-    Rectangle {
-        anchors.fill: parent
-        radius: width / 2
-
-        color:
-            dndButton.containsMouse
-            ? root.theme.surfaceAlt
-            : "transparent"
-    }
-
-    Text {
-        id: bellIcon
-
-        anchors.centerIn: parent
-
-        text:
-            root.dndEnabled
-            ? "󰂛"
-            : ""
-
-        color:
-            root.dndEnabled
-            ? root.theme.accent
-            : (
-                dndButton.containsMouse
-                ? Qt.lighter(
-                    root.theme.accent,
-                    1.2
-                )
-                : root.theme.inactive
-            )
-
-        font {
-            family:
-                root.theme
-                    ? root.theme.font
-                    : "sans"
-
-            pixelSize: 14
-        }
-
-        scale:
-            dndButton.pressed
-            ? 0.9
-            : (
-                dndButton.containsMouse
-                ? 1.15
-                : 1.0
-            )
-
-        Behavior on scale {
-            NumberAnimation {
-                duration: 120
-            }
-        }
-
-        Behavior on color {
-            ColorAnimation {
-                duration: 120
-            }
-        }
-    }
-
-    onClicked: {
-        root.dndEnabled =
-            !root.dndEnabled
-    }
-}
-        }
-    }
-    // ========================================================
-    // NOTIFICATION LIST
-    // ========================================================
-
-    ListView {
-        id: notificationListView
-
-        visible:
-            root.notificationCount > 0
-
-        width: parent.width
-
-        height:
-            Math.min(
-                contentHeight,
-                220 -
-                headerRow.height -
-                contentColumn.spacing
-            )
-
-        spacing: 8
-        clip: true
-
-        boundsBehavior:
-            Flickable.StopAtBounds
-
-        // FIXED BINDING POINTER: Point straight to our safe array calculation above
-        model:
-            notificationList
-
-        delegate:
-            Item {
-                width: notificationListView.width
-                height: 44
-
-                Rectangle {
-                    anchors.fill: parent
-
-                    radius: 8
-
-                    color:
-                        notificationMouseArea.containsMouse
-                        ? root.theme.surfaceAlt
-                        : "transparent"
-
-                    border {
-                        width:
-                            notificationMouseArea.containsMouse
-                        ? 1
-                        : 0
-
-                        color:
-                            root.theme.surface
+                Text {
+                    text: "Notifications"
+                    color: theme.fg
+                    font {
+                        family: theme.font
+                        pixelSize: 13
+                        weight: Font.Bold
                     }
                 }
 
+                Text {
+                    visible: notificationCount > 0
+                    text: notificationCount
+                    color: theme.accent
+                    font {
+                        family: theme.font
+                        pixelSize: 12
+                        weight: Font.Medium
+                    }
+                }
+
+                Item { Layout.fillWidth: true }
+
+                // Clear All
                 MouseArea {
-                    id: notificationMouseArea
-
-                    anchors.fill: parent
-
+                    id: clearBtn
+                    width: 28
+                    height: 28
+                    visible: notificationCount > 0
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
 
-                    onClicked: {
-                        // Dismiss the raw server daemon alert notification
-                        modelData.dismiss()
-                        
-                        // Cleanly remove the item entry from your local shell array view model
-                        var currentHistory = root.notifications;
-                        currentHistory.splice(index, 1);
-                        root.notifications = currentHistory;
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: width / 2
+                        color: clearBtn.containsMouse ? Qt.rgba(theme.error.r, theme.error.g, theme.error.b, 0.15) : "transparent"
+                        border.width: 1
+                        border.color: clearBtn.containsMouse ? theme.error : Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.12)
                     }
-                }
-
-                RowLayout {
-                    anchors {
-                        fill: parent
-                        leftMargin: 10
-                        rightMargin: 10
-                    }
-
-                    spacing: 12
 
                     Text {
-                        text: "  "
-                        color: root.theme.accent
-
+                        anchors.centerIn: parent
+                        text: "󰎟"
+                        color: clearBtn.containsMouse ? theme.error : theme.fg1
                         font {
-                            family:
-                                root.theme.font
+                            family: theme.font
                             pixelSize: 14
                         }
-
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-                    Column {
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignVCenter
-
-                        spacing: 0
-
-                        Text {
-                            width: parent.width
-
-                            text:
-                                modelData.summary
-                                || "Notification"
-
-                            color: root.theme.fg
-
-                            font {
-                                family:
-                                    root.theme.font
-
-                                pointSize: 9
-                                bold: true
-                            }
-
-                            elide: Text.ElideRight
-                        }
-
-                        Text {
-                            width: parent.width
-                            text: modelData.body || ""
-                            color: root.theme.inactive
-
-                            font {
-                                family: root.theme.font
-                                pointSize: 8
-                            }
-
-                            elide: Text.ElideRight
-                        }
                     }
 
-                    // ================================================
-                    // TIME AGO DURATION LABEL
-                    // ================================================
-                    Text {
-                        color: root.theme.inactive
-                        Layout.alignment: Qt.AlignVCenter
-
-                        font {
-                            family: root.theme.font
-                            pointSize: 8
+                    onClicked: {
+                        if (notifServer && notifServer.trackedNotifications) {
+                            const list = notifServer.trackedNotifications.values.slice()
+                            list.forEach(n => { if (n && n.dismiss) n.dismiss() })
                         }
-
-                        text: {
-                            var pulse = listClock.date
-                            var t = helpers.timeAgo(modelData.timestamp, pulse)
-                            return t === "now" ? "now" : t + " ago"
-                        }
+                        NotificationHistory.clearAll()
+                        root.expandedGroups = ({})
                     }
-
                 }
             }
-    }        
-    // ========================================================
-    // EMPTY STATE
-    // ========================================================
 
-    Text {
-        visible:root.emptyState
-        width: parent.width
-        height: 18
+            // ====================================================
+            // NOTIFICATION LIST
+            // ====================================================
 
-        text: "No Notifications"
+            ListView {
+                id: listView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                visible: !emptyState
+                clip: true
+                spacing: 6
+                model: root.displayRows
+                boundsBehavior: Flickable.StopAtBounds
 
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
+                delegate: Rectangle {
+                    id: rowRect
+                    required property var modelData
 
-        color:
-            root.theme
-            ? root.theme.inactive
-            : "gray"
+                    readonly property bool isGroup: modelData.type === "group"
+                    readonly property bool isChild: modelData.type === "child"
+                    readonly property var item: modelData.item
 
-        font {
-            family:
-                root.theme
-                ? root.theme.font
-                : "sans"
+                    width: listView.width
+                    height: isChild ? 42 : 48
+                    radius: 10
+                    color: rowMouse.containsMouse ? theme.surfaceAlt : "transparent"
 
-            pointSize: 8.5
-            italic: true
+                    Behavior on color { ColorAnimation { duration: 100 } }
+
+                    // Group: click toggles open/closed. Single/child: click dismisses.
+                    MouseArea {
+                        id: rowMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (rowRect.isGroup) root.toggleGroup(rowRect.modelData.title)
+                            else root.dismissItem(rowRect.item)
+                        }
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: rowRect.isChild ? 24 : 10   // children indented under their group
+                        anchors.rightMargin: 10
+                        spacing: 10
+
+                        // Accent bar (dimmer for children)
+                        Rectangle {
+                            width: 3
+                            height: rowRect.isChild ? 22 : 28
+                            radius: 2
+                            color: theme.accent
+                            opacity: rowRect.isChild ? 0.5 : 1
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+
+                        Column {
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignVCenter
+                            spacing: 1
+
+                            Row {
+                                width: parent.width
+                                spacing: 6
+
+                                Text {
+                                    width: Math.min(implicitWidth, parent.width - (countBadge.visible ? countBadge.width + 6 : 0))
+                                    text: rowRect.isChild
+                                        ? truncate(rowRect.item.body || rowRect.item.summary || "", 40)
+                                        : truncate(rowRect.item.summary || "Notification", 28)
+                                    color: theme.fg
+                                    elide: Text.ElideRight
+                                    font {
+                                        family: theme.font
+                                        pixelSize: 12
+                                        weight: rowRect.isChild ? Font.Normal : Font.Medium
+                                    }
+                                }
+
+                                // How many are in the group
+                                Rectangle {
+                                    id: countBadge
+                                    visible: rowRect.isGroup
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: countText.implicitWidth + 10
+                                    height: 16
+                                    radius: 8
+                                    color: Qt.rgba(theme.accent.r, theme.accent.g, theme.accent.b, 0.18)
+
+                                    Text {
+                                        id: countText
+                                        anchors.centerIn: parent
+                                        text: rowRect.isGroup ? rowRect.modelData.items.length : ""
+                                        color: theme.accent
+                                        font { family: theme.font; pixelSize: 10; weight: Font.Bold }
+                                    }
+                                }
+                            }
+
+                            // Body: latest one for a group, own body for single (children show it as title)
+                            Text {
+                                visible: !rowRect.isChild
+                                width: parent.width
+                                text: truncate(rowRect.item.body || "", 50)
+                                color: theme.fg0
+                                elide: Text.ElideRight
+                                font {
+                                    family: theme.font
+                                    pixelSize: 11
+                                }
+                            }
+                        }
+
+                        Text {
+                            text: {
+                                const t = timeAgo(rowRect.item.timestamp)
+                                return t === "now" ? "now" : t + " ago"
+                            }
+                            color: theme.fg1
+                            font {
+                                family: theme.font
+                                pixelSize: 10
+                            }
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+
+                        // Group only: clear the whole group
+                        MouseArea {
+                            id: clearGroupBtn
+                            visible: rowRect.isGroup
+                            Layout.preferredWidth: 22
+                            Layout.preferredHeight: 22
+                            Layout.alignment: Qt.AlignVCenter
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.dismissGroup(rowRect.modelData.items)
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "close"
+                                color: clearGroupBtn.containsMouse ? theme.error : theme.fg1
+                                font { family: "Material Symbols Outlined"; pixelSize: 16 }
+                                scale: clearGroupBtn.containsMouse ? 1.1 : 1.0
+                                Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                            }
+                        }
+
+                        // Group only: expand / collapse arrow
+                        Text {
+                            visible: rowRect.isGroup
+                            text: "expand_more"
+                            color: theme.fg1
+                            font { family: "Material Symbols Outlined"; pixelSize: 18 }
+                            rotation: rowRect.isGroup && rowRect.modelData.expanded ? 180 : 0
+                            Behavior on rotation { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+                    }
+                }
+            }
+
+            // ====================================================
+            // EMPTY STATE
+            // ====================================================
+
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true 
+                visible: emptyState
+
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 6
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: "󰂚"
+                        color: theme.inactive
+                        font {
+                            family: theme.font
+                            pixelSize: 48
+                        }
+                        opacity: 0.5
+                    }
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: "No notifications"
+                        color: theme.inactive
+                        font {
+                            family: theme.font
+                            pixelSize: 12
+                        }
+                    }
+                }
+            }
+
+
         }
     }
-    
-  }
 }
