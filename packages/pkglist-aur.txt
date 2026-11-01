@@ -22,6 +22,7 @@ nodejs-live-server
 onlyoffice-bin
 ookla-speedtest-bin
 openshot-bin
+otf-apple-sf-pro
 papirus-folders-catppuccin-git
 python-pywal
 python-pywalfox
