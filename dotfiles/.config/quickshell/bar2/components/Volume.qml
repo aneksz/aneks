@@ -105,22 +105,6 @@ Item {
         objects: root.sinks
     }
 
-
-    // ============================================================
-    // ACTIVE PHYSICAL PORT
-    //
-    // PipeWire's QML API does not reliably expose the active ALSA
-    // port, so pactl is used for this specific piece of information.
-    //
-    // Examples:
-    //
-    //   analog-output-headphones
-    //   analog-output-lineout
-    //
-    // AirPods do not have an ALSA port, so this will simply be empty
-    // when AirPods are the current output.
-    // ============================================================
-
     property string detectedActivePort: ""
 
 
@@ -167,11 +151,6 @@ Item {
 
     // ============================================================
     // REFRESH ACTIVE PORT
-    //
-    // The short delay is intentional.
-    //
-    // When switching sinks, PipeWire can update the default sink
-    // before pactl has updated the active ALSA port.
     // ============================================================
 
     Timer {
@@ -265,11 +244,6 @@ Item {
 
         // --------------------------------------------------------
         // PHYSICAL HEADPHONES
-        //
-        // The ALSA sink name remains unchanged when headphones
-        // are plugged in.
-        //
-        // Therefore we use the pactl-detected active port.
         // --------------------------------------------------------
 
         if (
@@ -384,7 +358,7 @@ Item {
     width: 18
     height: 18
     anchors.verticalCenter: parent.verticalCenter
-    anchors.verticalCenterOffset: 1
+    anchors.verticalCenterOffset: 2
 
     // Glyph icon (everything except the HomePod)
     Text {
@@ -431,7 +405,7 @@ Item {
 
             font.pixelSize: 16
             anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: 1 
+            anchors.verticalCenterOffset: 2
         }
     }
 

@@ -100,6 +100,7 @@ systemd.services.greetd.serviceConfig = {
     everforest-gtk-theme
     gruvbox-gtk-theme
     materia-theme
+    
 
     # Icons
     adwaita-icon-theme
@@ -110,6 +111,7 @@ systemd.services.greetd.serviceConfig = {
     nordzy-icon-theme
     gruvbox-plus-icons
     papirus-icon-theme
+ 
 
     # Hyprland helpers from your autostart and binds
     hypridle

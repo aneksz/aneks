@@ -40,7 +40,7 @@ inactive  = "#9893a5"
 # non-color, per-theme metadata
 color_scheme = "prefer-light"
 gtk_theme = "Adwaita"
-icon_theme      = "rose-pine-dawn-icons"
+icon_theme      = "RoséPine-Dawn"
 vscode_theme    = "Rosé Pine Dawn"
 spicetify_theme = "Ziro"
 spicetify_color_scheme = "rose-pine-dawn"
