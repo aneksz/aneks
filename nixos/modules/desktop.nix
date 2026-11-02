@@ -11,6 +11,32 @@
     pulse.enable = true; # pactl, and apps that expect PulseAudio
     wireplumber.enable = true; # wpctl
   };
+  
+  services.greetd = {
+  enable = true;
+  settings = {
+    # At boot: log igor in straight away and start Hyprland (your lock screen takes over)
+    initial_session = {
+      command = "start-hyprland > /dev/null 2>&1";
+      user = "igor";
+    };
+    # After logging out: a simple login prompt instead of the tty
+    default_session = {
+      command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd start-hyprland";
+      user = "greeter";
+    };
+  };
+};
+
+systemd.services.greetd.serviceConfig = {
+  Type = "idle";
+  StandardInput = "tty";
+  StandardOutput = "tty";
+  StandardError = "journal";
+  TTYReset = true;
+  TTYVHangup = true;
+  TTYVTDisallocate = true;
+};
 
   # ---------- Desktop services your bar uses ----------
 
@@ -38,7 +64,7 @@
   # quickshell graphics
   environment.sessionVariables.QML_IMPORT_PATH = "${pkgs.qt6.qt5compat}/${pkgs.qt6.qtbase.qtQmlPrefix}";
 
-  # ---------- Data drive (wallpapers live here) ----------
+  # ---------- Data Drive  ----------
   fileSystems."/mnt/data" = {
     device = "/dev/disk/by-uuid/320EF8150EF7CFB9";
     fsType = "ntfs3";

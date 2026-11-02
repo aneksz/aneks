@@ -9,14 +9,39 @@
     ./modules/desktop.nix
     ./modules/shell.nix
     ./modules/airplay.nix
+    ./modules/services.nix
   ];
 
   nixpkgs.config.allowUnfree = true;
 
-  # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.systemd-boot.configurationLimit = 5;
+  boot.plymouth = {
+  enable = true;
+  theme = "catppuccin-mocha";
+  themePackages = [ (pkgs.catppuccin-plymouth.override { variant = "mocha"; }) ];
+};
+
+# Hide the boot messages behind the splash
+boot.consoleLogLevel = 3;
+boot.kernelParams = [ "quiet" "splash" "udev.log_priority=3" "rd.systemd.show_status=auto" ];
+
+# Nvidia: load the driver early so Plymouth can draw at full resolution
+boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
+
+# GRUB boot loader with a theme and 4K optimization
+     # GRUB boot loader with a theme
+  boot.loader.systemd-boot.enable = false;
+  boot.loader.efi.canTouchEfiVariables = false;
+  boot.loader.grub = {
+    enable = true;
+    efiSupport = true;
+    efiInstallAsRemovable = true;
+    device = "nodev";
+    configurationLimit = 5;
+    gfxmodeEfi = "1280x720";
+    theme = pkgs.catppuccin-grub;
+  };
+
+
 
   nix.gc = {
     automatic = true;
