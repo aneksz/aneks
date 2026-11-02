@@ -4,7 +4,7 @@
 { pkgs, lib, ... }:
 
 let
-  src = ../../pw-airplay;
+  src = ../pkgs/pw-airplay;
 
   # AirPlay engine: OwnTone 29.3 with the pw-airplay patch, plus airptpd
   owntone-airplay = pkgs.stdenv.mkDerivation {
