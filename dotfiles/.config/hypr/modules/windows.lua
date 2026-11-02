@@ -42,7 +42,7 @@ hl.window_rule({
 -- Email
 
 hl.window_rule({
-    match     = { class = "org.mozilla.Thunderbird" },
+    match     = { class = "thunderbird" },
     workspace = "6 silent",
     opacity   = "1.0 1.0",         -- string
 })

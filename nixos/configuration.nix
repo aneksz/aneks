@@ -10,6 +10,7 @@
     ./modules/shell.nix
     ./modules/airplay.nix
     ./modules/services.nix
+    ./modules/update-check.nix
   ];
   
   nix.settings.experimental-features = [ "nix-command" "flakes" ];

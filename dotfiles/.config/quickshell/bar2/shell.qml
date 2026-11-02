@@ -1943,7 +1943,6 @@ LocalComponents.Updates {
     id: updatesButton
 
         visible:
-        !root.isNixOS &&
         root.showHoverModules &&
         !root.updatesVisible &&
         !root.mediaVisible

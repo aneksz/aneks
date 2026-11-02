@@ -23,7 +23,7 @@
             "text": "echo $(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days"
         },
         { "type": "os",       "key": "│ {#34}{icon} distro  {#keys}│" },
-        { "type": "wm",       "key": "│ {#36}󰇄 wm      {#keys}│" },
+        { "type": "wm",       "key": "│ {#36}󰇄 wm      {#keys}│", "text": "hyprctl version | head -1 | awk '{print $1, $2}'"},
         { "type": "kernel",   "key": "│ {#35}\uf013 kernel  {#keys}│" },
         { "type": "terminal", "key": "│ {#31}\uf120 term    {#keys}│" },
         { "type": "shell",    "key": "│ {#32}\uf489 shell   {#keys}│" },

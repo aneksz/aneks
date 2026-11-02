@@ -2,6 +2,7 @@
 {
   programs.zsh = {
     enable = true;
+    enableCompletion = false;
     autosuggestions.enable = true;
     ohMyZsh = {
       enable = true;
