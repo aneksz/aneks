@@ -44,6 +44,7 @@ Item {
         id: trayRow
 
         anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenterOffset: 2
         spacing: 4
 
         Repeater {

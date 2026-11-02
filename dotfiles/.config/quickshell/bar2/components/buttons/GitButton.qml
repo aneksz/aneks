@@ -20,7 +20,7 @@ Rectangle {
     height: 30
     radius: height / 2
     anchors.verticalCenter: parent.verticalCenter
-    anchors.verticalCenterOffset: 2
+    anchors.verticalCenterOffset: 4
 
     color: gitMouse.containsMouse
         ? "transparent"
