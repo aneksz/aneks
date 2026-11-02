@@ -1220,7 +1220,7 @@ LocalComponents.GitModule {
 // =====================================================
 LocalComponents.MonitorModule {
     id: monitorModule
-    anchors { fill: parent; margins: 14 }
+    anchors { fill: parent; margins: 12}
     visible: root.monitorVisible
     theme: root.theme
 
