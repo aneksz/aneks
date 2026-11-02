@@ -32,12 +32,7 @@ Item {
         anchors.verticalCenterOffset: 2
 
 
-        text:
-            Qt.formatDateTime(
-                new Date(),
-                "dd MMM • HH:mm"
-            )
-        
+        text: Qt.formatDateTime(new Date(), "dd MMM • HH:mm").toUpperCase()
 
         color: theme.fg1
 
@@ -63,7 +58,7 @@ Item {
                     Qt.formatDateTime(
                         new Date(),
                         "dd MMM • HH:mm"
-                    )
+                    ).toUpperCase()
             }
         }
     }

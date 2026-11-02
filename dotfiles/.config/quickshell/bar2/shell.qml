@@ -1730,27 +1730,6 @@ Buttons.GitButton {
 }
 
 // ========================================================
-// MONITOR BUTTON
-// ========================================================
-Buttons.MonitorButton {
-    id: monitorButton
-    visible: root.showHoverModules && !root.monitorVisible && !root.mediaVisible
-    theme: root.theme
-    detector: detector
-
-    onHoverEntered: {
-        detector.monitorHovered = true
-        detector.activeHover = true
-        hoverDebounceTimer.stop()
-    }
-    onHoverExited: {
-        detector.monitorHovered = false
-        if (!detector.isPinned) hoverDebounceTimer.start()
-    }
-    onClicked: root.monitorVisible = !root.monitorVisible
-}
-
-// ========================================================
 // THEME BUTTON
 // ========================================================
 
@@ -1898,6 +1877,26 @@ LocalComponents.BarWeather {
         height: 42
         spacing: 6
 
+// ========================================================
+// MONITOR BUTTON
+// ========================================================
+Buttons.MonitorButton {
+    id: monitorButton
+    visible: root.showHoverModules && !root.monitorVisible && !root.mediaVisible
+    theme: root.theme
+    detector: detector
+
+    onHoverEntered: {
+        detector.monitorHovered = true
+        detector.activeHover = true
+        hoverDebounceTimer.stop()
+    }
+    onHoverExited: {
+        detector.monitorHovered = false
+        if (!detector.isPinned) hoverDebounceTimer.start()
+    }
+    onClicked: root.monitorVisible = !root.monitorVisible
+}
 
 // ========================================================
 // NETWORK BUTTON

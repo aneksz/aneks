@@ -29,7 +29,7 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: root.padding
         anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset: 1
+        anchors.verticalCenterOffset: 4
         visible: root.icon !== ""
         text: root.icon
         color: root.theme && root.theme.success ? root.theme.success : "#a3be8c"
