@@ -1,0 +1,52 @@
+{
+  "name": "aneks-themes",
+  "displayName": "Aneks Themes",
+  "description": "Hand-collected colour themes used by apply-theme.sh",
+  "publisher": "aneks",
+  "version": "1.6.0",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "contributes": {
+    "themes": [
+      {
+        "label": "Hackerman",
+        "uiTheme": "vs-dark",
+        "path": "./themes/hackerman-color-theme.json"
+      },
+      {
+        "label": "Ghost Pastel",
+        "uiTheme": "vs-dark",
+        "path": "./themes/ghost-pastel-color-theme.json"
+      },
+      {
+        "label": "Lasthorizon",
+        "uiTheme": "vs-dark",
+        "path": "./themes/lasthorizon-color-theme.json"
+      },
+      {
+        "label": "Matte Black",
+        "uiTheme": "vs-dark",
+        "path": "./themes/matte-black-color-theme.json"
+      },
+      {
+        "label": "Miasma",
+        "uiTheme": "vs-dark",
+        "path": "./themes/miasma-color-theme.json"
+      },
+      {
+        "label": "Osaka",
+        "uiTheme": "vs-dark",
+        "path": "./themes/osaka-color-theme.json"
+      },
+      {
+        "label": "Solitude",
+        "uiTheme": "vs-dark",
+        "path": "./themes/solitude-color-theme.json"
+      }
+    ]
+  }
+}

@@ -44,7 +44,7 @@ inactive  = "#4b4e55"
 # non-color, per-theme metadata
 gtk_theme = "Adwaita-dark"
 icon_theme      = "Tela-grey-dark"
-vscode_theme = "Noctokai Dusk"
+vscode_theme = "Solitude"
 spicetify_theme = "Solitude"
 brave_accent    = "#101315"
 wallpaper_dp1   = "BG2.png"
