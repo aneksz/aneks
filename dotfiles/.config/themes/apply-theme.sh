@@ -106,7 +106,7 @@ done
 # background after its window closes. Without the live-reload patch (e.g. on
 # NixOS), quit it so the next launch picks up the new colours.
 if ! pacman -Q gtk4-live-css &>/dev/null; then
-  command -v nautilus >/dev/null && nautilus -q 2>/dev/null
+  command -v nautilus >/dev/null && nautilus -q 2>/dev/null || true
 fi
 
 # ---------- wallpapers ----------
@@ -141,10 +141,22 @@ if command -v pywalfox >/dev/null 2>&1; then
 fi
 
 # ---------- Spotify ----------
-spicetify config current_theme "${COLORS[spicetify_theme]}" || true
-[[ -n ${COLORS[spicetify_color_scheme]:-} ]] && { spicetify config color_scheme "${COLORS[spicetify_color_scheme]}" || true; }
-spicetify apply -n >/dev/null 2>&1 || true
-pgrep -x spotify >/dev/null && (spicetify watch -s 2>&1 | sed "/Reloaded Spotify/q") &
+# Themes with their own Spicetify theme use it; everything else gets "aneks",
+# Sleek's layout with colours generated from colors.toml.
+if command -v spicetify >/dev/null; then
+  SPICE_DIR="$CFG/spicetify/Themes"
+  SPICE_THEME="${COLORS[spicetify_theme]:-aneks}"
+  SPICE_SCHEME="${COLORS[spicetify_color_scheme]:-}"
+  if [[ ! -d "$SPICE_DIR/$SPICE_THEME" || $SPICE_THEME == aneks ]]; then
+    SPICE_THEME=aneks; SPICE_SCHEME=Base
+  fi
+  mkdir -p "$SPICE_DIR/aneks"
+  render spicetify-color.ini.tpl > "$SPICE_DIR/aneks/color.ini"
+  spicetify config current_theme "$SPICE_THEME" color_scheme "$SPICE_SCHEME" >/dev/null || true
+  spicetify apply -n >/dev/null 2>&1 || true
+  pgrep -x spotify >/dev/null && (sleep 2; spicetify watch -s 2>&1 | sed "/Reloaded Spotify/q") &
+fi
+
 
 # ---------- Starship (base + generated palette) ----------
 if [[ -f "$CFG/starship/base.toml" ]]; then

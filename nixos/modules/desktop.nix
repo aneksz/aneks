@@ -20,6 +20,7 @@
   services.gnome.gnome-keyring.enable = true;
   hardware.i2c.enable = true;                # monitor panel (ddcutil); adds the i2c group
   programs.dconf.enable = true;
+  services.flatpak.enable = true;
 
   # File-picker / screenshot portals (Hyprland's own comes with programs.hyprland)
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
@@ -56,9 +57,11 @@
     qt6.qtwayland
     qt6.qtsvg
     qt6.qtimageformats
+    qt6Packages.qt6ct
     glib
     gsettings-desktop-schemas
     gnome-themes-extra
+    lm_sensors
 
     # GTK themes
     gnome-themes-extra          # Adwaita-dark
@@ -77,7 +80,7 @@
     reversal-icon-theme
     nordzy-icon-theme
     gruvbox-plus-icons
-    catppuccin-papirus-folders
+    papirus-icon-theme
 
     # Hyprland helpers from your autostart and binds
     hypridle hyprlock hyprsunset hyprshot hyprpolkitagent

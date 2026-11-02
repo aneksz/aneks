@@ -20,7 +20,7 @@ Item {
     // Per-app icon size in px, keyed by the tray item's id (lower-case).
     // Apps not listed use defaultIconSize.
     readonly property var iconSizes: ({
-        "spotify-client": 24,
+        "spotify-client": 16,
         "chrome_status_icon_1": 18
     })
     readonly property int defaultIconSize: 20

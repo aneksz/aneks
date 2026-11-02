@@ -35,7 +35,7 @@ Item {
         text:
             Qt.formatDateTime(
                 new Date(),
-                "dd MMM  HH:mm"
+                "dd MMM • HH:mm"
             )
         
 
@@ -62,7 +62,7 @@ Item {
                 clockText.text =
                     Qt.formatDateTime(
                         new Date(),
-                        "dd MMM  HH:mm"
+                        "dd MMM • HH:mm"
                     )
             }
         }

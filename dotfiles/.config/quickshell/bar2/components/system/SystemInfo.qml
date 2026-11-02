@@ -56,7 +56,7 @@ Item {
 
     Process {
         id: uptimeProc
-        command: ["sh", "-c", "uptime -p | sed -E 's/up //; s/,//g; s/ hours?/hr/g; s/ minutes?/min/g; s/ days?/d/g'"]
+        command: ["awk", "{s=int($1); d=int(s/86400); h=int(s%86400/3600); m=int(s%3600/60); o=\"\"; if(d) o=o d \"d \"; if(h) o=o h \"hr \"; print o m \"min\"}", "/proc/uptime"]
         stdout: StdioCollector { onStreamFinished: root.uptimeVal = text.trim() }
     }
 

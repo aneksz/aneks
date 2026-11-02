@@ -274,7 +274,7 @@ if (name.startsWith("alsa_output.")) {
             Layout.fillWidth: true
 
             Text {
-                text: "󰕾 Audio Output"
+                text: "   Audio Output"
 
                 color: root.theme.fg
 

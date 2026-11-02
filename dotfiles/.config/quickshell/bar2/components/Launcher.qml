@@ -165,6 +165,7 @@ Item {
                 "/etc/profiles/per-user/$USER/share/applications" \
                 "$HOME/.nix-profile/share/applications" \
                 "$HOME/.local/share/applications" \
+                "~/.local/share/flatpak/exports/share/applications" \
                 "/var/lib/flatpak/exports/share/applications" \
                 "$HOME/.local/share/flatpak/exports/share/applications"
             do
@@ -408,7 +409,7 @@ Item {
                                     smooth: true
                                     mipmap: true
                                     fillMode: Image.PreserveAspectFit
-                                    source: "image://icon/" + (row.modelData.icon || "application-x-executable")
+                                    source: Quickshell.iconPath(row.modelData.icon, "application-x-executable")
                                 }
                             }
 

@@ -13,13 +13,13 @@ QtObject {
     readonly property color textSecondary: "#cfd3cd"
 
     readonly property color accent:      "#b59790"
-    readonly property color accentHover: "#0c0b0c"
+    readonly property color accentHover: "#262326"
     readonly property color border:      "#b59790"
     readonly property color activeWs:    "#b59790"
     readonly property color inactive:    "#584e51"
 
     readonly property color surface:    "#0c0b0c"
-    readonly property color surfaceAlt: "#0c0b0c"
+    readonly property color surfaceAlt: "#1c1a1c"
 
     readonly property color green:   "#87a9b0"
     readonly property color red:     "#c38b7b"

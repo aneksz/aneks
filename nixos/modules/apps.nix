@@ -15,10 +15,10 @@
     nwg-look
     pywalfox-native
     spicetify-cli
-    spotify
     vesktop
     vscodium
     zsh-completions
+    unzip
     
   ];
 }

@@ -19,7 +19,7 @@ QtObject {
     readonly property color inactive:    "#10d4b0"
 
     readonly property color surface:    "#0b0c16"
-    readonly property color surfaceAlt: "#0b0c16"
+    readonly property color surfaceAlt: "#0c0c11"
 
     readonly property color green:   "#26a269"
     readonly property color red:     "#ff3366"
