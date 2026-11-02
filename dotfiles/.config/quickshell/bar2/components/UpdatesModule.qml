@@ -1,6 +1,8 @@
 // components/UpdatesModule.qml
 // Single-card update center: pending updates grouped into System / AUR / Flatpak,
 // with package versions, last system upgrade and one "Update now" button.
+// On NixOS it shows "NixOS" instead of System/AUR, read from nixos-update-check
+// (nixos/modules/update-check.nix): a background build of the updated flake.
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -36,6 +38,15 @@ Item {
     property var lastUpgrade: null          // Date of the last full system upgrade
     property bool updating: false
 
+    // NixOS: detected once at start; nixChecking = background build running
+    property bool isNixOS: false
+    property bool nixChecking: false
+    Process {
+        command: ["test", "-e", "/etc/NIXOS"]
+        running: true
+        onExited: (code) => root.isNixOS = code === 0
+    }
+
     // Which sections are collapsed (sections with updates start open)
     property var collapsed: ({})
     function toggle(key) {
@@ -48,17 +59,39 @@ Item {
 
     function refresh() {
         if (busy) return
-        pendingChecks = 3
+        if (isNixOS) {
+            aurList = []
+            pendingChecks = 2
+        } else {
+            pendingChecks = 3
+            aurProc.running = true
+        }
         systemProc.running = true
-        aurProc.running = true
         flatpakProc.running = true
         lastUpgradeProc.running = true
+        if (isNixOS) nixCheckedProc.running = true
         if (root.checkAll) root.checkAll()      // keep the bar's number in step
+    }
+
+    // NixOS: run the background check now (takes a while: it downloads and builds)
+    function checkNow() {
+        if (nixChecking || busy) return
+        nixChecking = true
+        pendingChecks += 1
+        nixCheckProc.running = true
     }
 
     function finishCheck() {
         pendingChecks = Math.max(0, pendingChecks - 1)
-        if (pendingChecks === 0) lastChecked = Qt.formatTime(new Date(), "hh:mm")
+        if (pendingChecks === 0 && !isNixOS) lastChecked = Qt.formatTime(new Date(), "hh:mm")
+    }
+
+    // "name<TAB>from<TAB>to" lines (nixos-update-list)
+    function parseTabList(text) {
+        return text.split("\n").filter(l => l.trim().length > 0).map(function(l) {
+            const p = l.split("\t")
+            return { name: p[0] || "", from: p[1] || "", to: p[2] || "" }
+        })
     }
 
     // "pkg 1.0-1 -> 1.1-1" lines (checkupdates / yay -Qua)
@@ -84,9 +117,35 @@ Item {
 
     Process {
         id: systemProc
-        command: ["sh", "-c", "checkupdates 2>/dev/null"]
-        stdout: StdioCollector { onStreamFinished: root.systemList = root.parseArrowList(text) }
+        command: root.isNixOS ? ["sh", "-c", "nixos-update-list 2>/dev/null"]
+                              : ["sh", "-c", "checkupdates 2>/dev/null"]
+        stdout: StdioCollector {
+            onStreamFinished: root.systemList = root.isNixOS ? root.parseTabList(text) : root.parseArrowList(text)
+        }
         onExited: root.finishCheck()
+    }
+
+    // NixOS: start the background check (polkit lets wheel users do this without a password)
+    Process {
+        id: nixCheckProc
+        command: ["systemctl", "start", "nixos-update-check.service"]
+        onExited: {
+            root.nixChecking = false
+            root.pendingChecks = Math.max(0, root.pendingChecks - 1)
+            root.refresh()
+        }
+    }
+
+    // NixOS: when the background check last ran
+    Process {
+        id: nixCheckedProc
+        command: ["cat", "/var/lib/nixos-update-check/checked"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const n = parseInt(text.trim())
+                root.lastChecked = isNaN(n) ? "never" : root.timeAgo(new Date(n * 1000))
+            }
+        }
     }
 
     Process {
@@ -111,12 +170,19 @@ Item {
         onExited: root.finishCheck()
     }
 
-    // Time of the last "pacman -Syu" (or yay -Syu), from pacman's log
+    // Last system upgrade. Arch: from pacman's log. NixOS: when flake.lock last changed.
     Process {
         id: lastUpgradeProc
-        command: ["sh", "-c", "grep 'starting full system upgrade' /var/log/pacman.log | tail -n1 | sed -E 's/^\\[([^]]+)\\].*/\\1/'"]
+        command: root.isNixOS
+            ? ["sh", "-c", "stat -c %Y \"$HOME/Projects/aneks/nixos/flake.lock\""]
+            : ["sh", "-c", "grep 'starting full system upgrade' /var/log/pacman.log | tail -n1 | sed -E 's/^\\[([^]]+)\\].*/\\1/'"]
         stdout: StdioCollector {
             onStreamFinished: {
+                if (root.isNixOS) {
+                    const n = parseInt(text.trim())
+                    root.lastUpgrade = isNaN(n) ? null : new Date(n * 1000)
+                    return
+                }
                 // pacman writes "+1100"; JavaScript dates need "+11:00"
                 const d = new Date(text.trim().replace(/([+-]\d\d)(\d\d)$/, "$1:$2"))
                 root.lastUpgrade = isNaN(d.getTime()) ? null : d
@@ -124,14 +190,19 @@ Item {
         }
     }
 
-    // One terminal for everything: yay does repo + AUR, then Flatpak
+    // One terminal for everything. Arch: yay does repo + AUR. NixOS: apply the checked flake.lock.
     Process {
         id: updateProc
-        command: ["kitty", "-e", "bash", "-c",
-            "pkexec pacman -Syu; echo; " +
-            "yay -Sua --sudo pkexec; echo; " +
-            "flatpak update; echo; " +
-            "read -n1 -rsp 'Done. Press any key to close…'"]
+        command: root.isNixOS
+            ? ["kitty", "-e", "bash", "-c",
+                "nixos-update-apply; echo; " +
+                "flatpak update; echo; " +
+                "read -n1 -rsp 'Done. Press any key to close…'"]
+            : ["kitty", "-e", "bash", "-c",
+                "pkexec pacman -Syu; echo; " +
+                "yay -Sua --sudo pkexec; echo; " +
+                "flatpak update; echo; " +
+                "read -n1 -rsp 'Done. Press any key to close…'"]
         onExited: {
             root.updating = false
             root.refresh()
@@ -174,7 +245,8 @@ Item {
                     font { family: root.theme.font; pixelSize: 20; bold: true }
                 }
                 Text {
-                    text: root.busy ? "CHECKING…"
+                    text: root.nixChecking ? "CHECKING FOR NEW PACKAGES…"
+                        : root.busy ? "CHECKING…"
                         : root.total === 0 ? "UP TO DATE"
                         : root.total + (root.total === 1 ? " UPDATE WAITING" : " UPDATES WAITING")
                     color: root.total > 0 ? root.theme.accent : root.theme.fg3
@@ -191,7 +263,8 @@ Item {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 enabled: !root.busy
-                onClicked: root.refresh()
+                // NixOS: run a fresh check (downloads + builds); Arch: re-query
+                onClicked: root.isNixOS ? root.checkNow() : root.refresh()
 
                 Text {
                     anchors.centerIn: parent
@@ -320,8 +393,8 @@ Item {
                     }
                 }
 
-                Section { key: "system";  label: "System";  list: root.systemList }
-                Section { key: "aur";     label: "AUR";     list: root.aurList }
+                Section { key: "system";  label: root.isNixOS ? "NixOS" : "System";  list: root.systemList }
+                Section { key: "aur";     label: "AUR";     list: root.aurList; visible: !root.isNixOS }
                 Section { key: "flatpak"; label: "Flatpak"; list: root.flatpakList }
             }
         }
