@@ -3,13 +3,13 @@
 {
   programs.firefox.enable = true;
 
-
-  environment.systemPackages = with pkgs; [   
-    bat       
+  environment.systemPackages = with pkgs; [
+    bat
     bibata-cursors
     fastfetch
     git
     gh
+    irssi
     kitty
     nautilus
     nwg-look
@@ -19,6 +19,6 @@
     vscodium
     zsh-completions
     unzip
-    
+
   ];
 }

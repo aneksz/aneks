@@ -20,11 +20,33 @@ let
 
     patches = [ "${src}/engine/owntone-29.3.patch" ];
 
-    nativeBuildInputs = with pkgs; [ autoreconfHook pkg-config gperf bison flex gettext ];
+    nativeBuildInputs = with pkgs; [
+      autoreconfHook
+      pkg-config
+      gperf
+      bison
+      flex
+      gettext
+    ];
     buildInputs = with pkgs; [
-     zlib libconfuse curl libsodium libxml2 sqlite libevent json_c libplist
-     ffmpeg gnutls libwebsockets avahi alsa-lib libgcrypt libgpg-error libunistring
-   ];
+      zlib
+      libconfuse
+      curl
+      libsodium
+      libxml2
+      sqlite
+      libevent
+      json_c
+      libplist
+      ffmpeg
+      gnutls
+      libwebsockets
+      avahi
+      alsa-lib
+      libgcrypt
+      libgpg-error
+      libunistring
+    ];
     configureFlags = [
       "--disable-chromecast"
       "--disable-spotify"
@@ -43,7 +65,13 @@ let
     inherit src;
 
     nativeBuildInputs = [ pkgs.pkg-config ];
-    buildInputs = with pkgs; [ pipewire curl json_c avahi systemd ];
+    buildInputs = with pkgs; [
+      pipewire
+      curl
+      json_c
+      avahi
+      systemd
+    ];
 
     makeFlags = [ "PREFIX=$(out)" ];
   };
@@ -67,7 +95,10 @@ in
   systemd.services.airptpd = {
     description = "PTP clock for AirPlay 2 senders (airptpd)";
     wants = [ "network-online.target" ];
-    after = [ "network.target" "network-online.target" ];
+    after = [
+      "network.target"
+      "network-online.target"
+    ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       ExecStart = "${owntone-airplay}/sbin/airptpd -f";
@@ -96,7 +127,12 @@ in
     description = "AirPlay 2 output for PipeWire";
     requires = [ "pw-airplay-engine.service" ];
     wants = [ "pipewire.service" ];
-    after = [ "pipewire.service" "pipewire-pulse.service" "wireplumber.service" "pw-airplay-engine.service" ];
+    after = [
+      "pipewire.service"
+      "pipewire-pulse.service"
+      "wireplumber.service"
+      "pw-airplay-engine.service"
+    ];
     wantedBy = [ "default.target" ];
     environment.PIPEWIRE_DEBUG = "2,default:3";
     serviceConfig = {

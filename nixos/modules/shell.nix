@@ -16,7 +16,16 @@
     '';
   };
 
-  programs.fzf = { keybindings = true; fuzzyCompletion = true; };
+  programs.fzf = {
+    keybindings = true;
+    fuzzyCompletion = true;
+  };
 
-  environment.systemPackages = with pkgs; [ eza fzf bat fastfetch yazi ];
+  environment.systemPackages = with pkgs; [
+    eza
+    fzf
+    bat
+    fastfetch
+    yazi
+  ];
 }

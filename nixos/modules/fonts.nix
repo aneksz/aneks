@@ -1,7 +1,5 @@
 { config, pkgs, ... }:
 
-
-
 {
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
@@ -9,6 +7,6 @@
     material-symbols
     noto-fonts-color-emoji
   ];
-fonts.fontconfig.hinting.style = "slight";
-fonts.fontconfig.subpixel.rgba = "none"; 
+  fonts.fontconfig.hinting.style = "slight";
+  fonts.fontconfig.subpixel.rgba = "none";
 }

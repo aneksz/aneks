@@ -281,6 +281,7 @@ NotificationServer {
     property string currentResolutionFolder: "4K"
     property bool weatherVisible: false
     property bool calendarVisible: false
+    property bool isNixOS: false
 
     // Hub (tabbed panel opened from the clock)
     property bool hubVisible: false
@@ -428,6 +429,12 @@ NotificationServer {
     Component.onCompleted: {scanWallpapers(); root.checkAllUpdates()} 
 
     function scanWallpapers() { wallpaperProc.command = ["sh", "-c", `find "$HOME/Pictures/Wallpapers/${root.currentResolutionFolder}" -type f \\( -iname '*.jpeg' -o -iname '*.jpg' -o -iname '*.png' -o -iname '*.webp' \\)`]; wallpaperProc.running = true }
+
+    Process {
+    command: ["test", "-e", "/etc/NIXOS"]
+    running: true
+    onExited: (code) => root.isNixOS = code === 0
+}
 
     // ---------- git: keep the bar button's dot current ----------
     function checkGit() { gitPoll.running = true }
@@ -1935,7 +1942,8 @@ Buttons.NetworkButton {
 LocalComponents.Updates {
     id: updatesButton
 
-    visible:
+        visible:
+        !root.isNixOS &&
         root.showHoverModules &&
         !root.updatesVisible &&
         !root.mediaVisible
