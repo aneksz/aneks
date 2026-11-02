@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 
 {
+
+   xdg.icons.enable = true;  
   # ---------- Audio  ----------
 
   services.pulseaudio.enable = false;
@@ -60,6 +62,14 @@ systemd.services.greetd.serviceConfig = {
 
   # gsettings
   environment.sessionVariables.GSETTINGS_SCHEMA_DIR = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}/glib-2.0/schemas";
+  environment.pathsToLink = [ "/share/icons" ];
+  environment.sessionVariables = {
+  # Add system icons paths to XDG data directories
+  XDG_DATA_DIRS = [
+    "${pkgs.adwaita-icon-theme}/share"
+    "${pkgs.hicolor-icon-theme}/share"
+  ];
+};
 
   # quickshell graphics
   environment.sessionVariables.QML_IMPORT_PATH = "${pkgs.qt6.qt5compat}/${pkgs.qt6.qtbase.qtQmlPrefix}";
@@ -75,6 +85,7 @@ systemd.services.greetd.serviceConfig = {
       "uid=1000"
       "gid=100"
       "iocharset=utf8"
+      "x-gvfs-show"
     ];
   };
 
@@ -101,9 +112,11 @@ systemd.services.greetd.serviceConfig = {
     gruvbox-gtk-theme
     materia-theme
     
+ 
 
     # Icons
     adwaita-icon-theme
+    hicolor-icon-theme 
     yaru-theme
     tela-icon-theme
     tela-circle-icon-theme
@@ -111,6 +124,7 @@ systemd.services.greetd.serviceConfig = {
     nordzy-icon-theme
     gruvbox-plus-icons
     papirus-icon-theme
+    
  
 
     # Hyprland helpers from your autostart and binds

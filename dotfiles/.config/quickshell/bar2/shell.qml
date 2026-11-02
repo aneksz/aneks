@@ -1220,7 +1220,7 @@ LocalComponents.GitModule {
 // =====================================================
 LocalComponents.MonitorModule {
     id: monitorModule
-    anchors { fill: parent; margins: 12}
+    anchors { fill: parent; margins: 14 }
     visible: root.monitorVisible
     theme: root.theme
 
@@ -1228,7 +1228,8 @@ LocalComponents.MonitorModule {
     opacity: root.osdMode === "" ? 1 : 0
     enabled: root.osdMode === ""
     Behavior on opacity { NumberAnimation { duration: 150 } }
-}
+ }
+
 // =====================================================
 // BLUETOOTH MODULE (opened over IPC from the hub)
 // =====================================================
@@ -2090,7 +2091,7 @@ LocalComponents.Volume {
             detector.volumesHovered = false
         }
     }
-}
+  }
 
 // ========================================================
 // SYSTEM TRAY (HOVER / EXPANDED ISLAND ONLY)
@@ -2129,6 +2130,7 @@ Loader {
     }
   }
 } 
+
 // ================================================
 // Launcher
 // ================================================

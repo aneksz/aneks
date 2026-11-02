@@ -10,6 +10,7 @@
     git
     gh
     irssi
+    libreoffice
     kitty
     nautilus
     nwg-look
