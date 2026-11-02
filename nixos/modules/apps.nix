@@ -15,6 +15,7 @@
     nwg-look
     pywalfox-native
     spicetify-cli
+    thunderbird
     vesktop
     vscodium
     zsh-completions

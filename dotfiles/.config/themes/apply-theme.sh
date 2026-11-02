@@ -154,7 +154,19 @@ if command -v spicetify >/dev/null; then
   render spicetify-color.ini.tpl > "$SPICE_DIR/aneks/color.ini"
   spicetify config current_theme "$SPICE_THEME" color_scheme "$SPICE_SCHEME" >/dev/null || true
   spicetify apply -n >/dev/null 2>&1 || true
-  pgrep -x spotify >/dev/null && (sleep 2; spicetify watch -s 2>&1 | sed "/Reloaded Spotify/q") &
+
+  # Live-reload only once Spotify's debugger answers; never let spicetify kill/restart it
+  if pgrep -x spotify >/dev/null; then
+    (
+      for _ in $(seq 10); do
+        if curl -s localhost:9222/json/list | grep -q spotify; then
+          spicetify watch -s 2>&1 | sed "/Reloaded Spotify/q"
+          exit
+        fi
+        sleep 1
+      done
+    ) &
+  fi
 fi
 
 

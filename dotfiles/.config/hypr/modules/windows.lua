@@ -57,7 +57,7 @@ hl.window_rule({
 
 -- Spotify
 hl.window_rule({
-    match     = { class = "Spotify" },
+    match     = { class = "spotify" },
     workspace = "4 silent",
     opacity   = "1.0 1.0",         -- string
 })
