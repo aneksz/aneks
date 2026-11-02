@@ -86,6 +86,8 @@ systemd.services.greetd.serviceConfig = {
       "gid=100"
       "iocharset=utf8"
       "x-gvfs-show"
+      "x-gvfs-name=Data"
+      "x-gvfs-symbolic-icon=drive-harddisk-symbolic"
     ];
   };
 
@@ -108,7 +110,6 @@ systemd.services.greetd.serviceConfig = {
     magnetic-catppuccin-gtk # Fausto's Catppuccin (was catppuccin-gtk-theme-mocha)
     dracula-theme
     tokyonight-gtk-theme
-    everforest-gtk-theme
     gruvbox-gtk-theme
     materia-theme
     
