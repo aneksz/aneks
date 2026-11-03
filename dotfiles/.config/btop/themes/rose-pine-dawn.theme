@@ -1,0 +1,82 @@
+# Btop theme: Rose Pine Dawn (light)
+# Palette: base #faf4ed, surface #fffaf3, overlay #f2e9e1, muted #9893a5, subtle #797593,
+#          text #575279, love #b4637a, gold #ea9d34, rose #d7827e, pine #286983, foam #56949f, iris #907aa9
+
+# Main background, empty for terminal default
+theme[main_bg]="#faf4ed"
+
+# Main text color
+theme[main_fg]="#575279"
+
+# Title color for boxes
+theme[title]="#575279"
+
+# Highlight color for keyboard shortcuts
+theme[hi_fg]="#b4637a"
+
+# Background color of selected item in processes box
+theme[selected_bg]="#dfdad9"
+
+# Foreground color of selected item in processes box
+theme[selected_fg]="#575279"
+
+# Color of inactive/disabled text
+theme[inactive_fg]="#9893a5"
+
+# Color of text appearing on top of graphs
+theme[graph_text]="#797593"
+
+# Background color of the percentage meters
+theme[meter_bg]="#dfdad9"
+
+# Misc colors for processes box
+theme[proc_misc]="#56949f"
+
+# Cpu, Memory, Network, Proc box outline colors
+theme[cpu_box]="#56949f"
+theme[mem_box]="#907aa9"
+theme[net_box]="#d7827e"
+theme[proc_box]="#286983"
+
+# Box divider line and small boxes line color
+theme[div_line]="#cecacd"
+
+# Temperature graph colors
+theme[temp_start]="#56949f"
+theme[temp_mid]="#ea9d34"
+theme[temp_end]="#b4637a"
+
+# CPU graph colors
+theme[cpu_start]="#56949f"
+theme[cpu_mid]="#907aa9"
+theme[cpu_end]="#b4637a"
+
+# Mem/Disk free meter
+theme[free_start]="#286983"
+theme[free_mid]="#56949f"
+theme[free_end]="#56949f"
+
+# Mem/Disk cached meter
+theme[cached_start]="#907aa9"
+theme[cached_mid]="#907aa9"
+theme[cached_end]="#d7827e"
+
+# Mem/Disk available meter
+theme[available_start]="#ea9d34"
+theme[available_mid]="#ea9d34"
+theme[available_end]="#d7827e"
+
+# Mem/Disk used meter
+theme[used_start]="#ea9d34"
+theme[used_mid]="#d7827e"
+theme[used_end]="#b4637a"
+
+# Download graph colors
+theme[download_start]="#56949f"
+theme[download_mid]="#286983"
+theme[download_end]="#907aa9"
+
+# Upload graph colors
+theme[upload_start]="#ea9d34"
+theme[upload_mid]="#d7827e"
+theme[upload_end]="#b4637a"

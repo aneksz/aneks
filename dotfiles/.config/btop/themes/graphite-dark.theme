@@ -1,0 +1,76 @@
+# =========================
+# Graphite Dark (Proper)
+# =========================
+
+theme[main_bg]="#1E1E1E"
+theme[main_fg]="#E6E6E6"
+
+theme[title]="#E6E6E6"
+theme[hi_fg]="#A0A0A0"
+
+theme[selected_bg]="#2C2C2C"
+theme[selected_fg]="#E6E6E6"
+
+theme[inactive_fg]="#808080"
+
+theme[graph_text]="#CFCFCF"
+theme[meter_bg]="#2C2C2C"
+
+theme[proc_misc]="#CFCFCF"
+
+# Box outlines
+theme[cpu_box]="#3A3A3A"
+theme[mem_box]="#3A3A3A"
+theme[net_box]="#3A3A3A"
+theme[proc_box]="#3A3A3A"
+
+theme[div_line]="#3A3A3A"
+
+# =========================
+# Gradients (ALL MONOCHROME)
+# =========================
+
+# Temperature
+theme[temp_start]="#707070"
+theme[temp_mid]="#909090"
+theme[temp_end]="#B0B0B0"
+
+# CPU
+theme[cpu_start]="#707070"
+theme[cpu_mid]="#909090"
+theme[cpu_end]="#B0B0B0"
+
+# Free
+theme[free_start]="#606060"
+theme[free_mid]="#808080"
+theme[free_end]="#A0A0A0"
+
+# Cached
+theme[cached_start]="#707070"
+theme[cached_mid]="#909090"
+theme[cached_end]="#B0B0B0"
+
+# Available
+theme[available_start]="#808080"
+theme[available_mid]="#A0A0A0"
+theme[available_end]="#C0C0C0"
+
+# Used
+theme[used_start]="#707070"
+theme[used_mid]="#909090"
+theme[used_end]="#B0B0B0"
+
+# Download
+theme[download_start]="#707070"
+theme[download_mid]="#909090"
+theme[download_end]="#B0B0B0"
+
+# Upload
+theme[upload_start]="#707070"
+theme[upload_mid]="#909090"
+theme[upload_end]="#B0B0B0"
+
+# Process gradients
+theme[process_start]="#707070"
+theme[process_mid]="#909090"
+theme[process_end]="#B0B0B0"
