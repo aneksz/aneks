@@ -2,10 +2,12 @@
 
 {
   programs.firefox.enable = true;
+  programs.steam.enable = true;
 
   environment.systemPackages = with pkgs; [
     bat
     bibata-cursors
+    cliamp
     fastfetch
     git
     gh
@@ -15,6 +17,7 @@
     nautilus
     nwg-look
     pywalfox-native
+    steam
     spicetify-cli
     thunderbird
     vesktop
