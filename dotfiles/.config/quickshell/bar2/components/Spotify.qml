@@ -52,10 +52,10 @@ Item {
         color: root.theme && root.theme.success ? root.theme.success : "#a3be8c"
 
         font {
-            family: root.theme && root.theme.font ? root.theme.font : "JetBrainsMono Nerd Font Propo"
-            pointSize: theme.fontSize
-            weight: theme ? theme.fontWeight : Font.Normal
-        }
+        family: theme.font
+        pointSize: theme.fontSize
+        weight: theme.fontWeight
+    }
 
         width: Math.min(implicitWidth, 240)
         elide: Text.ElideRight
