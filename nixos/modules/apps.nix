@@ -21,6 +21,7 @@
     vscodium
     zsh-completions
     unzip
+    nixos-bgrt-plymouth
 
   ];
 }

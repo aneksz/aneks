@@ -135,14 +135,14 @@ systemd.services.greetd.serviceConfig = {
     hyprsunset
     hyprshot
     hyprpolkitagent
-    awww # wallpapers (formerly swww; use swww if awww isn't found)
+    awww 
     cliphist
     wl-clipboard
     grim
     slurp
     satty
 
-    # Things your scripts and bar call
+    # Things the scripts and bar call
     playerctl
     libnotify
     jq
@@ -152,7 +152,7 @@ systemd.services.greetd.serviceConfig = {
     cava
     ddcutil
     pamixer
-    networkmanagerapplet # nmcli comes with NetworkManager itself
+    networkmanagerapplet 
     btop
     stow
   ];

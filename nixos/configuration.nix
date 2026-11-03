@@ -11,17 +11,13 @@
     ./modules/airplay.nix
     ./modules/services.nix
     ./modules/update-check.nix
+    ./modules/plymouth.nix
   ];
   
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nixpkgs.config.allowUnfree = true;
 
-  boot.plymouth = {
-  enable = true;
-  theme = "catppuccin-mocha";
-  themePackages = [ (pkgs.catppuccin-plymouth.override { variant = "mocha"; }) ];
-};
-
+  
 # Hide the boot messages behind the splash
 boot.consoleLogLevel = 3;
 boot.kernelParams = [ "quiet" "splash" "udev.log_priority=3" "rd.systemd.show_status=auto" ];
