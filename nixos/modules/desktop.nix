@@ -100,6 +100,7 @@ systemd.services.greetd.serviceConfig = {
     qt6.qtsvg
     qt6.qtimageformats
     qt6Packages.qt6ct
+    qt6.qtdeclarative
     glib
     gsettings-desktop-schemas
     gnome-themes-extra

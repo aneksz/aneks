@@ -340,6 +340,8 @@ NotificationServer {
     property string flatpakChecked: "—"
     property bool updatesChecking: false
     readonly property int totalUpdateCount: archCount + aurCount + flatpakCount
+    property int notifiedUpdateCount: 0
+    onTotalUpdateCountChanged: updateToastTimer.restart()
 
     // Dynamic Island State Controls
     property bool launcherVisible: false
@@ -480,6 +482,18 @@ NotificationServer {
     Timer { id: countdownTimer; interval: 1000; repeat: true }
     Timer { id: updatesCheckingResetTimer; interval: 3000; onTriggered: root.updatesChecking = false }
     Timer { interval: 600000; running: true; repeat: true; onTriggered: root.checkAllUpdates() }
+    Timer {
+        id: updateToastTimer
+        interval: 3000     
+        onTriggered: {
+            const n = root.totalUpdateCount
+            if (n > root.notifiedUpdateCount)
+                Quickshell.execDetached(["notify-send", "-a", "Update Center", "-i", "system-software-update",
+                    "Updates available",
+                    n + (n === 1 ? " update is" : " updates are") + " ready to install"])
+            root.notifiedUpdateCount = n
+        }
+    }
 
 // ============================================================
 // TIMER ENGINE
