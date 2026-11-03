@@ -11,9 +11,6 @@ in {
         DeviceScale=1
       '';
     };
-    # quieter boot so the splash isn't covered by console text
-    consoleLogLevel = 0;
-    initrd.verbose = false;
     kernelParams = [ "quiet" "splash" ];
   };
 }
