@@ -17,3 +17,4 @@ dotfiles/.config/hypr/background/*
 dotfiles/.config/spicetify/Themes/aneks/color.ini
 vscodium/aneks-themes/*.vsix
 dotfiles/.config/btop/btop.log
+dotfiles/.config/btop/btop.conf
