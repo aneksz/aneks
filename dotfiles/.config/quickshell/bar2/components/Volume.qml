@@ -358,7 +358,7 @@ Item {
     width: 18
     height: 18
     anchors.verticalCenter: parent.verticalCenter
-    anchors.verticalCenterOffset: 2
+    anchors.verticalCenterOffset: 3
 
     // Glyph icon (everything except the HomePod)
     Text {
@@ -402,8 +402,7 @@ Item {
                     : root.theme.fg
 
             font.family: root.theme.font
-
-            font.pixelSize: 16
+            font.pointSize: theme.fontSize
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: 2
         }
