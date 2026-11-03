@@ -25,6 +25,6 @@
     zsh-completions
     unzip
     nixos-bgrt-plymouth
-
+    zapzap
   ];
 }
