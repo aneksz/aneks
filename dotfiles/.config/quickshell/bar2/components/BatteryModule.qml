@@ -229,10 +229,20 @@ Process {
             border.color: Qt.rgba(1, 1, 1, 0.05)
 
             Rectangle {
+                id: fill
+
+                // the single colour this bar would normally have
+                readonly property color base: percentValue <= 0.20 ? root.theme.error : root.theme.accent
+
                 width: parent.width * percentValue
                 height: parent.height
                 radius: 3
-                color: percentValue <= 0.20 ? root.theme.error : root.theme.accent
+
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0.0; color: Qt.darker(fill.base, 1.5) }
+                    GradientStop { position: 1.0; color: Qt.lighter(fill.base, 1.15) }
+                }
 
                 Behavior on width { NumberAnimation { duration: 250 } }
             }
