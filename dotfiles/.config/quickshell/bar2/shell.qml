@@ -1426,21 +1426,9 @@ height:
 
     scale: (detector.activeHover && !root.hubVisible) ? 1.01 : 1.0
 
-    // Frosted glass: light themes need more opacity, or the blurred wallpaper shows through as grey
+     // Frosted glass: light themes need more opacity, or the blurred wallpaper shows through as grey
     readonly property real bgLuminance: 0.2126 * root.theme.bg.r + 0.7152 * root.theme.bg.g + 0.0722 * root.theme.bg.b
-    readonly property real glassAlpha: bgLuminance > 0.5 ? 0.8 : 0.7
-
-    function glass(c) { return Qt.rgba(c.r, c.g, c.b, glassAlpha) }
-    function mix(a, b, t) {
-    return Qt.rgba(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t, 1)
-}
-
-gradient: Gradient {
-    orientation: Gradient.Horizontal
-    GradientStop { position: 0.0; color: island.glass(island.mix(root.theme.bg, root.theme.accent, 0.20)) }
-    GradientStop { position: 0.5; color: island.glass(root.theme.bg) }
-    GradientStop { position: 1.0; color: island.glass(island.mix(root.theme.bg, root.theme.accent, 0.20)) }
-}
+    color: Qt.rgba(root.theme.bg.r, root.theme.bg.g, root.theme.bg.b, bgLuminance > 0.5 ? 0.8 : 0.7)
 
     Connections { target: root; function onSpotifyTrackChanged() {}}
 
