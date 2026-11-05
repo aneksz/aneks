@@ -47,7 +47,7 @@ HoverItem {
     hovered: mouseArea.containsMouse
     overrideColor: root.textColor
     iconSize: 18
-    textSize: 17
+    textSize: 18
     iconYOffset: 0
 }
 
