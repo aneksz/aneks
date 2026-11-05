@@ -3,6 +3,7 @@
 {
   programs.firefox.enable = true;
   programs.steam.enable = true;
+  programs.starship.enable = true;
 
   environment.systemPackages = with pkgs; [
     bat
@@ -15,6 +16,7 @@
     libreoffice
     kitty
     nautilus
+    neovim
     nwg-look
     ookla-speedtest
     pywalfox-native

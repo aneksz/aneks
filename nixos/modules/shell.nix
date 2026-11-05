@@ -12,10 +12,13 @@
       source ${pkgs.zsh-fast-syntax-highlighting}/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
       source ${pkgs.zsh-autocomplete}/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
     '';
-    promptInit = ''
-      source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-    '';
+    # The prompt (Powerlevel10k or Starship) is chosen in ~/.zshrc
+    promptInit = "";
   };
+
+  # Where Powerlevel10k lives, for ~/.zshrc
+  environment.variables.P10K_THEME =
+    "${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
 
   programs.fzf = {
     keybindings = true;
@@ -28,5 +31,6 @@
     bat
     fastfetch
     yazi
+    starship
   ];
 }
