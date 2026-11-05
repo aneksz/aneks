@@ -16,6 +16,7 @@
     kitty
     nautilus
     nwg-look
+    ookla-speedtest
     pywalfox-native
     steam
     spicetify-cli
