@@ -39,7 +39,7 @@ let
 
   list = pkgs.writeShellApplication {
     name = "nixos-update-list";
-    runtimeInputs = [ pkgs.coreutils pkgs.diffutils pkgs.gnused ];
+    runtimeInputs = [ pkgs.coreutils pkgs.diffutils pkgs.gnused pkgs.gawk ];
     text = ''
       if [ ! -f "${state}/changes.txt" ] || [ ! -f "${state}/flake.lock" ]; then exit 0; fi
       # Already applied: the repo has the checked lock
@@ -48,7 +48,8 @@ let
         -e 's/^\[U.\][[:space:]]+#[0-9]+[[:space:]]+([^[:space:]]+)[[:space:]]+(.*) -> (.*)$/\1\t\2\t\3/p' \
         -e 's/^\[A.\][[:space:]]+#[0-9]+[[:space:]]+([^[:space:]]+)[[:space:]]+(.*)$/\1\t\t\2 (new)/p' \
         -e 's/^\[R.\][[:space:]]+#[0-9]+[[:space:]]+([^[:space:]]+)[[:space:]]+(.*)$/\1\t\2\tremoved/p' \
-        "${state}/changes.txt"
+        "${state}/changes.txt" \
+        | awk -F'\t' -v OFS='\t' '$1 !~ /^nixos-system-/ { for (i = 2; i <= 3; i++) { split($i, a, ", "); sub(/ x[0-9]+$/, "", a[1]); $i = a[1] } print }'
     '';
   };
 
@@ -61,7 +62,7 @@ let
         exit 1
       fi
       cp "${state}/flake.lock" "${flakeDir}/flake.lock"
-      sudo nixos-rebuild switch
+      pkexec env PATH=/run/current-system/sw/bin nixos-rebuild switch --flake "${flakeDir}#nixos"
     '';
   };
 in

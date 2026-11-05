@@ -485,9 +485,9 @@ NotificationServer {
     Timer {
         id: updateToastTimer
         interval: 3000     
-        onTriggered: {
+                onTriggered: {
             const n = root.totalUpdateCount
-            if (n > root.notifiedUpdateCount)
+            if (n > 0 && root.notifiedUpdateCount === 0)
                 Quickshell.execDetached(["notify-send", "-a", "Update Center", "-i", "system-software-update",
                     "Updates available",
                     n + (n === 1 ? " update is" : " updates are") + " ready to install"])
