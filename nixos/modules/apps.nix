@@ -19,7 +19,7 @@
   environment.systemPackages = with pkgs; [
     bat
     bibata-cursors
-    caffeine
+    caffeine-ng
     cliamp
     curl
     fastfetch
@@ -39,7 +39,6 @@
     nodejs
     nwg-look
     ookla-speedtest
-    openshot-qt
     pywalfox-native
     python3
     ripgrep
