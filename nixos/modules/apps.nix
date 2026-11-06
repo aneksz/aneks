@@ -4,6 +4,7 @@
   programs.firefox.enable = true;
   programs.steam.enable = true;
   programs.starship.enable = true;
+  programs.localsend.enable = true;
 
   programs.neovim = {
   enable = true;
