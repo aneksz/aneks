@@ -38,7 +38,8 @@ Item {
         target: "caps_osd"
 
         function toggle() {
-            root.isOn = !root.isOn
+            // Read the real state a moment after the key press (the LED updates just after)
+            capsReadDelay.restart()
 
             root.active = true
             root.closing = false
@@ -47,6 +48,19 @@ Item {
 
             progressTimer.restart()
         }
+    }
+
+    Timer {
+        id: capsReadDelay
+        interval: 60
+        onTriggered: capsStateProc.running = true
+    }
+
+    // 1 if any keyboard's caps lock LED is on
+    Process {
+        id: capsStateProc
+        command: ["sh", "-c", "cat /sys/class/leds/*::capslock/brightness 2>/dev/null | grep -qv '^0$' && echo 1 || echo 0"]
+        stdout: StdioCollector { onStreamFinished: root.isOn = text.trim() === "1" }
     }
 
     // ============================================================
@@ -76,9 +90,8 @@ Item {
         repeat: false
 
         onTriggered: {
-
-           root.osdClosing()
-           closeDelay.start()
+            root.osdClosing()
+            root.active = false
         }
     }
     

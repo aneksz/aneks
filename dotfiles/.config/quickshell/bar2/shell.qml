@@ -1147,6 +1147,10 @@ Loader {
     id: themeSelectorLoader
     active: root.themeVisible
     visible: root.themeVisible
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
     anchors {
         fill: parent
         margins: 14
@@ -1178,6 +1182,10 @@ LocalComponents.UpdatesModule {
     anchors.margins: 12
 
     visible: root.updatesVisible
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
     theme: root.theme
 
     archCount: root.archCount
@@ -1200,6 +1208,10 @@ LocalComponents.NetworkModule {
     anchors.margins: 12
 
     visible: root.networkVisible
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
     theme: root.theme
 }
 
@@ -1210,6 +1222,10 @@ Loader {
     id: clipboardLoader
     active: root.clipboardVisible
     visible: root.clipboardVisible
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
     anchors { fill: parent; margins: 14 }
     source: "components/ClipboardHistory.qml"
 
@@ -1265,6 +1281,10 @@ LocalComponents.PowerModule {
     id: powerModule
     anchors { fill: parent; margins: 14 }
     visible: root.powerVisible
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
     theme: root.theme
     onCloseRequested: root.powerVisible = false
 }
@@ -1275,6 +1295,10 @@ LocalComponents.TrayMenu {
     id: trayMenu
     anchors { fill: parent; margins: 14 }
     visible: root.trayMenuVisible
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
     theme: root.theme
     trayItem: root.trayMenuItem
     onCloseRequested: root.trayMenuVisible = false
@@ -1290,6 +1314,10 @@ LocalComponents.BatteryModule {
     anchors.margins: 14
 
     visible: root.batteryVisible
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
     theme: root.theme
 }
 
@@ -1303,6 +1331,10 @@ LocalComponents.VolumeModule {
     anchors.margins: 14
 
     visible: root.volumeVisible
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
     theme: root.theme
     volumeButton: volumeButton          
 }
@@ -1506,6 +1538,10 @@ Loader {
 
     active: true
     visible: root.mediaVisible || root.islandState === root.islandStateClosing
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
     source: "components/MediaPlayer.qml"
     width: root.mediaVisible ? 440 : 220
 
@@ -2158,6 +2194,10 @@ Loader {
     }
 
     visible: root.launcherVisible
+    // hide while a toast / OSD owns the island
+    opacity: root.osdMode === "" ? 1 : 0
+    enabled: root.osdMode === ""
+    Behavior on opacity { NumberAnimation { duration: 150 } }
     theme: root.theme
     launcherVisible: root.launcherVisible
     onCloseRequested: {
