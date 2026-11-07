@@ -2,7 +2,9 @@
 
 {
 
-   xdg.icons.enable = true;  
+   xdg.icons.enable = true;
+   
+  
   # ---------- Audio  ----------
 
   services.pulseaudio.enable = false;
@@ -105,6 +107,8 @@ systemd.services.greetd.serviceConfig = {
     gsettings-desktop-schemas
     gnome-themes-extra
     lm_sensors
+    xdg-utils
+    xdg-user-dirs
 
     # GTK themes
     gnome-themes-extra # Adwaita-dark
