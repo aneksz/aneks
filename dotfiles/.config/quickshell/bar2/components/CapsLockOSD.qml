@@ -155,7 +155,7 @@ Item {
 
                     color: root.isOn
                            ? root.theme.accent
-                           : root.theme.inactive
+                           : root.theme.fg1
 
                     opacity: root.isOn
                              ? 1.0
@@ -202,7 +202,11 @@ Item {
 
                     color: root.isOn
                            ? root.theme.accent
-                           : root.theme.inactive
+                           : root.theme.fg1
+                           
+                    opacity: root.isOn
+                             ? 1.0
+                             : 0.35       
 
                     font {
                         family: root.theme.font
