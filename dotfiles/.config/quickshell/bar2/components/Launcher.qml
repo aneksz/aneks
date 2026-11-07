@@ -286,7 +286,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 46
-                border.width: 1
+                border.width: 0
                 radius: 12
                 border.color: theme.accent
                 color: "transparent"
@@ -299,7 +299,7 @@ Item {
                     text: root.calcMode ? "󰃬" : " 󰍉"
                     font.family: root.uiFont
                     font.pixelSize: 16
-                    color: theme.accent
+                    color: theme.fg1
                 }
 
                 TextField {
@@ -308,12 +308,12 @@ Item {
                     anchors.leftMargin: 32
                     anchors.rightMargin: 4
                     text: root.searchText
-                    color: theme.fg
+                    color: theme.fg1
                     background: null
                     font.family: root.uiFont
                     font.pixelSize: 15
                     placeholderText: "Search apps  ·  start with = to calculate"
-                    placeholderTextColor: theme.textMuted
+                    placeholderTextColor: theme.fg1
                     verticalAlignment: TextInput.AlignVCenter
 
                     onTextChanged: {
@@ -479,14 +479,14 @@ Item {
                     Layout.fillWidth: true
                     text: root.calcMode ? "Enter to copy result · Esc to close"
                                         : "↑↓ navigate · Enter launch · Esc close"
-                    color: theme.textMuted
+                    color: theme.fg1
                     font.family: root.uiFont
                     font.pixelSize: 12
                 }
                 Text {
                     visible: !root.calcMode
                     text: root.filteredApps.length + " apps"
-                    color: theme.textMuted
+                    color: theme.fg1
                     font.family: root.uiFont
                     font.pixelSize: 12
                 }
