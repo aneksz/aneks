@@ -24,7 +24,6 @@ bind_exec("SUPER + SHIFT + V", editor)
 bind_exec("SUPER + P", "qs ipc -c ~/.config/quickshell/bar2 call power toggle")
 
 -- Scripts & Utilities
-bind_exec("SUPER + S", "~/.config/hypr/scripts/theme-selector.sh")
 bind_exec("SUPER + R", "~/.config/hypr/scripts/relaunch.sh")
 bind_exec("SUPER + H", "~/.config/hypr/scripts/wall.sh")
 bind_exec("SUPER + L", "quickshell -p ~/.config/quickshell/lock/shell.qml")

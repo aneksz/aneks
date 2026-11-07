@@ -56,13 +56,23 @@ let
   apply = pkgs.writeShellApplication {
     name = "nixos-update-apply";
     runtimeInputs = [ pkgs.coreutils ];
-    text = ''
+        text = ''
       if [ ! -f "${state}/flake.lock" ]; then
         echo "No checked update yet - run: systemctl start nixos-update-check"
         exit 1
       fi
+      backup=$(mktemp)
+      cp "${flakeDir}/flake.lock" "$backup"
       cp "${state}/flake.lock" "${flakeDir}/flake.lock"
-      pkexec env PATH=/run/current-system/sw/bin nixos-rebuild switch --flake "${flakeDir}#nixos"
+
+      if ! /run/wrappers/bin/pkexec env PATH=/run/current-system/sw/bin \
+           nixos-rebuild switch --flake "${flakeDir}#nixos"; then
+        cp "$backup" "${flakeDir}/flake.lock"
+        echo
+        echo "Update failed - flake.lock restored, nothing was changed."
+        exit 1
+      fi
+      rm -f "$backup"
     '';
   };
 in
