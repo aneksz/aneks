@@ -39,7 +39,7 @@ accent_ws = "#78824b"
 inactive  = "#666666"
 
 gtk_theme = "Adwaita-dark"
-icon_theme    = "Gruvbox-Material-Dark"
+icon_theme    = "Yaru-wartybrown-dark"
 vscode_theme  = "Miasma"
 brave_accent  = "#78824b"
 spicetify_theme = "Miasma"
