@@ -1,30 +1,36 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   imports = [
-    # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ./modules/apps.nix
+    ./modules/firefox.nix
     ./modules/fonts.nix
     ./modules/desktop.nix
+    ./modules/nvidia.nix
     ./modules/shell.nix
     ./modules/airplay.nix
     ./modules/services.nix
     ./modules/update-check.nix
     ./modules/plymouth.nix
   ];
-  
+
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.auto-optimise-store = true;
   nixpkgs.config.allowUnfree = true;
 
-  # Hide the boot messages behind the splash
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
+
+  # Boot: latest kernel, quiet boot behind the splash
+  boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.consoleLogLevel = 3;
   boot.kernelParams = [ "quiet" "splash" "udev.log_priority=3" "rd.systemd.show_status=auto" ];
 
-  # Nvidia: load the driver early so Plymouth can draw at full resolution
-  boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
-
-  # GRUB boot loader with a theme
+  # GRUB with a theme (installed as the removable fallback so the firmware always finds it)
   boot.loader.systemd-boot.enable = false;
   boot.loader.efi.canTouchEfiVariables = false;
   boot.loader.grub = {
@@ -37,99 +43,22 @@
     theme = pkgs.catppuccin-grub;
   };
 
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
-
-  nix.settings.auto-optimise-store = true;
-
-  # Use latest kernel.
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  # Enable networking
+  networking.hostName = "nixos";
   networking.networkmanager.enable = true;
-  networking.hostName = "nixos"; # Define your hostname.
 
-  # Set your time zone.
   time.timeZone = "Australia/Melbourne";
-
-  # Select internationalisation properties.
   i18n.defaultLocale = "en_AU.UTF-8";
 
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_AU.UTF-8";
-    LC_IDENTIFICATION = "en_AU.UTF-8";
-    LC_MEASUREMENT = "en_AU.UTF-8";
-    LC_MONETARY = "en_AU.UTF-8";
-    LC_NAME = "en_AU.UTF-8";
-    LC_NUMERIC = "en_AU.UTF-8";
-    LC_PAPER = "en_AU.UTF-8";
-    LC_TELEPHONE = "en_AU.UTF-8";
-    LC_TIME = "en_AU.UTF-8";
-  };
-
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
-  };
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users."igor" = {
+  users.users.igor = {
     isNormalUser = true;
     description = "igor";
     shell = pkgs.zsh;
-    extraGroups = [
-      "networkmanager"
-      "wheel"
-      "i2c"
-    ];
-    packages = with pkgs; [ ];
+    extraGroups = [ "networkmanager" "wheel" "i2c" ];
   };
 
-  # Nvidia & VA-API Graphics Stack Optimization
-  hardware.graphics = {
-    enable = true;
-    extraPackages = with pkgs; [
-      nvidia-vaapi-driver
-      libva             # Essential for VA-API infrastructure link mapping
-      libva-utils       # Installs the 'vainfo' diagnostic terminal utility
-      ffmpeg_7-full     # <-- ADD THIS HERE instead to provide the translation system globally!
-    ];
-  };
-
-  services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.nvidia.modesetting.enable = true;
-  hardware.nvidia.open = true;
-  hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.latest;
-
-  # Session Variables Optimized for Hyprland + Firefox + Nvidia
-  environment.sessionVariables = {
-    LIBVA_DRIVER_NAME = "nvidia";
-    
-    # Tells nvidia-vaapi-driver to communicate directly with the hardware on Wayland
-    NVD_BACKEND = "direct";
-    
-    # Required for Firefox to use the driver outside its render sandbox
-    MOZ_DISABLE_RDD_SANDBOX = "1"; 
-    
-    # Forces Firefox to run natively on Wayland instead of falling back to XWayland
-    MOZ_ENABLE_WAYLAND = "1";
-    
-    # Recommended Hyprland environment variables for Nvidia stability
-    GBM_BACKEND = "nvidia-drm";
-    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-
-    # Maps out explicit backend system pathways for hardware acceleration libraries
-    LIBVA_DRIVERS_PATH = "/run/opengl-driver/lib/dri";
-  };
-
-  # Hyprland
   programs.hyprland.enable = true;
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
-  # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
-  system.stateVersion = "26.05"; # Did you read the comment?
+  # Never change this, even after updates (see `man configuration.nix`)
+  system.stateVersion = "26.05";
 }
