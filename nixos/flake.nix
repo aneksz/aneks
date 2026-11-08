@@ -2,6 +2,7 @@
   description = "aneks NixOS";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.nixpkgs-small.url = "github:NixOS/nixpkgs/nixos-unstable-small";
   inputs.zen-browser = {
     url = "github:0xc000022070/zen-browser-flake";
     inputs.nixpkgs.follows = "nixpkgs";
