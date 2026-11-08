@@ -18,6 +18,27 @@
         "type": "github"
       }
     },
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "zen-browser",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793193205,
+        "narHash": "sha256-X6xa6sGA7RnJQuZGbFMC+K+KToWAlBDCCjJXfTwEPsw=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "095fef2f265c3c0da4fe315efba8f8a04495ab34",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1793876309,
@@ -52,7 +73,8 @@
     "root": {
       "inputs": {
         "nixpkgs": "nixpkgs",
-        "seamless-asahi-plymouth": "seamless-asahi-plymouth"
+        "seamless-asahi-plymouth": "seamless-asahi-plymouth",
+        "zen-browser": "zen-browser"
       }
     },
     "seamless-asahi-plymouth": {
@@ -73,6 +95,27 @@
       "original": {
         "owner": "luca-schlecker",
         "repo": "seamless-asahi-plymouth",
+        "type": "github"
+      }
+    },
+    "zen-browser": {
+      "inputs": {
+        "home-manager": "home-manager",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793999934,
+        "narHash": "sha256-2VbZROa77YEzzuUyRStmHdkrjV89YALYL566Ssij0Fk=",
+        "owner": "0xc000022070",
+        "repo": "zen-browser-flake",
+        "rev": "37ba4a650eaeeb5a086114da3a2cdf7593967d12",
+        "type": "github"
+      },
+      "original": {
+        "owner": "0xc000022070",
+        "repo": "zen-browser-flake",
         "type": "github"
       }
     }

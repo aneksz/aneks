@@ -3,6 +3,17 @@
 {
 
    xdg.icons.enable = true;
+   networking.networkmanager.plugins = [ pkgs.networkmanager-openvpn ];
+   services.resolved.enable = true;
+  
+   networking.firewall = {
+   checkReversePath = false;
+   trustedInterfaces = [ "surfshark_wg" ];
+   extraCommands = ''
+    iptables  -A nixos-fw -p udp --sport 51820 -j nixos-fw-accept
+    ip6tables -A nixos-fw -p udp --sport 51820 -j nixos-fw-accept
+  '';
+};
    
   
   # ---------- Audio  ----------

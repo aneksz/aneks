@@ -1,10 +1,11 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   programs.localsend.enable = true;
   programs.steam.enable = true;     # also installs Steam itself
   programs.vlc.enable = true;
   programs.neovim.enable = true;
+  programs.openvpn3.enable = true;
 
   # Lets Mason's downloaded language servers (Neovim) run
   programs.nix-ld.enable = true;
@@ -16,6 +17,7 @@
     gpu-screen-recorder-gtk
     image-roll
     imv
+    inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
     irssi
     kitty
     libreoffice
@@ -42,6 +44,7 @@
     ripgrep
     unzip
     wget
+    wireguard-tools
 
     # Neovim / development
     gcc

@@ -5,12 +5,33 @@
 #                                     builds the new system and saves an nvd diff.
 #                                     Your repo and running system are never touched.
 #  nixos-update-list   (user)         prints pending changes as "name<TAB>from<TAB>to".
-#  nixos-update-apply  (user)         copies the checked flake.lock into the repo and switches.
+#  nixos-update-apply  (user)         moves the repo's inputs to the checked versions and switches.
+#
+# Pending/applied is decided per input (by lastModified), so adding a new input to
+# flake.nix, or updating with `u`, never makes old updates reappear.
 { config, pkgs, ... }:
 
 let
   flakeDir = "/home/igor/Projects/aneks/nixos";
   state = "/var/lib/nixos-update-check";
+
+  # Number of root inputs whose checked version is newer than the repo's
+  pendingJq = ''
+    $s[0] as $s | $r[0] as $r
+    | [ $s.nodes.root.inputs | to_entries[] | select(.value | type == "string")
+        | .key as $name
+        | ($s.nodes[.value].locked.lastModified // 0) as $want
+        | ($r.nodes[$r.nodes.root.inputs[$name] // ""].locked.lastModified // 0) as $have
+        | select($want > $have) ]
+    | length
+  '';
+
+  # Repo lock with every node from the checked lock copied over; inputs added since stay
+  mergeJq = ''
+    $s[0] as $s | $r[0] as $r
+    | reduce ($s.nodes | keys[] | select(. != "root")) as $k
+        ($r; if .nodes[$k] != null then .nodes[$k] = $s.nodes[$k] else . end)
+  '';
 
   check = pkgs.writeShellApplication {
     name = "nixos-update-check";
@@ -39,11 +60,13 @@ let
 
   list = pkgs.writeShellApplication {
     name = "nixos-update-list";
-    runtimeInputs = [ pkgs.coreutils pkgs.diffutils pkgs.gnused pkgs.gawk ];
+    runtimeInputs = [ pkgs.coreutils pkgs.gnused pkgs.gawk pkgs.jq ];
     text = ''
       if [ ! -f "${state}/changes.txt" ] || [ ! -f "${state}/flake.lock" ]; then exit 0; fi
-      # Already applied: the repo has the checked lock
-      if cmp -s "${state}/flake.lock" "${flakeDir}/flake.lock"; then exit 0; fi
+
+      pending=$(jq -n --slurpfile s "${state}/flake.lock" --slurpfile r "${flakeDir}/flake.lock" '${pendingJq}')
+      if [ "$pending" = 0 ]; then exit 0; fi
+
       sed -nE \
         -e 's/^\[U.\][[:space:]]+#[0-9]+[[:space:]]+([^[:space:]]+)[[:space:]]+(.*) -> (.*)$/\1\t\2\t\3/p' \
         -e 's/^\[A.\][[:space:]]+#[0-9]+[[:space:]]+([^[:space:]]+)[[:space:]]+(.*)$/\1\t\t\2 (new)/p' \
@@ -55,15 +78,21 @@ let
 
   apply = pkgs.writeShellApplication {
     name = "nixos-update-apply";
-    runtimeInputs = [ pkgs.coreutils ];
-        text = ''
+    runtimeInputs = [ pkgs.coreutils pkgs.jq ];
+    text = ''
       if [ ! -f "${state}/flake.lock" ]; then
         echo "No checked update yet - run: systemctl start nixos-update-check"
         exit 1
       fi
+
       backup=$(mktemp)
       cp "${flakeDir}/flake.lock" "$backup"
-      cp "${state}/flake.lock" "${flakeDir}/flake.lock"
+
+      # Move the repo's inputs to the checked (already built) versions, keep anything added since
+      merged=$(mktemp)
+      jq -n --slurpfile s "${state}/flake.lock" --slurpfile r "${flakeDir}/flake.lock" '${mergeJq}' > "$merged"
+      cp "$merged" "${flakeDir}/flake.lock"
+      rm -f "$merged"
 
       if ! /run/wrappers/bin/pkexec env PATH=/run/current-system/sw/bin \
            nixos-rebuild switch --flake "${flakeDir}#nixos"; then

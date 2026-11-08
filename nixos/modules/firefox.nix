@@ -21,10 +21,14 @@
 
   systemd.user.services.firefox = {
     serviceConfig = {
-    BindPaths = "/run/opengl-driver/lib/dri";
+      BindPaths = "/run/opengl-driver/lib/dri";
     };
   };
 
   # Lets Firefox's video decoder process load the Nvidia VA-API driver
   environment.sessionVariables.MOZ_DISABLE_RDD_SANDBOX = "1";
+
+  # FIX: Force the browser window and compositor to render natively on Wayland frames!
+  environment.sessionVariables.MOZ_ENABLE_WAYLAND = "1";
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
 }

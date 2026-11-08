@@ -2,6 +2,10 @@
   description = "aneks NixOS";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.zen-browser = {
+    url = "github:0xc000022070/zen-browser-flake";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
   inputs.seamless-asahi-plymouth = {
     url = "github:luca-schlecker/seamless-asahi-plymouth";
     inputs.nixpkgs.follows = "nixpkgs";
