@@ -93,12 +93,37 @@ boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm
     packages = with pkgs; [ ];
   };
 
-  # Nvidia
-  hardware.graphics.enable = true;
+    # Nvidia
+  hardware.graphics = {
+    enable = true;
+    extraPackages = with pkgs; [
+      nvidia-vaapi-driver
+    ];
+  };
+
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia.modesetting.enable = true;
   hardware.nvidia.open = true;
   hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.latest;
+
+  # Session Variables Optimized for Hyprland + Firefox + Nvidia
+  environment.sessionVariables = {
+    LIBVA_DRIVER_NAME = "nvidia";
+    
+    # Tells nvidia-vaapi-driver to communicate directly with the hardware on Wayland
+    NVD_BACKEND = "direct";
+    
+    # Required for Firefox to use the driver outside its render sandbox
+    MOZ_DISABLE_RDD_SANDBOX = "1"; 
+    
+    # Forces Firefox to run natively on Wayland instead of falling back to XWayland
+    MOZ_ENABLE_WAYLAND = "1";
+    
+    # Recommended Hyprland environment variables for Nvidia stability
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+  };
+
 
   # Hyprland
   programs.hyprland.enable = true;
