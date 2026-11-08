@@ -17,6 +17,7 @@
     gpu-screen-recorder-gtk
     image-roll
     imv
+    inputs.nixpkgs-small.legacyPackages.${pkgs.stdenv.hostPlatform.system}.brave
     inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
     irssi
     kitty
