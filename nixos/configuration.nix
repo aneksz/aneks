@@ -17,16 +17,14 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nixpkgs.config.allowUnfree = true;
 
-  
-# Hide the boot messages behind the splash
-boot.consoleLogLevel = 3;
-boot.kernelParams = [ "quiet" "splash" "udev.log_priority=3" "rd.systemd.show_status=auto" ];
+  # Hide the boot messages behind the splash
+  boot.consoleLogLevel = 3;
+  boot.kernelParams = [ "quiet" "splash" "udev.log_priority=3" "rd.systemd.show_status=auto" ];
 
-# Nvidia: load the driver early so Plymouth can draw at full resolution
-boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
+  # Nvidia: load the driver early so Plymouth can draw at full resolution
+  boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
 
-# GRUB boot loader with a theme and 4K optimization
-     # GRUB boot loader with a theme
+  # GRUB boot loader with a theme
   boot.loader.systemd-boot.enable = false;
   boot.loader.efi.canTouchEfiVariables = false;
   boot.loader.grub = {
@@ -38,8 +36,6 @@ boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm
     gfxmodeEfi = "1280x720";
     theme = pkgs.catppuccin-grub;
   };
-
-
 
   nix.gc = {
     automatic = true;
@@ -93,11 +89,14 @@ boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm
     packages = with pkgs; [ ];
   };
 
-    # Nvidia
+  # Nvidia & VA-API Graphics Stack Optimization
   hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [
       nvidia-vaapi-driver
+      libva             # Essential for VA-API infrastructure link mapping
+      libva-utils       # Installs the 'vainfo' diagnostic terminal utility
+      ffmpeg_7-full     # <-- ADD THIS HERE instead to provide the translation system globally!
     ];
   };
 
@@ -122,8 +121,10 @@ boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm
     # Recommended Hyprland environment variables for Nvidia stability
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-  };
 
+    # Maps out explicit backend system pathways for hardware acceleration libraries
+    LIBVA_DRIVERS_PATH = "/run/opengl-driver/lib/dri";
+  };
 
   # Hyprland
   programs.hyprland.enable = true;
@@ -131,5 +132,4 @@ boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm
 
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
   system.stateVersion = "26.05"; # Did you read the comment?
-
 }
