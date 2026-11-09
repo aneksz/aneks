@@ -64,6 +64,9 @@ Comp.Icon {
     visible: root.connected
     name: "language"
     size: 18
+    restRotation: 90
+    hoverRotation: 0
+    hovered: sysMouse.containsMouse
     color: sysMouse.containsMouse ? root.theme.accent : root.theme.fg
     Behavior on color { ColorAnimation { duration: 120 } }
 }

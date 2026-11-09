@@ -43,7 +43,9 @@ Rectangle {
     anchors.centerIn: parent
     name: root.batteryIcons[root.iconIndex]
     size: 18
-
+    restRotation: 0
+    hoverRotation: 90
+    hovered: sysMouse.containsMouse
     color: root.critical ? root.theme.error
          : sysMouse.containsMouse ? root.theme.accent
          : root.theme.fg

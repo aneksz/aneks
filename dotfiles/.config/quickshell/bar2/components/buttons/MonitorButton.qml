@@ -29,7 +29,9 @@ Rectangle {
         anchors.centerIn: parent
         name: "desktop_windows"
         size: 18
-
+        restRotation: 0
+        hoverRotation: 90
+        hovered: monMouse.containsMouse
         color: monMouse.containsMouse ? root.theme.accent : root.theme.fg
         Behavior on color { ColorAnimation { duration: 120 } }
     }

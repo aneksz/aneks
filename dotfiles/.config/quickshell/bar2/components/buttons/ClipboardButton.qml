@@ -29,7 +29,9 @@ Rectangle {
     anchors.centerIn: parent
     name: "content_paste"
     size: 18
-
+    restRotation: 0
+    hoverRotation: 90
+    hovered: sysMouse.containsMouse
     color: sysMouse.containsMouse ? root.theme.accent : root.theme.fg
     Behavior on color { ColorAnimation { duration: 120 } }
 }

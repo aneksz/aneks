@@ -39,12 +39,14 @@ Comp.Icon {
     anchors.verticalCenterOffset: 2
     name: "palette"
     size: 18
-    rotation: themeMouse.containsMouse ? 90 : 0.
+    restRotation: 90
+    hoverRotation: 0
+    hovered: themeMouse.containsMouse
     color: root.themeVisible ? root.theme.accent
          : themeMouse.containsMouse ? root.theme.accent
          : root.theme.fg
     Behavior on color { ColorAnimation { duration: 120 } }
-    Behavior on rotation { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+    
 }
 
 MouseArea {

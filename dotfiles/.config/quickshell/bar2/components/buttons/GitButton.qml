@@ -31,14 +31,15 @@ Rectangle {
     }
 
     Comp.Icon {
-        anchors.centerIn: parent
-        name: "commit"
-        size: 18
-        rotation: gitMouse.containsMouse ? 0 : 90.
-        color: gitMouse.containsMouse || root.dirty ? root.theme.accent : root.theme.fg
-        Behavior on color { ColorAnimation { duration: 120 } }
-        Behavior on rotation { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
-    }
+    anchors.centerIn: parent
+    name: "commit"
+    size: 18
+    restRotation: 90      // vertical at rest
+    hoverRotation: 0      // flips to horizontal on hover
+    hovered: gitMouse.containsMouse
+    color: gitMouse.containsMouse || root.dirty ? root.theme.accent : root.theme.fg
+    Behavior on color { ColorAnimation { duration: 120 } }
+}
 
     // Small dot when there is something to commit or push
     Rectangle {
