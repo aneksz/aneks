@@ -37,6 +37,7 @@ Rectangle {
         rotation: 90
         color: gitMouse.containsMouse || root.dirty ? root.theme.accent : root.theme.fg
         Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on rotation { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
     }
 
     // Small dot when there is something to commit or push
