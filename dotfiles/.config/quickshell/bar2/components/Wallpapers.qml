@@ -146,8 +146,15 @@ Item {
                 visible: (root.themeFolders || []).length > 1
 
                 Repeater {
-                    model: root.themeFolders
-
+                    model: {
+    const folders = Array.from(root.themeFolders || [])
+    folders.sort((a, b) => {
+        if (a === "") return -1        // keep "All" first
+        if (b === "") return 1
+        return a.localeCompare(b, undefined, { sensitivity: "base" })
+    })
+    return folders
+}
                     Rectangle {
                         required property var modelData
                         readonly property bool active: root.currentThemeFolder === modelData
