@@ -23,7 +23,7 @@ Item {
         "spotify-client": 16,
         "chrome_status_icon_1": 18
     })
-    readonly property int defaultIconSize: 20
+    readonly property int defaultIconSize: 18
 
     // Padding added around each icon to form its clickable slot
     readonly property int slotPadding: 10
