@@ -42,7 +42,7 @@ HoverItem {
     id: hoverItem
     anchors.fill: parent
     textValue: root.label
-    iconName: "directory_sync"
+    iconName: "autorenew"
     theme: root.theme
     hovered: mouseArea.containsMouse
     overrideColor: root.textColor
