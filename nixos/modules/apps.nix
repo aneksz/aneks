@@ -14,6 +14,7 @@
     # Apps
     caffeine-ng
     cliamp
+    ghostty
     gpu-screen-recorder-gtk
     image-roll
     imv
