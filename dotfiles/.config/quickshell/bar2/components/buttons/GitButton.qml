@@ -34,7 +34,7 @@ Rectangle {
         anchors.centerIn: parent
         name: "commit"
         size: 18
-
+        rotation: 90
         color: gitMouse.containsMouse || root.dirty ? root.theme.accent : root.theme.fg
         Behavior on color { ColorAnimation { duration: 120 } }
     }
