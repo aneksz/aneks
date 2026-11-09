@@ -135,7 +135,7 @@ Item {
                                                     : root.themeList.length + " available"
                     font.family: theme.font
                     font.pixelSize: 13
-                    color: theme.textMuted
+                    color: theme.fg1
                 }
             }
 
@@ -241,7 +241,7 @@ Item {
             text: "Click a theme to apply it"
             font.family: theme.font
             font.pixelSize: 12
-            color: theme.textMuted
+            color: theme.fg1
         }
     }
 }
