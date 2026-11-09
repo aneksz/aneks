@@ -14,6 +14,7 @@ Item {
     property string temperature: "--"
     
     // Nerd Font weather glyph (from the weather script) -> Material Symbols name
+// Nerd Font weather glyph (from the weather script) -> Material Symbols name
 readonly property var materialNames: ({
     "\ue30d": "clear_day",             // clear, day
     "\ue32b": "clear_night",           // clear, night
@@ -29,6 +30,7 @@ readonly property var materialNames: ({
     "\ue31a": "weather_snowy",         // snow
     "\ue31d": "thunderstorm"           // thunderstorm
 })
+readonly property real baseSize: 18
 readonly property string materialName: materialNames[root.icon] ?? "cloud"
     signal clicked()
 
@@ -59,7 +61,7 @@ readonly property string materialName: materialNames[root.icon] ?? "cloud"
     Icon {
     anchors.centerIn: parent
     name: root.materialName
-    size: 20
+    size: root.baseSize
     color: theme.accent
 }
 }
