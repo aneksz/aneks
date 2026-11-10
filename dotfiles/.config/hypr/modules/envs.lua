@@ -26,13 +26,18 @@ hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 hl.env("HYPRSHOT_DIR", "/home/igor/Pictures/Screenshots")
 
 -- Cursor
+-- Aneks-Accent is Bibata recoloured by apply-theme.sh (cursor-accent)
 hl.env("XCURSOR_SIZE", "30")
-hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
+hl.env("XCURSOR_THEME", "Aneks-Accent")
+hl.env("HYPRCURSOR_SIZE", "30")
+hl.env("HYPRCURSOR_THEME", "Aneks-Accent")
 
 -- Ensure the cursor theme applies to the Hyprland process specifically
 hl.config({
     env = {
         "XCURSOR_SIZE,30",
-        "XCURSOR_THEME,Bibata-Modern-Classic",
+        "XCURSOR_THEME,Aneks-Accent",
+        "HYPRCURSOR_SIZE,30",
+        "HYPRCURSOR_THEME,Aneks-Accent",
     }
 })

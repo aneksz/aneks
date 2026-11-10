@@ -170,6 +170,14 @@ if command -v spicetify >/dev/null; then
 fi
 
 
+# ---------- Cursor (Bibata outlined in the accent colour) ----------
+# Builds ~/.local/share/icons/Aneks-Accent from colors.toml and applies it live.
+# Runs in the background: a first build for a theme takes a few seconds.
+CURSOR_ACCENT="$HOME/.local/share/cursor-accent/recolor.py"
+if [[ -f $CURSOR_ACCENT ]] && command -v rsvg-convert >/dev/null; then
+  python3 "$CURSOR_ACCENT" "$COLORS_FILE" >/dev/null 2>&1 &
+fi
+
 # ---------- Starship (base + generated palette) ----------
 if [[ -f "$CFG/starship/base.toml" ]]; then
   { cat "$CFG/starship/base.toml"; render starship-palette.tpl; } > "$CFG/starship.toml"
