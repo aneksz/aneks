@@ -133,6 +133,7 @@ in
   };
 
   # Let wheel users start the check from the bar without a password
+  security.polkit.enablePkexecWrapper = true;
   security.polkit.extraConfig = ''
     polkit.addRule(function(action, subject) {
       if (action.id == "org.freedesktop.systemd1.manage-units" &&
