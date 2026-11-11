@@ -143,7 +143,13 @@ def hyprland_versions():
 
 
 def hypr_format():
-    """"svg" only when both the running and the installed Hyprland are safe.
+    """PNG unless CURSOR_ACCENT_FORMAT=svg.
+
+    aneks: SVG shapes leave a trail of old cursor copies on the wallpaper as
+    the pointer moves (Hyprland 0.57, Nvidia), and the old Bibata was PNG
+    too. The PNGs are rendered at every size Hyprland asks for, so they look
+    the same. With CURSOR_ACCENT_FORMAT=svg, the upstream rule below applies:
+    "svg" only when both the running and the installed Hyprland are safe.
 
     An SVG theme on disk crashes Hyprland 0.56 at the next login (see
     build_theme), before this script runs again. Checking the installed
@@ -151,6 +157,8 @@ def hypr_format():
     next theme switch or shell reload, not only by the compositor that is
     already running. Anything unknown counts as unsafe.
     """
+    if os.environ.get("CURSOR_ACCENT_FORMAT") != "svg":
+        return "png"
     versions = hyprland_versions()
     if all(v is not None and v >= SVG_SAFE_HYPRLAND for v in versions):
         return "svg"
