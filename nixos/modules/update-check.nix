@@ -15,11 +15,13 @@ let
   flakeDir = "/home/igor/Projects/aneks/nixos";
   state = "/var/lib/nixos-update-check";
 
-  # Number of root inputs whose checked version is newer than the repo's
+  # Number of root inputs whose checked version is newer than the repo's.
+  # Inputs since removed from flake.nix don't count.
   pendingJq = ''
     $s[0] as $s | $r[0] as $r
     | [ $s.nodes.root.inputs | to_entries[] | select(.value | type == "string")
         | .key as $name
+        | select($r.nodes.root.inputs[$name] != null)
         | ($s.nodes[.value].locked.lastModified // 0) as $want
         | ($r.nodes[$r.nodes.root.inputs[$name] // ""].locked.lastModified // 0) as $have
         | select($want > $have) ]
@@ -102,6 +104,9 @@ let
         exit 1
       fi
       rm -f "$backup"
+
+      # Re-check against the new system so the bar's list starts fresh
+      systemctl start --no-block nixos-update-check.service || true
     '';
   };
 in
