@@ -55,8 +55,14 @@ CURSOR_SIZE = os.environ.get("HYPRCURSOR_SIZE") or os.environ.get("XCURSOR_SIZE"
 INSTALL_DIR = Path.home() / f".local/share/icons/{CURSOR_NAME}"
 # Staging lives outside every icons/ folder: hyprcursor treats any directory
 # there with a manifest, hidden ones included, as a theme it may pick up.
-STAGING_DIR = Path.home() / ".local/share/cursor-accent/staging"
+# ~/.cache rather than the plugin's own folder: that one is stowed from the
+# dotfiles repo, and builds must never land in git.
+STAGING_DIR = Path.home() / ".cache/cursor-accent/staging"
 STAMP_NAME = ".cursor-accent-stamp"
+# Finished builds, one per colour set, so switching back to a theme is instant.
+# Outside icons/, so hyprcursor never lists them as themes of their own.
+CACHE_DIR = Path.home() / ".cache/cursor-accent/cache"
+CACHE_KEEP = 30
 # Bump when the installed theme's layout changes, so existing installs with
 # unchanged colors still get rebuilt after `omarchy plugin update`.
 BUILD_FORMAT = 3
@@ -265,6 +271,35 @@ def reapply_when_hyprcursor_on(timeout=60):
         time.sleep(0.5)
 
 
+def cache_path(stamp):
+    return CACHE_DIR / hashlib.sha256(stamp.encode()).hexdigest()[:16]
+
+
+def install_from_cache(stamp):
+    """Install a build cached earlier for these exact colours; False if none."""
+    cached = cache_path(stamp)
+    if not (cached / STAMP_NAME).is_file() or (cached / STAMP_NAME).read_text() != stamp:
+        return False
+    shutil.rmtree(STAGING_DIR, ignore_errors=True)
+    shutil.copytree(cached, STAGING_DIR, symlinks=True)
+    replace_dir(STAGING_DIR, INSTALL_DIR)
+    os.utime(cached)  # most recently used, pruned last
+    return True
+
+
+def save_to_cache(stamp):
+    cached = cache_path(stamp)
+    tmp = cached.with_name(cached.name + ".tmp")
+    shutil.rmtree(tmp, ignore_errors=True)
+    shutil.copytree(INSTALL_DIR, tmp, symlinks=True)
+    shutil.rmtree(cached, ignore_errors=True)
+    tmp.rename(cached)
+    entries = sorted((p for p in CACHE_DIR.iterdir() if p.is_dir() and not p.name.endswith(".tmp")),
+                     key=lambda p: p.stat().st_mtime, reverse=True)
+    for old in entries[CACHE_KEEP:]:
+        shutil.rmtree(old, ignore_errors=True)
+
+
 def build_theme(target, fmt, sizes, stamp):
     """Build the recolored theme in a scratch dir and swap it into place."""
     build_dir = STATE_DIR / "build"
@@ -367,6 +402,11 @@ def main():
             print(f"cursor-accent: {CURSOR_NAME} already up to date, re-applied")
             return
 
+        if install_from_cache(stamp):
+            apply_theme()
+            print(f"cursor-accent: applied cached {CURSOR_NAME} ({target}, {fmt})")
+            return
+
         build_theme(target, fmt, sizes, stamp)
 
         # Runtime-only: Hyprland forgets this on restart, and with no
@@ -374,6 +414,10 @@ def main():
         # hyprcursor finds first. The post-boot hook re-runs this script.
         apply_theme()
         print(f"cursor-accent: applied {CURSOR_NAME} ({target}, {fmt}) at size {CURSOR_SIZE}")
+        try:
+            save_to_cache(stamp)
+        except OSError as e:
+            print(f"cursor-accent: could not cache the build: {e}", file=sys.stderr)
 
 
 if __name__ == "__main__":
