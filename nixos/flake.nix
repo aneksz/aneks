@@ -2,7 +2,6 @@
   description = "aneks NixOS";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-  inputs.nixpkgs-small.url = "github:NixOS/nixpkgs/nixos-unstable-small";
 
   inputs.seamless-asahi-plymouth = {
     url = "github:luca-schlecker/seamless-asahi-plymouth";
