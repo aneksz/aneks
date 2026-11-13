@@ -29,7 +29,7 @@ Item {
         id: clockText
 
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: 2
+        anchors.verticalCenterOffset: 3
 
 
         text: Qt.formatDateTime(new Date(), "dd MMM • HH:mm").toUpperCase()
