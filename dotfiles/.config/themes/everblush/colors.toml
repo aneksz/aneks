@@ -1,0 +1,51 @@
+# Everblush - https://github.com/Everblush
+# Palette from the official kitty port (Everblush/terminal-emulators)
+accent     = "#67b0e8"
+cursor     = "#dadada"
+foreground = "#dadada"
+background = "#141b1e"
+
+color0  = "#232a2d"
+color1  = "#e57474"
+color2  = "#8ccf7e"
+color3  = "#e5c76b"
+color4  = "#67b0e8"
+color5  = "#c47fd5"
+color6  = "#6cbfbf"
+color7  = "#b3b9b8"
+color8  = "#2d3437"
+color9  = "#ef7e7e"
+color10 = "#96d988"
+color11 = "#f4d67a"
+color12 = "#71baf2"
+color13 = "#ce89df"
+color14 = "#67cbe7"
+color15 = "#bdc3c2"
+
+# surface ramp: background, the darker shade used across the ports,
+# the "lighter background", and the selection colour
+bg0 = "#141b1e"
+bg1 = "#1e2528"
+bg2 = "#232a2d"
+bg3 = "#2d3437"
+fg0 = "#dadada"
+fg1 = "#b3b9b8"
+accent_alt = "#c47fd5"
+error = "#e57474"
+warn = "#e5c76b"
+info = "#6cbfbf"
+success = "#8ccf7e"
+
+border    = "#67b0e8"
+accent_ws = "#e57474"
+inactive  = "#2d3437"
+
+# non-color, per-theme metadata
+gtk_theme       = "Adwaita-dark"
+icon_theme      = "Papirus-Dark"
+vscode_theme    = "Everblush"
+spicetify_theme = "aneks"
+spicetify_color_scheme = ""
+brave_accent    = "#141b1e"
+wallpaper_dp1   = "everblush-dp1.png"
+wallpaper_dp3   = "everblush-dp3.png"
