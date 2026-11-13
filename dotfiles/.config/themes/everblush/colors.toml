@@ -42,7 +42,7 @@ inactive  = "#2d3437"
 
 # non-color, per-theme metadata
 gtk_theme       = "Adwaita-dark"
-icon_theme      = "Papirus-Dark"
+icon_theme      = "Yaru-blue-dark"
 vscode_theme    = "Everblush"
 spicetify_theme = "aneks"
 spicetify_color_scheme = ""

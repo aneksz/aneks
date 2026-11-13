@@ -8,6 +8,7 @@ jarith.everforest-night-vscode
 jdinhlife.gruvbox
 jnoortheen.nix-ide
 jolaleye.horizon-theme-vscode
+mangeshrex.everblush
 mvllow.rose-pine
 mxz7.kanagawa-vscode-pretty
 nuromirg.nightfox-theme-collections

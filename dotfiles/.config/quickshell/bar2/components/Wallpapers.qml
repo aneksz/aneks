@@ -80,7 +80,7 @@ Item {
                         text: root.filteredWallpapers.length + " images · click one to apply it to " + root.currentMonitor
                         font.family: theme.font
                         font.pixelSize: 13
-                        color: theme.textMuted
+                        color: theme.fg1
                     }
                 }
 
