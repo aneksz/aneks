@@ -144,7 +144,7 @@ Item {
 
             Text {
                 text: "commit"
-                color: root.theme.accent
+                color: root.theme.fg1
                 font { family: "Material Symbols Outlined"; pixelSize: 24 }
             }
 
@@ -159,7 +159,7 @@ Item {
                     text: (root.branch || "…") + "  ·  " +
                           (root.hasChanges ? root.files.length + " changed" : "no changes") +
                           (root.ahead > 0 ? "  ·  " + root.ahead + " to push" : "")
-                    color: root.theme.fg3
+                    color: root.theme.fg1
                     font { family: root.theme.font; pixelSize: 12 }
                 }
             }
@@ -176,7 +176,7 @@ Item {
                 Text {
                     id: refreshText
                     text: "Refresh"
-                    color: parent.containsMouse ? root.theme.accent : root.theme.fg3
+                    color: parent.containsMouse ? root.theme.accent : root.theme.fg1
                     font { family: root.theme.font; pixelSize: 14 }
                 }
             }
@@ -195,7 +195,7 @@ Item {
                 anchors.centerIn: parent
                 visible: !root.hasChanges
                 text: "Working tree clean"
-                color: root.theme.fg3
+                color: root.theme.fg1
                 font { family: root.theme.font; pixelSize: 13 }
             }
 
@@ -257,7 +257,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     visible: messageInput.text.length === 0
                     text: root.hasChanges ? "Commit message…" : "Nothing to commit"
-                    color: root.theme.fg3
+                    color: root.theme.fg1
                     font: messageInput.font
                 }
             }
@@ -328,7 +328,7 @@ Item {
         // ---------- recent commits ----------
         Text {
             text: "Recent commits"
-            color: root.theme.fg3
+            color: root.theme.fg
             font { family: root.theme.font; pixelSize: 12; bold: true }
         }
 
