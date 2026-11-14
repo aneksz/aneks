@@ -71,7 +71,7 @@ Item {
 
         property string font: "SF Compact Display"
         property string iconFont: "JetBrainsMono Nerd Font"
-        property real fontSize: 12
+        property real fontSize: 11.5
         property int fontWeight: Font.Medium
 
         property color bg: c.bg
