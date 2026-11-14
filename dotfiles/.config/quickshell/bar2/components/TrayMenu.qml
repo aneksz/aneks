@@ -135,7 +135,7 @@ Item {
             Layout.leftMargin: root.stack.length ? 0 : 8
             text: root.currentTitle
             elide: Text.ElideRight
-            color: root.theme.fg3
+            color: root.theme.fg
             font { family: root.theme.font; pixelSize: 12; bold: true }
         }
     }
