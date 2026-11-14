@@ -442,7 +442,7 @@ Item {
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "󰂚"
-                        color: theme.inactive
+                        color: theme.fg1
                         font {
                             family: theme.font
                             pixelSize: 48
@@ -453,7 +453,7 @@ Item {
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "No notifications"
-                        color: theme.inactive
+                        color: theme.fg1
                         font {
                             family: theme.font
                             pixelSize: 12
