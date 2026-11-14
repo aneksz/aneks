@@ -51,7 +51,7 @@ Item {
     property bool shuffleOn: false
     property string loopMode: "None"      // None | Track | Playlist
     readonly property string player: "spotify"   // only Spotify is controlled
-    readonly property string sourceName: "󰓇 Spotify"
+    readonly property string sourceName: "󰓇   Spotify"
 
     property int artSize: 160            // the hub's Media tab uses a bigger cover
     property real textScale: 1.0         // scales title + artist text
