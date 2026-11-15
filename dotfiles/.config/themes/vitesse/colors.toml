@@ -1,0 +1,62 @@
+# ============================================================
+# Vitesse Dark Soft
+# Omarchy port of antfu/vscode-theme-vitesse
+# VSCodium: antfu.theme-vitesse ("Vitesse Dark Soft")
+# ============================================================
+
+accent     = "#4d9375"
+cursor     = "#dbd7ca"
+foreground = "#dbd7ca"
+background = "#222222"
+
+# terminal colours, mapped from the source palette
+color0  = "#222222"   # background
+color1  = "#cb7676"   # red
+color2  = "#4d9375"   # green
+color3  = "#e6cc77"   # yellow
+color4  = "#6394bf"   # blue - Vitesse's own blue; the source toml sets blue to the green accent
+color5  = "#d9739f"   # magenta
+color6  = "#5eaab5"   # cyan
+color7  = "#dbd7ca"   # foreground
+color8  = "#758575"   # muted
+color9  = "#cb7676"   # bright_red
+color10 = "#4d9375"   # bright_green
+color11 = "#e6cc77"   # bright_yellow
+color12 = "#6394bf"   # bright_blue (see color4)
+color13 = "#d9739f"   # bright_magenta
+color14 = "#5eaab5"   # bright_cyan
+color15 = "#ffffff"   # bright_foreground
+
+# --- Everything below is filled in for this setup's schema. ---
+# bg0, bg1 and bg3 are source colours (background, lighter_background,
+# selection). bg2 is NOT in the source: it is the midpoint of bg1 and bg3.
+bg0 = "#222222"
+bg1 = "#292929"
+bg2 = "#2f2f2f"
+bg3 = "#353535"
+fg0 = "#dbd7ca"
+fg1 = "#777777"   # dark_foreground
+
+accent_alt = "#c99076"   # orange
+error   = "#cb7676"      # red
+warn    = "#e6cc77"      # yellow
+info    = "#5eaab5"      # cyan
+success = "#4d9375"      # green
+
+border    = "#4d9375"
+accent_ws = "#4d9375"
+inactive  = "#353535"
+
+# non-colour, per-theme metadata
+color_scheme  = "prefer-dark"
+gtk_theme     = "Adwaita-dark"
+icon_theme    = "Yaru-sage-dark"
+vscode_theme  = "Vitesse Dark Soft"
+spicetify_theme        = "vitesse-dark-soft"
+spicetify_color_scheme = "vitesse-dark-soft"
+brave_accent  = "#4d9375"
+zen_accent    = "#4d9375"
+
+# TODO: put your wallpapers in wallpapers/ and set these two file names
+wallpaper_dp1 = "vitesse-1.png"
+wallpaper_dp3 = "vitesse-3.png"

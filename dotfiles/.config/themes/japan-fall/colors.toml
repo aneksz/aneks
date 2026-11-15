@@ -1,0 +1,60 @@
+# ============================================================
+# Japan Fall
+# Source: https://github.com/fsrodrig/omarchy-japan-autumn-theme (Japan Autumn, MIT)
+# ============================================================
+
+accent     = "#94a7ba"
+cursor     = "#d6c9b1"
+foreground = "#d6c9b1"
+background = "#0c111d"
+
+# terminal colours, mapped from the source palette
+color0  = "#0c111d"   # background
+color1  = "#eb5e3f"   # red
+color2  = "#727f6a"   # green
+color3  = "#9d917a"   # yellow
+color4  = "#94a7ba"   # blue
+color5  = "#a67665"   # magenta
+color6  = "#83a2a3"   # cyan
+color7  = "#d6c9b1"   # foreground
+color8  = "#63666c"   # muted
+color9  = "#ef7f66"   # bright_red
+color10 = "#94a489"   # bright_green
+color11 = "#c3b798"   # bright_yellow
+color12 = "#b8cde5"   # bright_blue
+color13 = "#d09983"   # bright_magenta
+color14 = "#a5c9ca"   # bright_cyan
+color15 = "#e0d7c5"   # bright_foreground
+
+# --- Everything below is filled in for this setup's schema. ---
+# bg0, bg2 and bg3 are source colours (background, lighter_background,
+# selection). bg1 is NOT in the source: it is the midpoint of bg0 and bg2.
+bg0 = "#0c111d"
+bg1 = "#181d29"
+bg2 = "#242934"
+bg3 = "#2f3946"
+fg0 = "#d6c9b1"
+fg1 = "#a19785"   # dark_foreground
+
+accent_alt = "#ee765c"   # orange
+error   = "#eb5e3f"      # red
+warn    = "#c3b798"      # bright_yellow
+info    = "#83a2a3"      # cyan
+success = "#94a489"      # bright_green
+
+border    = "#94a7ba"
+accent_ws = "#94a7ba"
+inactive  = "#2f3946"
+
+# non-colour, per-theme metadata
+color_scheme  = "prefer-dark"
+gtk_theme     = "Adwaita-dark"
+icon_theme    = "Yaru-wartybrown-dark"
+vscode_theme  = "Japan Fall"
+spicetify_theme        = "japan-fall"
+spicetify_color_scheme = "japan-fall"
+brave_accent  = "#94a7ba"
+zen_accent    = "#94a7ba"
+
+wallpaper_dp1 = "01-japan-fuji.jpg"
+wallpaper_dp3 = "04-japan-castle.jpg"
