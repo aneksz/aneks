@@ -25,6 +25,15 @@ Item {
     property color accent: "#81a1c1"
     property color errorColor: "#bf616a"
 
+    property real introContent: 1   // 1 = fully shown, so the content can never get stuck hidden
+
+    SequentialAnimation {
+    running: true
+    PropertyAction { target: root; property: "introContent"; value: 0 }
+    PauseAnimation { duration: 100 }
+    NumberAnimation { target: root; property: "introContent"; to: 1; duration: 600; easing.type: Easing.OutBack }
+}
+
     // ============================================================
     // THEME: parse colors.conf ($name = rgb(RRGGBB) format)
     // ============================================================
@@ -32,7 +41,7 @@ Item {
     function toQtColor(raw) {
         raw = raw.trim().replace(/#.*$/, "").replace(/;$/, "").trim()
 
-        // Matches Hyprland-style: rgb(2e3440) or rgba(2e3440ff)
+        // Matches Hyprland-sttayle: rgb(2e3440) or rgba(2e3440ff)
         const packedMatch = raw.match(/rgba?\(\s*([0-9a-fA-F]{6,8})\s*\)/i)
         if (packedMatch) {
             return "#" + packedMatch[1]
@@ -96,6 +105,7 @@ Item {
         id: wallpaper
         anchors.fill: parent
         source: "file://" + root.wallpaperPath
+        sourceSize.width: 1280
         fillMode: Image.PreserveAspectCrop
         visible: false
     }
@@ -104,6 +114,7 @@ Item {
         anchors.fill: parent
         source: wallpaper
         radius: 64
+       
     }
 
     Rectangle {
@@ -119,6 +130,8 @@ Item {
         id: content
         anchors.fill: parent
         visible: root.isPrimary
+        opacity: root.introContent
+        transform: Translate { y: -220 * (1 - root.introContent) }
 
         Timer {
             interval: 1000
@@ -278,132 +291,59 @@ Item {
                     }
                 }
             }
-        RowLayout {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 46
-                visible: root.activePlayer !== null
+        
+        }
 
-                Text {
-                    text: "󰙣"
-                    color: root.accent
-                    font { family: root.font; pixelSize: 30 }
-                    MouseArea { anchors.fill: parent; onClicked: root.activePlayer?.previous() }
-                }
-                Text {
-                    text: root.activePlayer?.isPlaying ? "" : ""
-                    color: root.accent
-                    font { family: root.font; pixelSize: 36 }
-                    MouseArea { anchors.fill: parent; onClicked: root.activePlayer?.togglePlaying() }
-                }
-                Text {
-                    text: "󰙡"
-                    color: root.accent
-                    font { family: root.font; pixelSize: 30 }
-                    MouseArea { anchors.fill: parent; onClicked: root.activePlayer?.next() }
-                }
-                
-            }
-            
-           RowLayout {
-    Layout.alignment: Qt.AlignHCenter
+       // Spotify controls + track, pinned to the bottom centre
+Column {
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: 48
+    spacing: 16
     visible: root.activePlayer !== null
-    spacing: 12
 
-    Text {
-        text: "󰓇"
-        color: root.fg0
-        font { family: root.font; pixelSize: 16 }
+    RowLayout {
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: 46
+
+        Text {
+            text: "󰙣"
+            color: root.accent
+            font { family: root.font; pixelSize: 30 }
+            MouseArea { anchors.fill: parent; onClicked: root.activePlayer?.previous() }
+        }
+        Text {
+            text: root.activePlayer?.isPlaying ? "" : ""
+            color: root.accent
+            font { family: root.font; pixelSize: 36 }
+            MouseArea { anchors.fill: parent; onClicked: root.activePlayer?.togglePlaying() }
+        }
+        Text {
+            text: "󰙡"
+            color: root.accent
+            font { family: root.font; pixelSize: 30 }
+            MouseArea { anchors.fill: parent; onClicked: root.activePlayer?.next() }
+        }
     }
 
-    Text {
-        Layout.maximumWidth: 280
-        elide: Text.ElideRight
-        text: (root.activePlayer?.trackArtist || "Unknown Artist") + " - " + (root.activePlayer?.trackTitle || "Unknown Title")
-        color: root.fg1
-        font { family: root.font; pixelSize: 16; bold: true }
+    RowLayout {
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: 12
+
+        Text {
+            text: "󰓇"
+            color: root.fg0
+            font { family: root.font; pixelSize: 16 }
+        }
+        Text {
+            Layout.maximumWidth: 280
+            elide: Text.ElideRight
+            text: (root.activePlayer?.trackArtist || "Unknown Artist") + " - " + (root.activePlayer?.trackTitle || "Unknown Title")
+            color: root.fg1
+            font { family: root.font; pixelSize: 16; bold: true }
+        }
     }
 }
-        }
-
-        // ============================================================
-        // POWER ACTIONS — sleep / reboot / shutdown
-        // Reboot and shutdown need a second click to confirm.
-        // ============================================================
-
-        Row {
-            id: powerRow
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 48
-            spacing: 28
-
-            property string armed: ""   // which action is waiting for confirmation
-
-            Timer {
-                id: disarmTimer
-                interval: 3000
-                onTriggered: powerRow.armed = ""
-            }
-
-            Repeater {
-                model: [
-                    { id: "sleep",    icon: "󰤄", label: "Sleep",    cmd: ["systemctl", "suspend"],  confirm: false },
-                    { id: "reboot",   icon: "󰜉", label: "Reboot",   cmd: ["systemctl", "reboot"],   confirm: true  },
-                    { id: "shutdown", icon: "󰐥", label: "Shutdown", cmd: ["systemctl", "poweroff"], confirm: true  }
-                ]
-
-                delegate: Column {
-                    id: btn
-                    required property var modelData
-                    readonly property bool armed: powerRow.armed === modelData.id
-                    readonly property color tone: armed ? root.errorColor : root.accent
-                    spacing: 8
-
-                    Rectangle {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        width: 56
-                        height: 56
-                        radius: 28
-                        color: root.bg0   // same fill as the password field
-                        border.width: 2
-                        border.color: btn.armed ? root.errorColor
-                                    : btnMouse.containsMouse ? root.accent
-                                    : Qt.rgba(1, 1, 1, 0.15)
-                        Behavior on border.color { ColorAnimation { duration: 150 } }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: btn.modelData.icon
-                            color: btn.tone
-                            font { family: root.font; pixelSize: 22 }
-                        }
-
-                        MouseArea {
-                            id: btnMouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                if (btn.modelData.confirm && !btn.armed) {
-                                    powerRow.armed = btn.modelData.id
-                                    disarmTimer.restart()
-                                    return
-                                }
-                                powerRow.armed = ""
-                                Quickshell.execDetached(btn.modelData.cmd)
-                            }
-                        }
-                    }
-
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: (btn.armed ? "Confirm?" : btn.modelData.label).toUpperCase()
-                        color: btn.armed ? root.errorColor : root.fg1
-                        font { family: root.font; pixelSize: 11; bold: true; letterSpacing: 2 }
-                    }
-                }
-            }
-        }
 
         Component.onCompleted: passwordInput.forceActiveFocus()
     }

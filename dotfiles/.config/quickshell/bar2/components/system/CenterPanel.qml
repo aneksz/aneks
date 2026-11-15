@@ -34,21 +34,11 @@ Item {
 
 Row {
     anchors.horizontalCenter: parent.horizontalCenter
-    spacing: 2
+    spacing: 8
 
     Text {
         text: Qt.formatTime(root.globalClock.date, "hh")
         color: theme.accent
-        font {
-            family: theme.font
-            pixelSize: 76
-            weight: Font.Bold
-        }
-    }
-
-    Text {
-        text: ":"
-        color: theme.fg1
         font {
             family: theme.font
             pixelSize: 76
