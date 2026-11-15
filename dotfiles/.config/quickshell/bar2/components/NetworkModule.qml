@@ -261,7 +261,7 @@ Item {
                 }
                 Text {
                     text: root.connected ? "ETHERNET CONNECTION ACTIVE" : "CABLE DISCONNECTED"
-                    color: root.theme.fg3
+                    color: root.theme.fg1
                     font { family: root.theme.font; pixelSize: 11; bold: true }
                 }
             }
@@ -320,7 +320,7 @@ Item {
                     property string value: ""
                     Layout.fillWidth: true
 
-                    Text { text: label; color: root.theme.fg3; font { family: root.theme.font; pixelSize: 14 } }
+                    Text { text: label; color: root.theme.fg1; font { family: root.theme.font; pixelSize: 14 } }
                     Item { Layout.fillWidth: true }
                     Text { text: value; color: root.theme.fg; font { family: root.theme.font; pixelSize: 14; bold: true } }
                 }
@@ -418,7 +418,7 @@ Rectangle {
         // ---- DNS PROVIDER ROW LAYOUT ----
         Text {
             text: "DNS PROVIDER"
-            color: root.theme.fg3
+            color: root.theme.fg1
             font { family: root.theme.font; pixelSize: 12; bold: true }
         }
 

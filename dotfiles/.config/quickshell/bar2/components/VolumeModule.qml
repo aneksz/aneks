@@ -295,7 +295,7 @@ if (name.startsWith("alsa_output.")) {
                     ? "Muted · " + volumeButton.volumePercent + "%"
                     : volumeButton.volumePercent + "%"
 
-                color: root.theme.fg3
+                color: root.theme.fg1
 
                 font {
                     family: root.theme.font
@@ -495,7 +495,7 @@ Item {
                                     : "Click to switch"
 
                                 color:
-                                    root.theme.fg3
+                                    root.theme.fg1
 
                                 font {
                                     family: root.theme.font
@@ -541,7 +541,7 @@ Item {
 
                                 color:
                                     rowRoot.isMuted
-                                    ? root.theme.fg3
+                                    ? root.theme.fg1
                                     : root.theme.fg
 
                                 font {
@@ -679,7 +679,7 @@ Item {
                                 + "%"
 
                             color:
-                                root.theme.fg3
+                                root.theme.fg1
 
                             font {
                                 family: root.theme.font
@@ -759,7 +759,7 @@ Item {
     + " available"
 
             color:
-                root.theme.fg3
+                root.theme.fg1
 
             font {
                 family: root.theme.font

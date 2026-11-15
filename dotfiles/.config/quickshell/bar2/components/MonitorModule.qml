@@ -186,7 +186,7 @@ Item {
                     text: root.error ? root.error.toUpperCase()
                         : root.mon ? root.mon.connector + (root.reading ? "  ·  READING…" : "")
                         : "DETECTING…"
-                    color: root.error ? root.theme.error : root.theme.fg3
+                    color: root.error ? root.theme.error : root.theme.fg1
                     font { family: root.theme.font; pixelSize: 11; bold: true; letterSpacing: 1.5 }
                 }
             }
@@ -229,7 +229,7 @@ Item {
         Text {
             visible: root.mon && root.mon.modes && root.mon.modes.length > 0
             text: "PICTURE MODE"
-            color: root.theme.fg3
+            color: root.theme.fg1
             font { family: root.theme.font; pixelSize: 11; bold: true; letterSpacing: 1.5 }
         }
         Flow {
@@ -250,7 +250,7 @@ Item {
         Text {
             visible: root.mon && root.mon.presets && root.mon.presets.length > 0
             text: "COLOR PRESET"
-            color: root.theme.fg3
+            color: root.theme.fg1
             font { family: root.theme.font; pixelSize: 11; bold: true; letterSpacing: 1.5 }
         }
         Flow {
@@ -324,7 +324,7 @@ Item {
             Layout.fillWidth: true
             Text {
                 text: slider.label
-                color: root.theme.fg3
+                color: root.theme.fg1
                 font { family: root.theme.font; pixelSize: 11; bold: true; letterSpacing: 1.5 }
             }
             Item { Layout.fillWidth: true }

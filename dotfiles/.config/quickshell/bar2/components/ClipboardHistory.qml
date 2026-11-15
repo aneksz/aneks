@@ -134,7 +134,7 @@ Item {
 
                         Text {
                             text: "Clipboard history"
-                            color: root.theme.fg0
+                            color: root.theme.fg1
                             font {
                                 family: root.theme.font
                                 pixelSize: 20
@@ -144,7 +144,7 @@ Item {
 
                         Text {
                             text: root.entries.length + " item" + (root.entries.length === 1 ? "" : "s")
-                            color: root.theme.textMuted
+                            color: root.theme.fg1
                             font {
                                 family: root.theme.font
                                 pixelSize: 13
@@ -213,7 +213,7 @@ Item {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "\uf002" // search glyph
-                        color: root.theme.textMuted
+                        color: root.theme.fg1
                         font {
                             family: root.theme.font
                             pixelSize: 15
@@ -224,7 +224,7 @@ Item {
                         id: searchInput
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - 30
-                        color: root.theme.fg0
+                        color: root.theme.fg1
                         font {
                             family: root.theme.font
                             pixelSize: 15
@@ -233,7 +233,7 @@ Item {
 
                         Text {
                             text: "Type to filter clipboard history..."
-                            color: root.theme.textMuted
+                            color: root.theme.fg1
                             visible: searchInput.text.length === 0
                             font: searchInput.font
                         }
@@ -291,7 +291,7 @@ Item {
                         Text {
                             width: parent.width
                             text: modelData.preview
-                            color: root.theme.fg0
+                            color: root.theme.fg
                             elide: Text.ElideRight
                             maximumLineCount: 1
                             font {
@@ -303,7 +303,7 @@ Item {
 
                         Text {
                             text: "Text"
-                            color: root.theme.textMuted
+                            color: root.theme.fg1
                             font {
                                 family: root.theme.font
                                 pixelSize: 12
@@ -328,7 +328,7 @@ Item {
             // ---------------- Footer ----------------
             Text {
                 text: "Enter/Click copy · Esc close"
-                color: root.theme.textMuted
+                color: root.theme.fg1
                 font {
                     family: root.theme.font
                     pixelSize: 12
