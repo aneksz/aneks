@@ -1389,7 +1389,7 @@ width:
 
     : root.bluetoothVisible ? 440
 
-    : root.powerVisible ? 588
+    : root.powerVisible ? 380
 
     : root.trayMenuVisible ? 300
 
@@ -1446,7 +1446,7 @@ height:
 
     : root.bluetoothVisible ? 460
 
-    : root.powerVisible ? 120
+    : root.powerVisible ? 90
 
     : root.trayMenuVisible ? trayMenu.implicitHeight + 28
 

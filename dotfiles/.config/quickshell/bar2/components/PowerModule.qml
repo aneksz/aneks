@@ -20,6 +20,10 @@ Item {
         { label: "Power Off", icon: "power_settings_new", cmd: ["systemctl", "poweroff"] }
     ]
 
+    // size the host can use for the power panel
+    implicitWidth: content.implicitWidth + 64
+    implicitHeight: content.implicitHeight + 48
+
     function run(i) {
         const a = actions[i]
         if (!a) return
@@ -28,7 +32,7 @@ Item {
     }
 
     // Every time the menu opens: start on Lock (the harmless one) and grab the keyboard
-        onVisibleChanged: {
+    onVisibleChanged: {
         if (visible) {
             selected = 0
             Qt.callLater(() => root.forceActiveFocus())
@@ -51,58 +55,90 @@ Item {
         }
     }
 
-    Row {
+    Column {
+        id: content
         anchors.centerIn: parent
-        spacing: 10
+        anchors.verticalCenterOffset: 3       // nudge down: the label line has empty space below the letters
+        spacing: 4
 
-        Repeater {
-            model: root.actions
+        // round icon buttons
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 18
 
-            delegate: Rectangle {
-                id: tile
-                required property var modelData
-                required property int index
-                readonly property bool isSelected: root.selected === index
+            Repeater {
+                model: root.actions
 
-                width: 104
-                height: 96
-                radius: 16
-                color: isSelected ? root.theme.accent : root.theme.bgAlt
-                border.width: 1
-                border.color: isSelected ? "transparent" : Qt.rgba(1, 1, 1, 0.06)
-                scale: tileMouse.pressed ? 0.96 : 1.0
+                delegate: Rectangle {
+                    id: btn
+                    required property var modelData
+                    required property int index
+                    readonly property bool isSelected: root.selected === index
 
-                Behavior on color { ColorAnimation { duration: 120 } }
-                Behavior on scale { NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
+                    width: 48
+                    height: 48
+                    radius: width / 2
+                    color: isSelected ? root.theme.accent : root.theme.bgAlt
+                    border.width: 1
+                    border.color: isSelected ? "transparent" : Qt.rgba(1, 1, 1, 0.06)
+                    scale: btnMouse.pressed ? 0.94 : 1.0
 
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 8
+                    Behavior on color { ColorAnimation { duration: 120 } }
+                    Behavior on scale { NumberAnimation { duration: 100; easing.type: Easing.OutCubic } }
 
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: tile.modelData.icon
-                        color: tile.isSelected ? root.theme.bg : root.theme.fg
-                        font { family: "Material Symbols Outlined"; pixelSize: 26 }
+                    Icon {
+                        anchors.centerIn: parent
+                        name: btn.modelData.icon
+                        size: 24
+                        color: btn.isSelected ? root.theme.bg : root.theme.fg
                         Behavior on color { ColorAnimation { duration: 120 } }
                     }
 
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: tile.modelData.label
-                        color: tile.isSelected ? root.theme.bg : root.theme.fg
-                        font { family: root.theme.font; pixelSize: 13; bold: true }
-                        Behavior on color { ColorAnimation { duration: 120 } }
+                    MouseArea {
+                        id: btnMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onEntered: root.selected = btn.index
+                        onClicked: root.run(btn.index)
                     }
                 }
+            }
+        }
 
-                MouseArea {
-                    id: tileMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onEntered: root.selected = tile.index
-                    onClicked: root.run(tile.index)
+        // name of the selected action: slides up when it changes
+        Item {
+            id: labelBox
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 160
+            height: 22
+            clip: true
+
+            Text {
+                id: labelText
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                color: root.theme.fg
+                font { family: root.theme.font; pixelSize: 15; bold: true }
+                Component.onCompleted: text = root.actions[root.selected].label
+            }
+
+            Connections {
+                target: root
+                function onSelectedChanged() { labelAnim.restart() }
+            }
+
+            SequentialAnimation {
+                id: labelAnim
+                ParallelAnimation {
+                    NumberAnimation { target: labelText; property: "y"; to: -10; duration: 90; easing.type: Easing.InCubic }
+                    NumberAnimation { target: labelText; property: "opacity"; to: 0; duration: 90 }
+                }
+                ScriptAction { script: labelText.text = root.actions[root.selected].label }
+                PropertyAction { target: labelText; property: "y"; value: 10 }
+                ParallelAnimation {
+                    NumberAnimation { target: labelText; property: "y"; to: 0; duration: 150; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: labelText; property: "opacity"; to: 1; duration: 150 }
                 }
             }
         }

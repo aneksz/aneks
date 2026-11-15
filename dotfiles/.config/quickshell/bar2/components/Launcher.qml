@@ -432,7 +432,7 @@ Item {
                                     visible: root.showSubtitle && text !== ""
                                     text: row.modelData.desc || ""
                                     elide: Text.ElideRight
-                                    color: theme.textMuted
+                                    color: theme.fg1
                                     font.family: root.uiFont
                                     font.pixelSize: 11
                                 }
