@@ -185,6 +185,7 @@ Item {
                     color: root.mutedAccent
                     font { family: root.font; pixelSize: 100; bold: true }
                 }
+
                 Text {
                     id: minutesText
                     text: new Date().getMinutes().toString().padStart(2, '0')

@@ -48,7 +48,7 @@ Row {
 
     Text {
         text: ":"
-        color: theme.inactive
+        color: theme.fg1
         font {
             family: theme.font
             pixelSize: 76
