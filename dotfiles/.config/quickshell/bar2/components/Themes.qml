@@ -154,7 +154,7 @@ Item {
                 boundsBehavior: Flickable.StopAtBounds
                 model: root.themeList
 
-                readonly property int columns: Math.max(2, Math.floor(width / 150))
+                readonly property int columns: 4
                 cellWidth: Math.floor(width / columns)
                 cellHeight: 96
 

@@ -1365,7 +1365,7 @@ width:
 
     : root.calendarVisible ? 440
 
-    : root.themeVisible ? 540
+    : root.themeVisible ? 640
 
     : root.wallpaperVisible ? 968
 
