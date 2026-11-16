@@ -13,6 +13,7 @@
     ./modules/services.nix
     ./modules/update-check.nix
     ./modules/plymouth.nix
+    ./modules/thunderbird.nix
   ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
