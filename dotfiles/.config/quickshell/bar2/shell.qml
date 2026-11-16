@@ -483,17 +483,21 @@ NotificationServer {
     Timer { id: updatesCheckingResetTimer; interval: 3000; onTriggered: root.updatesChecking = false }
     Timer { interval: 600000; running: true; repeat: true; onTriggered: root.checkAllUpdates() }
     Timer {
-        id: updateToastTimer
-        interval: 3000     
-                onTriggered: {
-            const n = root.totalUpdateCount
-            if (n > 0 && root.notifiedUpdateCount === 0)
-                Quickshell.execDetached(["notify-send", "-a", "Update Center", "-i", "system-software-update",
-                    "Updates available",
-                    n + (n === 1 ? " update is" : " updates are") + " ready to install"])
-            root.notifiedUpdateCount = n
-        }
+    id: updateToastTimer
+    interval: 3000     
+    onTriggered: {
+        const n = root.totalUpdateCount
+        if (n > 0 && root.notifiedUpdateCount === 0)
+            Quickshell.execDetached([
+                "notify-send", 
+                "-a", "Update Center",
+                "Updates available",
+                n + (n === 1 ? " update is" : " updates are") + " ready to install"
+            ])
+        root.notifiedUpdateCount = n
     }
+}
+
 
 // ============================================================
 // TIMER ENGINE

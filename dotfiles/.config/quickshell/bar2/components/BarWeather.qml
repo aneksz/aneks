@@ -76,7 +76,7 @@ readonly property string materialName: materialNames[root.icon] ?? "cloud"
 
     font {
         family: theme.font
-        pointSize: theme.fontSize
+        pointSize: theme.fontSize 
         weight: theme.fontWeight
     }
 }

@@ -224,8 +224,9 @@ Item {
                     ).toLowerCase()
 
                     // Catch theme updates and qbittorrent early so they never evaluate as image fallbacks
-                    if (isThemeUpdate() || isQbittorrent() || isEmail()) return false
-                    if (isThemeUpdate() || isQbittorrent() || isCaffeine() || isNightLight() || isEmail()) return false
+                    // Fixed syntax:
+                    if (isThemeUpdate() || isQbittorrent() || isCaffeine() || isNightLight() || isEmail() || isUpdateCenter()) return false
+
 
                     // Spotify with album art
                     if (app.includes("spotify") && root.spotifyArtUrl && root.spotifyArtUrl !== "")
@@ -249,6 +250,17 @@ Item {
                     return summary.includes("theme updated") || body.includes("theme updated")
                 }
 
+                function isUpdateCenter() {
+                    if (!root.currentNotif) return false
+
+                    const app = String(root.currentNotif.appName || "").toLowerCase()
+                    const summary = String(root.currentNotif.summary || "").toLowerCase()
+                    const body = String(root.currentNotif.body || "").toLowerCase()
+
+                    return app.includes("update center") || summary.includes("update center") || body.includes("update center")
+                }
+
+
                 // Identify if notification originates from qBittorrent
                 function isQbittorrent() {
                     if (!root.currentNotif) return false
@@ -269,6 +281,7 @@ function isCaffeine() {
     const summary = String(root.currentNotif.summary || "").toLowerCase()
     return summary.includes("stay awake")
 }
+
 
 // Identify if notification is a Night Light toggle
 function isNightLight() {
@@ -369,6 +382,7 @@ function isOn() {
                         // Condition tree evaluating icons: qBittorrent -> Theme -> Default Bell
                         text: iconContainer.isQbittorrent() ? "󰅢" 
     : iconContainer.isThemeUpdate() ? "󰏘" 
+    : iconContainer.isUpdateCenter() ? ""
     : iconContainer.isCaffeine() ? (iconContainer.isOn() ? "󰾪" : "󰅶")
     : iconContainer.isNightLight() ? (iconContainer.isOn() ? "󰖔" : "󰖨")
     : iconContainer.isEmail() ? "󰇮"
