@@ -6,6 +6,7 @@
   programs.vlc.enable = true;
   programs.neovim.enable = true;
   programs.openvpn3.enable = true;
+  programs.thunderbird.enable = true;
 
   # Lets Mason's downloaded language servers (Neovim) run
   programs.nix-ld.enable = true;
@@ -23,7 +24,6 @@
     libreoffice
     nautilus
     nwg-look
-    thunderbird
     vesktop
     vm-curator
     vscodium
