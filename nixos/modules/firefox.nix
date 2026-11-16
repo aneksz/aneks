@@ -3,6 +3,24 @@
 {
   programs.firefox = {
     enable = true;
+
+    # Removes Firefox's 0.5px tooltip hairline border, which gets clipped at
+    # fractional scaling. userChrome.css can't reach the generated tooltip, so it
+    # is loaded as an agent stylesheet via AutoConfig.
+    autoConfig = ''
+      try {
+        const Cc = Components.classes, Ci = Components.interfaces;
+        const sss = Cc["@mozilla.org/content/style-sheet-service;1"]
+                      .getService(Ci.nsIStyleSheetService);
+        const css = "tooltip { border: none !important; }";
+        const uri = Cc["@mozilla.org/network/io-service;1"]
+                      .getService(Ci.nsIIOService)
+                      .newURI("data:text/css," + encodeURIComponent(css));
+        if (!sss.sheetRegistered(uri, sss.AGENT_SHEET))
+          sss.loadAndRegisterSheet(uri, sss.AGENT_SHEET);
+      } catch (e) {}
+    '';
+
     preferences = {
       # Hardware video decoding through VA-API (nvidia-vaapi-driver, see nvidia.nix)
       "media.ffmpeg.vaapi.enabled" = true;
