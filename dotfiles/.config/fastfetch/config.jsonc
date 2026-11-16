@@ -28,6 +28,7 @@
         { "type": "terminal", "key": "│ {#31}\uf120 term    {#keys}│" },
         { "type": "shell",    "key": "│ {#32}\uf489 shell   {#keys}│" },
         { "type": "cpu",      "key": "│ {#33}󰍛 cpu     {#keys}│", "showPeCoreCount": true },
+        { "type": "gpu",      "key": "│ {#32}\udb82\udcae gpu     {#keys}│", "format": "{name}" },        
         { "type": "disk",     "key": "│ {#34}󰉉 disk    {#keys}│", "folders": "/" },
         { "type": "disk",     "key": "│ {#34}󰉉 data    {#keys}│", "folders": "/mnt/data" },
         { "type": "memory",   "key": "│ {#35}\uf2db memory  {#keys}│" },
