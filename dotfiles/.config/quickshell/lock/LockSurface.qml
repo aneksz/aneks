@@ -119,7 +119,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.25)
+        color: Qt.rgba(0, 0, 0, 0.35)
     }
 
     // ============================================================
@@ -196,14 +196,14 @@ Item {
                     id: hoursText
                     text: new Date().getHours().toString().padStart(2, '0')
                     color: root.mutedAccent
-                    font { family: root.font; pixelSize: 100; bold: true }
+                    font { family: "SF Compact Rounded"; pixelSize: 140; bold: true }
                 }
 
                 Text {
                     id: minutesText
                     text: new Date().getMinutes().toString().padStart(2, '0')
                     color: root.fg0
-                    font { family: root.font; pixelSize: 100; bold: true }
+                    font { family: "SF Compact Rounded"; pixelSize: 140; bold: true }
                 }
             }
 
@@ -213,7 +213,7 @@ Item {
                 text: Qt.formatDate(new Date(), "dddd").toUpperCase() + "  •  " +
                       new Date().getDate() + " " + Qt.formatDate(new Date(), "MMM").toUpperCase()
                 color: root.fg1
-                font { family: root.font; pixelSize: 14; bold: true; letterSpacing: 2 }
+                font { family: "SF Compact Rounded"; pixelSize: 16; bold: true }
             }
 
             Rectangle {
