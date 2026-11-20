@@ -80,7 +80,7 @@ let
 
   apply = pkgs.writeShellApplication {
     name = "nixos-update-apply";
-    runtimeInputs = [ pkgs.coreutils pkgs.jq ];
+    runtimeInputs = [ pkgs.coreutils pkgs.jq pkgs.git ];
     text = ''
       if [ ! -f "${state}/flake.lock" ]; then
         echo "No checked update yet - run: systemctl start nixos-update-check"
@@ -104,6 +104,17 @@ let
         exit 1
       fi
       rm -f "$backup"
+
+      # Record the new versions: commit flake.lock only (anything else being
+      # edited stays uncommitted). Pushing is left to you.
+      repo=$(dirname "${flakeDir}")
+      if ! git -C "$repo" diff --quiet HEAD -- nixos/flake.lock; then
+        if git -C "$repo" commit -q -m "system updates" -- nixos/flake.lock; then
+          echo "Committed flake.lock (push it from the git panel)"
+        else
+          echo "Could not commit flake.lock - commit it yourself"
+        fi
+      fi
 
       # Re-check against the new system so the bar's list starts fresh
       systemctl start --no-block nixos-update-check.service || true
