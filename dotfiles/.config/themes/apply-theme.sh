@@ -45,7 +45,6 @@ SCHEME="${COLORS[color_scheme]:-prefer-dark}"
 BRAVE_MODE=dark; [[ $SCHEME == prefer-light ]] && BRAVE_MODE=light
 
 # ---------- templates -> theme dir ----------
-render hypr.conf.tpl            > "$THEME_DIR/hypr.conf"
 render hypr.lua.tpl             > "$THEME_DIR/hypr.lua"
 render kitty.colors.conf.tpl    > "$THEME_DIR/kitty/${THEME}.colors.conf"
 render quickshell_theme.qml.tpl > "$THEME_DIR/quickshell_theme.qml"
@@ -60,7 +59,7 @@ cp "$THEME_DIR/${THEME}.p10k.zsh" "$HOME/.p10k.zsh"
 (sleep 0.6 && notify-send "Theme Updated" "Applied Theme: $THEME") &
 
 for d in "$QS" "$QS/bar1" "$QS/bar2"; do cp "$THEME_DIR/quickshell_theme.qml" "$d/Colors.qml"; done
-cp "$THEME_DIR/hypr.lua"  "$HYPR/modules/colors.lua"
+cp "$THEME_DIR/hypr.lua"  "$HYPR/colors.lua"
 cp "$THEME_DIR/hypr.conf" "$HYPR/colors.conf"
 
 

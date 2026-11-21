@@ -1,5 +1,6 @@
 return {
     -- Backgrounds
+    bg  = "{{ background_argb }}",
     bg0 = "{{ bg0_argb }}",
     bg1 = "{{ bg1_argb }}",
     bg2 = "{{ bg2_argb }}",

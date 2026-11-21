@@ -4,7 +4,7 @@ package.path = config_dir .. "/hypr/?.lua;" .. config_dir .. "/hypr/?/init.lua;"
 
 -- hyprland.lua
 _G.hl = hl -- Make Hyprland functions global
-_G.colors = require("modules/colors") -- Make your theme global
+_G.colors = require("colors") -- Make your theme global
 
 -- Now load everything else
 require("modules/envs")
