@@ -11,7 +11,9 @@ Item {
     property var theme
     required property var globalClock
 
-    Process { id: commandRunner }
+    Process {
+        id: commandRunner
+    }
 
     // ============================================================
     // CARD BACKGROUND
@@ -28,36 +30,34 @@ Item {
             anchors.centerIn: parent
             spacing: 40
 
-        // ====================================================
-       // CLOCK
-      // ====================================================
+            // ====================================================
+            // CLOCK
+            // ====================================================
 
-Row {
-    anchors.horizontalCenter: parent.horizontalCenter
-    spacing: 8
+            Row {
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 8
 
-    Text {
-        text: Qt.formatTime(root.globalClock.date, "hh")
-        color: theme.accent
-        font {
-            family: theme.font
-            pixelSize: 76
-            weight: Font.Bold
-        }
-    }
+                Text {
+                    text: Qt.formatTime(root.globalClock.date, "hh")
+                    color: theme.accent
+                    font {
+                        family: theme.font
+                        pixelSize: 76
+                        weight: Font.Bold
+                    }
+                }
 
-    Text {
-        text: Qt.formatTime(root.globalClock.date, "mm")
-        color: theme.fg
-        font {
-            family: theme.font
-            pixelSize: 76
-            weight: Font.Bold
-        }
-    }
-
-    
-}
+                Text {
+                    text: Qt.formatTime(root.globalClock.date, "mm")
+                    color: theme.fg
+                    font {
+                        family: theme.font
+                        pixelSize: 76
+                        weight: Font.Bold
+                    }
+                }
+            }
 
             // ====================================================
             // DATE
@@ -121,55 +121,13 @@ Row {
                 anchors.horizontalCenter: parent.horizontalCenter
                 spacing: 28
 
-                component CircularButton: MouseArea {
-                    id: btn
-                    width: 42
-                    height: 42
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-
-                    property string icon
-                    property color accent: theme.accent
-
-                    scale: btn.containsMouse ? 1.08 : 1.0
-                    Behavior on scale {
-                        NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
-                    }
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: width / 2
-                        color: btn.containsMouse
-                               ? Qt.rgba(btn.accent.r, btn.accent.g, btn.accent.b, 0.15)
-                               : "transparent"
-                        border.width: 1.5
-                        border.color: btn.containsMouse
-                                      ? btn.accent
-                                      : Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.15)
-
-                        Behavior on color { ColorAnimation { duration: 120 } }
-                        Behavior on border.color { ColorAnimation { duration: 120 } }
-                    }
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: btn.icon
-                        color: btn.containsMouse ? btn.accent : theme.fg1
-                        font {
-                            family: theme.font
-                            pixelSize: 18
-                        }
-                        Behavior on color { ColorAnimation { duration: 120 } }
-                    }
-                }
-
                 // Shutdown
                 CircularButton {
                     icon: "󰐥"
                     accent: theme.error
                     onClicked: {
-                        commandRunner.command = ["systemctl", "poweroff"]
-                        commandRunner.running = true
+                        commandRunner.command = ["systemctl", "poweroff"];
+                        commandRunner.running = true;
                     }
                 }
 
@@ -178,8 +136,8 @@ Row {
                     icon: ""
                     accent: theme.warning
                     onClicked: {
-                        commandRunner.command = ["systemctl", "reboot"]
-                        commandRunner.running = true
+                        commandRunner.command = ["systemctl", "reboot"];
+                        commandRunner.running = true;
                     }
                 }
 
@@ -188,9 +146,62 @@ Row {
                     icon: "󰍃"
                     accent: theme.accent
                     onClicked: {
-                        commandRunner.command = ["hyprctl", "dispatch", "hl.dispatch(hl.dsp.exit())"]
-                        commandRunner.running = true
+                        commandRunner.command = ["hyprctl", "dispatch", "hl.dispatch(hl.dsp.exit())"];
+                        commandRunner.running = true;
                     }
+                }
+            }
+        }
+    }
+
+    component CircularButton: MouseArea {
+        id: btn
+        width: 42
+        height: 42
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+
+        property string icon
+        property color accent: theme.accent
+
+        scale: btn.containsMouse ? 1.08 : 1.0
+        Behavior on scale {
+            NumberAnimation {
+                duration: 120
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: width / 2
+            color: btn.containsMouse ? Qt.rgba(btn.accent.r, btn.accent.g, btn.accent.b, 0.15) : "transparent"
+            border.width: 1.5
+            border.color: btn.containsMouse ? btn.accent : Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.15)
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: 120
+                }
+            }
+            Behavior on border.color {
+                ColorAnimation {
+                    duration: 120
+                }
+            }
+        }
+
+        Text {
+            anchors.centerIn: parent
+            text: btn.icon
+            color: btn.containsMouse ? btn.accent : theme.fg1
+            font {
+                family: theme.font
+                pixelSize: 18
+            }
+            Behavior on color {
+                ColorAnimation {
+                    duration: 120
                 }
             }
         }

@@ -19,7 +19,6 @@ Item {
 
     // Fallback defaults — overwritten once colors.lua is parsed
     property color bg: "#2e3440"
-    property color bg0: "#3b4252"
     property color fg0: "#eceff4"
     property color fg1: "#e5e9f0"
     property color mutedAccent: "#81a1c1"
@@ -31,7 +30,7 @@ Item {
     property color success: "#a3be8c"
     readonly property var dotPalette: [accent, accentAlt, errorColor, warn, info, success]
 
-    property real introContent: 1   // 1 = fully shown, so the content can never get stuck hidden
+    property real introContent: 1 // 1 = fully shown, so the content can never get stuck hidden
 
     SequentialAnimation {
         running: true
@@ -80,9 +79,6 @@ Item {
                 case "bg":
                     root.bg = value;
                     break;
-                case "bg1":
-                    root.bg0 = value;   // input field bg
-                    break;
                 case "fg0":
                     root.fg0 = value;
                     break;
@@ -99,6 +95,15 @@ Item {
                 }
             }
         }
+    }
+
+    function pad2(n) {
+        return n.toString().padStart(2, '0');
+    }
+
+    // same format for the first frame and every timer tick
+    function dateString(d) {
+        return Qt.formatDate(d, "dddd").toUpperCase() + "    " + d.getDate() + " " + Qt.formatDate(d, "MMM").toUpperCase();
     }
 
     readonly property var activePlayer: {
@@ -153,9 +158,9 @@ Item {
             repeat: true
             onTriggered: {
                 const now = new Date();
-                hoursText.text = now.getHours().toString().padStart(2, '0');
-                minutesText.text = now.getMinutes().toString().padStart(2, '0');
-                dateText.text = Qt.formatDate(now, "dddd").toUpperCase() + "     " + now.getDate() + " " + Qt.formatDate(now, "MMM").toUpperCase();
+                hoursText.text = root.pad2(now.getHours());
+                minutesText.text = root.pad2(now.getMinutes());
+                dateText.text = root.dateString(now);
             }
         }
 
@@ -169,7 +174,7 @@ Item {
 
                 Text {
                     id: hoursText
-                    text: new Date().getHours().toString().padStart(2, '0')
+                    text: root.pad2(new Date().getHours())
                     color: root.mutedAccent
                     renderType: Text.CurveRendering
                     font {
@@ -182,19 +187,19 @@ Item {
                 Text {
                     text: ":"
                     color: root.fg0
+                    renderType: Text.CurveRendering
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.topMargin: -40 // colon sits low next to the digits
                     font {
                         family: "SF Compact Rounded"
                         pixelSize: 240
                         bold: true
                     }
-                    Layout.alignment: Qt.AlignVCenter
-                    renderType: Text.CurveRendering
-                    Layout.topMargin: -40
                 }
 
                 Text {
                     id: minutesText
-                    text: new Date().getMinutes().toString().padStart(2, '0')
+                    text: root.pad2(new Date().getMinutes())
                     color: root.fg0
                     renderType: Text.CurveRendering
                     font {
@@ -208,7 +213,7 @@ Item {
             Text {
                 id: dateText
                 Layout.alignment: Qt.AlignHCenter
-                text: Qt.formatDate(new Date(), "dddd").toUpperCase() + "  •  " + new Date().getDate() + " " + Qt.formatDate(new Date(), "MMM").toUpperCase()
+                text: root.dateString(new Date())
                 color: root.fg1
                 font {
                     family: "SF Compact Rounded"
@@ -257,7 +262,7 @@ Item {
                 Layout.alignment: Qt.AlignHCenter
 
                 Text {
-                    text: "hi,  "
+                    text: "hi, "
                     color: root.fg1
                     font {
                         family: "SF Compact Rounded"
@@ -276,61 +281,72 @@ Item {
                 }
             }
 
-            Rectangle {
-                id: inputField
+            // Fixed-size slot: the column never re-lays out while the field animates,
+            // the field grows inside it, centred.
+            Item {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.topMargin: 24
-                width: 260
-                height: 56
-                radius: 28
-                opacity: passwordInput.text.length > 0 || root.context.showFailure ? 1 : 0
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 500
-                        easing.type: Easing.OutCubic
+                Layout.preferredWidth: inputField.maxWidth
+                Layout.preferredHeight: inputField.height
+
+                Rectangle {
+                    id: inputField
+                    anchors.centerIn: parent
+
+                    readonly property int maxWidth: 420
+                    readonly property int padding: 20
+                    readonly property int dotSize: 10
+                    readonly property int dotGap: 8
+                    readonly property int dotStep: dotSize + dotGap
+                    readonly property real dotsWidth: Math.max(0, dotModel.count * dotStep - dotGap)
+                    readonly property bool showHint: passwordInput.text.length === 0 && root.context.showFailure
+
+                    // Where the width wants to be; animWidth follows it at a steady speed,
+                    // so fast typing doesn't restart the animation in jerks.
+                    readonly property real targetWidth: {
+                        const inner = showHint ? hint.implicitWidth : dotsWidth;
+                        return Math.min(maxWidth, Math.max(height, inner + padding * 2));
                     }
-                }
-                color: root.bg
-                border.width: 2
-                border.color: root.context.showFailure ? root.errorColor : Qt.rgba(1, 1, 1, 0.15)
-
-                Behavior on border.color {
-                    ColorAnimation {
-                        duration: 150
-                    }
-                }
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 20
-                    anchors.rightMargin: 12
-                    spacing: 8
-
-                    Text {
-                        text: "󰌾"
-                        color: root.fg1
-                        font {
-                            family: root.font
-                            pixelSize: 16
+                    property real animWidth: targetWidth
+                    Behavior on animWidth {
+                        SmoothedAnimation {
+                            velocity: 260
                         }
                     }
 
+                    width: animWidth
+                    height: 48
+                    radius: height / 2
+                    color: root.bg
+                    border.width: 2
+                    border.color: root.context.showFailure ? root.errorColor : Qt.rgba(1, 1, 1, 0.15)
+                    opacity: passwordInput.text.length > 0 || root.context.showFailure ? 1 : 0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 300
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+                    Behavior on border.color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+
+                    // Receives the keystrokes; its own text is invisible, the dots below show it
                     TextInput {
                         id: passwordInput
-                        Layout.fillWidth: true
-                        verticalAlignment: TextInput.AlignVCenter
+                        anchors.fill: parent
                         color: "transparent"
-                        cursorVisible: false
-                        font {
-                            family: root.font
-                            pixelSize: 15
-                        }
+                        cursorDelegate: Item {}
                         echoMode: TextInput.Password
                         enabled: !root.context.unlockInProgress
                         focus: true
 
                         onTextChanged: {
                             root.context.currentText = text;
+                            // one dot per character, each with a random theme colour that stays put
                             while (dotModel.count < text.length) {
                                 const p = root.dotPalette;
                                 dotModel.append({
@@ -340,29 +356,6 @@ Item {
                             while (dotModel.count > text.length)
                                 dotModel.remove(dotModel.count - 1);
                         }
-                        ListModel {
-                            id: dotModel
-                        }
-
-                        Row {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width
-                            clip: true
-                            spacing: 6
-
-                            Repeater {
-                                model: dotModel
-                                Text {
-                                    required property string c
-                                    text: "●"
-                                    color: c
-                                    font {
-                                        family: root.font
-                                        pixelSize: 14
-                                    }
-                                }
-                            }
-                        }
                         onAccepted: root.context.tryUnlock()
 
                         Connections {
@@ -371,39 +364,61 @@ Item {
                                 passwordInput.text = root.context.currentText;
                             }
                         }
+                    }
 
-                        Text {
-                            anchors.fill: parent
-                            verticalAlignment: Text.AlignVCenter
-                            visible: passwordInput.text.length === 0
-                            text: "Enter your password"
-                            color: root.fg1
-                            font {
-                                family: root.font
-                                pixelSize: 14
+                    ListModel {
+                        id: dotModel
+                    }
+
+                    // Dots sit a fixed distance from the field's left edge, so they ride along
+                    // with the growing edge; the newest dot is revealed as the field widens.
+                    Item {
+                        id: dots
+                        anchors.fill: parent
+                        clip: true
+
+                        // past maxWidth, shift left so the newest dots stay visible
+                        readonly property real startX: Math.min(inputField.padding, inputField.maxWidth - inputField.padding - inputField.dotsWidth)
+
+                        Repeater {
+                            model: dotModel
+
+                            Rectangle {
+                                required property string c
+                                required property int index
+
+                                x: dots.startX + index * inputField.dotStep
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: inputField.dotSize
+                                height: width
+                                radius: width / 2
+                                color: c
+
+                                NumberAnimation on scale {
+                                    from: 0
+                                    to: 1
+                                    duration: 220
+                                    easing.type: Easing.OutBack
+                                }
+                                NumberAnimation on opacity {
+                                    from: 0
+                                    to: 1
+                                    duration: 160
+                                }
                             }
                         }
                     }
 
-                    Rectangle {
-                        width: 32
-                        height: 32
-                        radius: 16
-                        color: Qt.rgba(1, 1, 1, 0.08)
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "→"
-                            color: root.fg0
-                            font {
-                                family: root.font
-                                pixelSize: 16
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: root.context.tryUnlock()
+                    // shown after a failed attempt, once the field is empty again
+                    Text {
+                        id: hint
+                        anchors.centerIn: parent
+                        visible: inputField.showHint
+                        text: "Enter your password"
+                        color: root.fg1
+                        font {
+                            family: root.font
+                            pixelSize: 14
                         }
                     }
                 }
@@ -431,6 +446,7 @@ Item {
                     }
                     MouseArea {
                         anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
                         onClicked: root.activePlayer?.previous()
                     }
                 }
@@ -443,6 +459,7 @@ Item {
                     }
                     MouseArea {
                         anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
                         onClicked: root.activePlayer?.togglePlaying()
                     }
                 }
@@ -455,6 +472,7 @@ Item {
                     }
                     MouseArea {
                         anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
                         onClicked: root.activePlayer?.next()
                     }
                 }
