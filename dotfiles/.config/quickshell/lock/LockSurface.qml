@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
 import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
 Item {
     id: root
@@ -12,7 +13,7 @@ Item {
     property string screenName: ""
     readonly property bool isPrimary: screenName === "DP-1"
 
-    property string avatarPath: Quickshell.env("HOME") + "/.config/hypr/background/avatar1.png"
+    property string avatarPath: Quickshell.env("HOME") + "/.config/hypr/background/avatar2.png"
     property string wallpaperPath: Quickshell.env("HOME") + "/.config/hypr/background/current.png"
     property string colorsPath: Quickshell.env("HOME") + "/.config/hypr/colors.lua"
     property string font: "JetBrainsMono Nerd Font"
@@ -179,7 +180,7 @@ Item {
                     renderType: Text.CurveRendering
                     font {
                         family: "SF Compact Rounded"
-                        pixelSize: 240
+                        pixelSize: 280
                         bold: true
                     }
                 }
@@ -192,7 +193,7 @@ Item {
                     Layout.topMargin: -40 // colon sits low next to the digits
                     font {
                         family: "SF Compact Rounded"
-                        pixelSize: 240
+                        pixelSize: 280
                         bold: true
                     }
                 }
@@ -204,7 +205,7 @@ Item {
                     renderType: Text.CurveRendering
                     font {
                         family: "SF Compact Rounded"
-                        pixelSize: 240
+                        pixelSize: 280
                         bold: true
                     }
                 }
@@ -217,7 +218,7 @@ Item {
                 color: root.fg1
                 font {
                     family: "SF Compact Rounded"
-                    pixelSize: 16
+                    pixelSize: 22
                     bold: true
                 }
             }
@@ -225,59 +226,56 @@ Item {
             Item {
                 id: avatarWrapper
                 Layout.alignment: Qt.AlignHCenter
-                width: 220
-                height: 220
+                Layout.preferredWidth: 220
+                Layout.preferredHeight: 220
 
-                Rectangle {
-                    id: avatarMaskShape
-                    anchors.fill: parent
-                    radius: width / 2
-                    visible: false
-                }
+                readonly property int inset: 2
 
                 Image {
                     id: avatarImg
                     anchors.fill: parent
                     source: "file://" + root.avatarPath
                     fillMode: Image.PreserveAspectCrop
+                    sourceSize: Qt.size(width * 2, height * 2)
+                    mipmap: true
+                    smooth: true
                     visible: false
                 }
 
-                OpacityMask {
+                // full-size, transparent layer with a smaller circle in it: the photo's edge falls outside
+                Item {
+                    id: avatarMask
                     anchors.fill: parent
-                    source: avatarImg
-                    maskSource: avatarMaskShape
+                    layer.enabled: true
+                    layer.smooth: true
+                    visible: false
+
+                    Rectangle {
+                        anchors.fill: parent
+                        anchors.margins: avatarWrapper.inset
+                        radius: width / 2
+                        antialiasing: true
+                    }
                 }
 
+                MultiEffect {
+                    anchors.fill: parent
+                    source: avatarImg
+                    maskEnabled: true
+                    maskSource: avatarMask
+                    maskThresholdMin: 0.5
+                    maskSpreadAtMin: 1.0
+                }
+
+                // ring sits on the trimmed edge
                 Rectangle {
                     anchors.fill: parent
+                    anchors.margins: avatarWrapper.inset - 1
                     radius: width / 2
                     color: "transparent"
                     border.width: 2
                     border.color: root.accent
-                }
-            }
-
-            Row {
-                Layout.alignment: Qt.AlignHCenter
-
-                Text {
-                    text: "hi, "
-                    color: root.fg1
-                    font {
-                        family: "SF Compact Rounded"
-                        pixelSize: 24
-                        bold: true
-                    }
-                }
-                Text {
-                    text: Quickshell.env("USER")
-                    color: root.mutedAccent
-                    font {
-                        family: "SF Compact Rounded"
-                        pixelSize: 24
-                        bold: true
-                    }
+                    antialiasing: true
                 }
             }
 
