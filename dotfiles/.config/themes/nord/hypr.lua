@@ -1,5 +1,6 @@
 return {
     -- Backgrounds
+    bg  = "0xff2e3440",
     bg0 = "0xff2e3440",
     bg1 = "0xff3b4252",
     bg2 = "0xff434c5e",
