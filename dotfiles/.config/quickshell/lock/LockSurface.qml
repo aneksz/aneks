@@ -180,7 +180,7 @@ Item {
                     renderType: Text.CurveRendering
                     font {
                         family: "SF Compact Rounded"
-                        pixelSize: 280
+                        pixelSize: 240
                         bold: true
                     }
                 }
@@ -193,7 +193,7 @@ Item {
                     Layout.topMargin: -40 // colon sits low next to the digits
                     font {
                         family: "SF Compact Rounded"
-                        pixelSize: 280
+                        pixelSize: 240
                         bold: true
                     }
                 }
@@ -205,7 +205,7 @@ Item {
                     renderType: Text.CurveRendering
                     font {
                         family: "SF Compact Rounded"
-                        pixelSize: 280
+                        pixelSize: 240
                         bold: true
                     }
                 }
@@ -218,7 +218,7 @@ Item {
                 color: root.fg1
                 font {
                     family: "SF Compact Rounded"
-                    pixelSize: 22
+                    pixelSize: 18
                     bold: true
                 }
             }
@@ -226,8 +226,8 @@ Item {
             Item {
                 id: avatarWrapper
                 Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: 220
-                Layout.preferredHeight: 220
+                Layout.preferredWidth: 260
+                Layout.preferredHeight: 260
 
                 readonly property int inset: 2
 
@@ -242,7 +242,6 @@ Item {
                     visible: false
                 }
 
-                // full-size, transparent layer with a smaller circle in it: the photo's edge falls outside
                 Item {
                     id: avatarMask
                     anchors.fill: parent
@@ -267,10 +266,9 @@ Item {
                     maskSpreadAtMin: 1.0
                 }
 
-                // ring sits on the trimmed edge
                 Rectangle {
                     anchors.fill: parent
-                    anchors.margins: avatarWrapper.inset - 1
+                    anchors.margins: avatarWrapper.inset - 2
                     radius: width / 2
                     color: "transparent"
                     border.width: 2
