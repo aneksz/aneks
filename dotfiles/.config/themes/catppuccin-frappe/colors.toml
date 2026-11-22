@@ -1,0 +1,57 @@
+# ============================================================
+# Catppuccin Frappé
+# Official palette: https://catppuccin.com/palette (Frappé)
+# Same key mapping as the catppuccin (Mocha) theme.
+# ============================================================
+
+accent     = "#ca9ee6"   # mauve
+cursor     = "#f2d5cf"   # rosewater
+foreground = "#c6d0f5"   # text
+background = "#303446"   # base
+
+color0  = "#414559"   # surface0
+color1  = "#e78284"   # red
+color2  = "#a6d189"   # green
+color3  = "#e5c890"   # yellow
+color4  = "#8caaee"   # blue
+color5  = "#f4b8e4"   # pink
+color6  = "#81c8be"   # teal
+color7  = "#b5bfe2"   # subtext1
+color8  = "#626880"   # surface2
+color9  = "#e78284"
+color10 = "#a6d189"
+color11 = "#e5c890"
+color12 = "#8caaee"
+color13 = "#f4b8e4"
+color14 = "#81c8be"
+color15 = "#f2d5cf"   # rosewater
+
+bg0 = "#303446"   # base
+bg1 = "#414559"   # surface0
+bg2 = "#51576d"   # surface1
+bg3 = "#626880"   # surface2
+fg0 = "#c6d0f5"   # text
+fg1 = "#b5bfe2"   # subtext1
+
+accent_alt = "#babbf1"   # lavender
+error   = "#e78284"      # red
+warn    = "#e5c890"      # yellow
+info    = "#99d1db"      # sky
+success = "#a6d189"      # green
+
+border    = "#ca9ee6"
+accent_ws = "#ca9ee6"
+inactive  = "#626880"
+
+# non-colour metadata - icon theme and wallpapers: copy the values from your Mocha colors.toml
+color_scheme  = "prefer-dark"
+gtk_theme     = "Adwaita-dark"
+icon_theme    = "Yaru-purple-dark"
+vscode_theme  = "Catppuccin Frappé"
+spicetify_theme        = "Catppuccin"
+spicetify_color_scheme = "frappe"
+brave_accent  = "#ca9ee6"
+zen_accent    = "#ca9ee6"
+
+wallpaper_dp1   = "cat-frappe-3.png"
+wallpaper_dp3   = "cat-frappe-7.png"
