@@ -1559,6 +1559,12 @@ PanelWindow {
                     theme: root.theme
                     onRefreshed: root.checkGit()
 
+                    // the message box keeps the keyboard, so Escape bubbles up here, not to globalFocusScope
+                    Keys.onEscapePressed: function (event) {
+                        globalFocusScope.closeAll();
+                        event.accepted = true;
+                    }
+
                     opacity: root.osdMode === "" ? 1 : 0
                     enabled: root.osdMode === ""
                     Behavior on opacity {
