@@ -10,146 +10,130 @@ Item {
     property int activeWs: Hyprland.focusedWorkspace?.id ?? 1
     property int hoveredIdx: -1
 
-    // Workspace labels, indexed by (workspace id - 1)
-    readonly property var kanji: ["一", "二", "三", "四", "五", "六"]
+    // ---- look ----
+    readonly property int count: 6
+    readonly property int dotSize: 16 // inactive dot
+    readonly property int pillWidth: 30 // active pill
+    readonly property int gap: 8
+    readonly property int animMs: 160
 
-    width: 148
-    height: 30
+    implicitWidth: wsRow.implicitWidth + 16
+    implicitHeight: 30
+    width: implicitWidth
+    height: implicitHeight
+
+    // Workspaces Hyprland currently knows about (open windows, or the focused one)
+    function isOccupied(id) {
+        const list = Hyprland.workspaces.values;
+        for (let i = 0; i < list.length; i++)
+            if (list[i].id === id)
+                return true;
+        return false;
+    }
+
+    // Which dot is under the pointer; each dot gets half the gap on both sides,
+    // so the small targets are still easy to hit.
+    function indexAt(x, y) {
+        for (let i = 0; i < dots.count; i++) {
+            const item = dots.itemAt(i);
+            if (!item)
+                continue;
+            const p = item.mapFromItem(wsMouse, x, y);
+            if (p.x >= -root.gap / 2 && p.x <= item.width + root.gap / 2)
+                return i;
+        }
+        return -1;
+    }
 
     // ============================================================
-    // GLOBAL MOUSE ZONE
+    // MOUSE: one area for the whole widget (keeps the bar's hover handoff)
     // ============================================================
     MouseArea {
-        id: masterWorkspaceMouse
-
+        id: wsMouse
         anchors.fill: parent
         hoverEnabled: true
-        propagateComposedEvents: true
+        cursorShape: root.hoveredIdx >= 0 ? Qt.PointingHandCursor : Qt.ArrowCursor
 
-        // --------------------------------------------------------
-        // ENTER ZONE
-        // --------------------------------------------------------
         onEntered: {
-            // Instantly kill the countdown so the bar stays warm and open
-            if (typeof hoverDebounceTimer !== "undefined") {
-                hoverDebounceTimer.stop()
-            }
-            if (detector) detector.activeHover = true
+            if (typeof hoverDebounceTimer !== "undefined")
+                hoverDebounceTimer.stop();
+            if (root.detector)
+                root.detector.activeHover = true;
         }
 
-        // --------------------------------------------------------
-        // EXIT ZONE (FIXED: Stops Edge Collapse & Launcher Flickering)
-        // --------------------------------------------------------
         onExited: {
-            root.hoveredIdx = -1
-
-            // CRITICAL FIX: Do NOT set detector.activeHover = false here!
-            // Instead, start the central debounce timer so transitioning to the
-            // launcher button or empty space gives a smooth 200ms handoff.
-            if (typeof hoverDebounceTimer !== "undefined") {
-                hoverDebounceTimer.start()
-            }
+            root.hoveredIdx = -1;
+            // let the bar's debounce decide when to collapse
+            if (typeof hoverDebounceTimer !== "undefined")
+                hoverDebounceTimer.start();
         }
 
-        // --------------------------------------------------------
-        // POSITION TRACKING (Perfect Coordinate Clamping)
-        // --------------------------------------------------------
-        onPositionChanged: function(mouse) {
-            // Secure the bar open while actively moving anywhere inside the 184px box
-            if (typeof hoverDebounceTimer !== "undefined" && hoverDebounceTimer.running) {
-                hoverDebounceTimer.stop()
-            }
-
-            if (detector && !detector.activeHover) {
-                detector.activeHover = true
-            }
-
-            const localX = mouse.x - wsRow.x
-            const itemWidthPlusSpacing = 32
-            const targetIndex = Math.floor(localX / itemWidthPlusSpacing)
-
-            if (targetIndex >= 0 && targetIndex < 6) {
-                const internalX = localX % itemWidthPlusSpacing
-                if (internalX >= 0 && internalX <= 24) {
-                    root.hoveredIdx = targetIndex
-                    return
-                }
-            }
-            root.hoveredIdx = -1
+        onPositionChanged: mouse => {
+            if (typeof hoverDebounceTimer !== "undefined" && hoverDebounceTimer.running)
+                hoverDebounceTimer.stop();
+            if (root.detector && !root.detector.activeHover)
+                root.detector.activeHover = true;
+            root.hoveredIdx = root.indexAt(mouse.x, mouse.y);
         }
 
-        // --------------------------------------------------------
-        // PRESS STREAM MONITOR
-        // --------------------------------------------------------
-        onPressedChanged: {
-            if (detector && !detector.activeHover) {
-                detector.activeHover = true
-            }
-
-            if (pressed) {
-                const localX = mouseX - wsRow.x
-                const itemWidthPlusSpacing = 32
-                const targetIndex = Math.floor(localX / itemWidthPlusSpacing)
-
-                if (targetIndex >= 0 && targetIndex < 6) {
-                    const internalX = localX % itemWidthPlusSpacing
-                    if (internalX >= 0 && internalX <= 24) {
-                        const wsId = targetIndex + 1
-                        Hyprland.dispatch(`hl.dsp.focus({ workspace = "${wsId}" })`)
-                    }
-                }
-            }
+        onClicked: mouse => {
+            const i = root.indexAt(mouse.x, mouse.y);
+            if (i >= 0)
+                Hyprland.dispatch(`hl.dsp.focus({ workspace = "${i + 1}" })`);
         }
     }
 
     // ============================================================
-    // VISUAL ROW (Centered & Stable)
+    // DOTS
     // ============================================================
     Row {
         id: wsRow
-
         anchors.centerIn: parent
         anchors.verticalCenterOffset: 1
-        spacing: 8
+        spacing: root.gap
 
         Repeater {
-            model: [1, 2, 3, 4, 5, 6]
+            id: dots
+            model: root.count
 
-            delegate: Item {
-                id: wsItem
-                width: 18
-                height: 18
+            delegate: Rectangle {
+                id: dot
+                required property int index
+                readonly property int wsId: index + 1
+                readonly property bool isActive: root.activeWs === wsId
+                readonly property bool isHovered: root.hoveredIdx === index && !isActive
+                readonly property bool occupied: root.isOccupied(wsId)
 
-                property int wsId: modelData
-                property bool isActive: root.activeWs === wsId
-                property bool isHovered: root.hoveredIdx === index
+                anchors.verticalCenter: parent.verticalCenter
+                width: isActive ? root.pillWidth : root.dotSize
+                height: root.dotSize
+                radius: height / 2
 
-                Rectangle {
-                    id: circle
-                    anchors.fill: parent
-                    radius: width / 2
+                color: isActive ? root.theme.accent : root.theme.fg
+                // empty workspaces fade back; hover brings a dot forward
+                opacity: isActive ? 1.0 : isHovered ? 0.9 : occupied ? 0.55 : 0.25
+                scale: isHovered ? 1.25 : 1.0
 
-                    color: wsItem.isActive   ? root.theme.accent
-                         : wsItem.isHovered  ? root.theme.surfaceAlt
-                         : root.theme.inactive
-
-                    opacity: wsItem.isActive  ? 1.0
-                           : wsItem.isHovered ? 0.9
-                           : 0.6
-
-                    Behavior on color { ColorAnimation { duration: 120 } }
-                    Behavior on opacity { NumberAnimation { duration: 120 } }
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: root.kanji[wsItem.wsId - 1]
-                        color: wsItem.isActive ? root.theme.bg : root.theme.fg
-
-                        font {
-                            family: root.theme.font
-                            pixelSize: 12
-                            bold: false
-                        }
+                Behavior on width {
+                    NumberAnimation {
+                        duration: root.animMs
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: root.animMs
+                    }
+                }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: root.animMs
+                    }
+                }
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 120
+                        easing.type: Easing.OutCubic
                     }
                 }
             }
