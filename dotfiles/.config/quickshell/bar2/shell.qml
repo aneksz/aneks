@@ -239,7 +239,7 @@ PanelWindow {
     property bool themeVisible: false
     property string currentTheme: ""
     property string currentThemeFolder: ""
-    property var themeFolders: []
+    property var themeFolders: []``
     property var themes: []
     property string osdMode: ""
     property bool osdVisible: root.osdMode !== ""
@@ -250,6 +250,7 @@ PanelWindow {
     property bool weatherVisible: false
     property bool calendarVisible: false
     property bool isNixOS: false
+    property bool mediaLyricsOpen: false
 
     // Hub (tabbed panel opened from the clock)
     property bool hubVisible: false
@@ -1706,7 +1707,7 @@ PanelWindow {
                 // HEIGHT
                 // =================================================
 
-                height: root.islandState === root.islandStateClosing ? 42 : root.osdMode === "volume" ? 40 : root.osdMode === "caps" ? 60 : root.timerOsdVisible || root.timerControlOsdVisible ? 70 : root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitHeight : 80) : root.hubVisible ? root.hubHeight : root.launcherVisible ? 530 : root.mediaVisible ? 235 : root.weatherVisible ? 540 : root.calendarVisible ? 500 : root.themeVisible ? 650 : root.wallpaperVisible ? 680 : root.updateAuthVisible ? 280 : root.networkVisible ? networkLoader.implicitHeight : root.updatesVisible ? 400 : root.batteryVisible ? 400 : root.clipboardVisible ? 520 : root.torrentsVisible ? 480 : root.gitVisible ? 590 : root.monitorVisible ? 500 : root.bluetoothVisible ? 460 : root.powerVisible ? 90 : root.trayMenuVisible ? trayMenu.implicitHeight + 28 : root.volumeVisible ? volumeLoader.requiredHeight : 42
+                height: root.islandState === root.islandStateClosing ? 42 : root.osdMode === "volume" ? 40 : root.osdMode === "caps" ? 60 : root.timerOsdVisible || root.timerControlOsdVisible ? 70 : root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitHeight : 80) : root.hubVisible ? root.hubHeight : root.launcherVisible ? 530 : root.mediaVisible ? 235 + (embeddedMediaContent.item ? embeddedMediaContent.item.extraHeight : 0) : root.weatherVisible ? 540 : root.calendarVisible ? 500 : root.themeVisible ? 650 : root.wallpaperVisible ? 680 : root.updateAuthVisible ? 280 : root.networkVisible ? networkLoader.implicitHeight : root.updatesVisible ? 400 : root.batteryVisible ? 400 : root.clipboardVisible ? 520 : root.torrentsVisible ? 480 : root.gitVisible ? 590 : root.monitorVisible ? 500 : root.bluetoothVisible ? 460 : root.powerVisible ? 90 : root.trayMenuVisible ? trayMenu.implicitHeight + 28 : root.volumeVisible ? volumeLoader.requiredHeight : 42
 
                 radius: (root.launcherVisible || root.panelVisible || root.hubVisible) ? 16 : 21
 

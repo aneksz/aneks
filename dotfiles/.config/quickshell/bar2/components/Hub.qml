@@ -27,15 +27,35 @@ Item {
 
     signal tabSelected(string tab)
     signal dndToggleRequested(bool enabled)
-    signal closeRequested()
+    signal closeRequested
     signal wallpaperResolutionChanged(string folder)
 
     readonly property var tabs: [
-        { id: "today",      label: "Today",      icon: "\udb81\udd6e" },
-        { id: "system",     label: "System",     icon: "\ueaf8" },
-        { id: "media",      label: "Media",      icon: "\udb80\udf88" },
-        { id: "weather",    label: "Weather",    icon: "\uf522" },
-        { id: "wallpapers", label: "Wallpapers", icon: "\udb83\ude09" }
+        {
+            id: "today",
+            label: "Today",
+            icon: "\udb81\udd6e"
+        },
+        {
+            id: "system",
+            label: "System",
+            icon: "\ueaf8"
+        },
+        {
+            id: "media",
+            label: "Media",
+            icon: "\udb80\udf88"
+        },
+        {
+            id: "weather",
+            label: "Weather",
+            icon: "\uf522"
+        },
+        {
+            id: "wallpapers",
+            label: "Wallpapers",
+            icon: "\udb83\ude09"
+        }
     ]
 
     // ============================================================
@@ -86,11 +106,13 @@ Item {
                             height: 30
                             radius: height / 2
 
-                            color: tab.selected
-                                ? Qt.rgba(root.theme.accent.r, root.theme.accent.g, root.theme.accent.b, 0.22)
-                                : (tab.hovered ? Qt.rgba(root.theme.accent.r, root.theme.accent.g, root.theme.accent.b, 0.10) : "transparent")
+                            color: tab.selected ? Qt.rgba(root.theme.accent.r, root.theme.accent.g, root.theme.accent.b, 0.22) : (tab.hovered ? Qt.rgba(root.theme.accent.r, root.theme.accent.g, root.theme.accent.b, 0.10) : "transparent")
 
-                            Behavior on color { ColorAnimation { duration: 120 } }
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: 120
+                                }
+                            }
 
                             Text {
                                 anchors.centerIn: parent
@@ -190,7 +212,7 @@ Item {
                     dndEnabled: root.dndEnabled
                     onDndEnabledChanged: {
                         if (dndEnabled !== root.dndEnabled)
-                            root.dndToggleRequested(dndEnabled)
+                            root.dndToggleRequested(dndEnabled);
                     }
                 }
             }
@@ -202,6 +224,7 @@ Item {
 
                 sourceComponent: Item {
                     MediaPlayer {
+                        lyricsEnabled: false
                         anchors.centerIn: parent
                         width: Math.min(parent.width, 860)
 
@@ -256,7 +279,9 @@ Item {
                     currentMonitor: root.shell.currentResolutionFolder === "4K" ? "DP-1" : "DP-3"
 
                     onCloseRequested: root.closeRequested()
-                    onResolutionChanged: function(folder) { root.wallpaperResolutionChanged(folder) }
+                    onResolutionChanged: function (folder) {
+                        root.wallpaperResolutionChanged(folder);
+                    }
                 }
             }
         }

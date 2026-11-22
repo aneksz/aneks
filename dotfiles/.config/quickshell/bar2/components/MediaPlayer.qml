@@ -6,8 +6,8 @@ import Qt5Compat.GraphicalEffects
 
 // Replaces the media player content file you attached.
 // Same external API as before, plus two optional cava inputs:
-//   cavaValues  - array of 0..100 values (the bar's cava, any length)
-//   cavaPlaying - bool, true while audio is actually playing
+// cavaValues - array of 0..100 values (the bar's cava, any length)
+// cavaPlaying - bool, true while audio is actually playing
 Item {
     id: root
 
@@ -27,11 +27,146 @@ Item {
     readonly property int islandStateExpanded: 1
     readonly property int islandStateClosing: 2
     property int islandState: islandStateCollapsed
-    signal closingFinished()
+    signal closingFinished
 
     // New: shared cava data from the bar
     property var cavaValues: []
     property bool cavaPlaying: false
+
+    // ============================================================
+    // LYRICS (synced, from lrclib.net)
+    // ============================================================
+    property bool lyricsEnabled: true // set false where the player can't grow (hub Media tab)
+    property bool lyricsOpen: false
+    readonly property int lyricsHeight: 200
+    readonly property int extraHeight: lyricsOpen ? lyricsHeight + 12 : 0 // shell.qml adds this to the island
+    property var lyricLines: [] // [{ t: seconds, text: "..." }]
+    readonly property bool hasLyrics: lyricLines.length > 0
+    property bool lyricsLoading: false
+    property int lyricIndex: -1
+    readonly property real lyricLead: 0.25 // show each line a touch early
+
+    // position only arrives every so often; count forward between updates
+    property real basePos: 0
+    property double baseTime: 0
+    onPositionChanged: {
+        basePos = position;
+        baseTime = Date.now();
+    }
+
+    function livePosition() {
+        if (status !== "Playing" || baseTime === 0)
+            return basePos;
+        return basePos + (Date.now() - baseTime) / 1000;
+    }
+
+    // "[01:23.45] line" -> [{ t: 83.45, text: "line" }], sorted by time
+    function parseLrc(lrc) {
+        const out = [];
+        const re = /\[(\d+):(\d+(?:\.\d+)?)\]/g;
+        const rows = (lrc || "").split("\n");
+        for (let r = 0; r < rows.length; r++) {
+            const raw = rows[r];
+            const stamps = [];
+            let m;
+            re.lastIndex = 0;
+            while ((m = re.exec(raw)) !== null)
+                stamps.push(parseInt(m[1]) * 60 + parseFloat(m[2]));
+            if (stamps.length === 0)
+                continue;
+            const text = raw.replace(re, "").trim();
+            for (let k = 0; k < stamps.length; k++)
+                out.push({
+                    t: stamps[k],
+                    text: text
+                });
+        }
+        out.sort((a, b) => a.t - b.t);
+        return out;
+    }
+
+    function updateLyricIndex() {
+        const p = livePosition() + lyricLead;
+        let i = -1;
+        for (let k = 0; k < lyricLines.length; k++) {
+            if (lyricLines[k].t <= p)
+                i = k;
+            else
+                break;
+        }
+        if (i !== lyricIndex)
+            lyricIndex = i;
+    }
+
+    function fetchLyrics() {
+        lyricLines = [];
+        lyricIndex = -1;
+        if (!lyricsEnabled || artist === "" || title === "") {
+            lyricsOpen = false;
+            return;
+        }
+        lyricsLoading = true;
+        lyricsProc.key = track;
+        lyricsProc.command = ["curl", "-sf", "--max-time", "8", "-A", "quickshell-bar2-lyrics", "https://lrclib.net/api/search?artist_name=" + encodeURIComponent(artist) + "&track_name=" + encodeURIComponent(title)];
+        lyricsProc.running = false;
+        Qt.callLater(() => lyricsProc.running = true);
+    }
+
+    // track and length update separately on a song change; wait for both
+    onTrackChanged: lyricsFetchTimer.restart()
+    Component.onCompleted: if (track !== "")
+        lyricsFetchTimer.restart()
+    Timer {
+        id: lyricsFetchTimer
+        interval: 600
+        onTriggered: root.fetchLyrics()
+    }
+
+    Process {
+        id: lyricsProc
+        property string key: ""
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (lyricsProc.key !== root.track)
+                    // answer for a song that's no longer playing
+                    return;
+                root.lyricsLoading = false;
+                let results = [];
+                try {
+                    results = JSON.parse(text);
+                } catch (e) {
+                    results = [];
+                }
+                // synced lyrics only, from the result whose length matches this track
+                let best = null;
+                for (let i = 0; i < results.length; i++) {
+                    const r = results[i];
+                    if (!r.syncedLyrics)
+                        continue;
+                    const diff = root.length > 0 ? Math.abs((r.duration || 0) - root.length) : 0;
+                    if (diff > 3)
+                        continue;
+                    if (!best || diff < best.diff)
+                        best = {
+                            r: r,
+                            diff: diff
+                        };
+                }
+                root.lyricLines = best ? root.parseLrc(best.r.syncedLyrics) : [];
+                if (!root.hasLyrics)
+                    root.lyricsOpen = false;
+                else
+                    root.updateLyricIndex();
+            }
+        }
+    }
+
+    Timer {
+        interval: 100
+        repeat: true
+        running: root.lyricsOpen && root.hasLyrics && root.visible
+        onTriggered: root.updateLyricIndex()
+    }
 
     // ============================================================
     // ANIMATION STATE
@@ -49,60 +184,120 @@ Item {
 
     // Local player state (polled with playerctl while visible)
     property bool shuffleOn: false
-    property string loopMode: "None"      // None | Track | Playlist
-    readonly property string player: "spotify"   // only Spotify is controlled
-    readonly property string sourceName: "󰓇   Spotify"
+    property string loopMode: "None" // None | Track | Playlist
+    readonly property string player: "spotify" // only Spotify is controlled
+    readonly property string sourceName: "󰓇 Spotify"
 
-    property int artSize: 160            // the hub's Media tab uses a bigger cover
-    property real textScale: 1.0         // scales title + artist text
-    property int infoSpacing: 4          // gap between the rows next to the cover
-    property real controlScale: 1.0      // scales controls, timestamps, seek bar, source pill, cava
+    property int artSize: 160 // the hub's Media tab uses a bigger cover
+    property real textScale: 1.0 // scales title + artist text
+    property int infoSpacing: 4 // gap between the rows next to the cover
+    property real controlScale: 1.0 // scales controls, timestamps, seek bar, source pill, cava
 
     width: parent.width
-    height: body.height + 24
+    height: body.height + 24 + extraHeight
     implicitWidth: 360
-    implicitHeight: body.height + 24   // wrapper can bind its height to this
+    implicitHeight: body.height + 24 + extraHeight // wrapper can bind its height to this
 
     // ============================================================
     // VISIBILITY / REVEAL SEQUENCE (same behaviour as before)
     // ============================================================
     onIslandStateChanged: {
         if (root.islandState === root.islandStateExpanded) {
-            if (root.contentVisible) return
-            root.contentVisible = false
-            root.textVisible = false
-            root.progressVisible = false
-            root.controlsVisible = false
-            root.labelVisible = false
-            contentRevealTimer.restart()
-            textRevealTimer.restart()
-            progressRevealTimer.restart()
-            controlsRevealTimer.restart()
-            labelRevealTimer.restart()
-            stateTimer.restart()
+            if (root.contentVisible)
+                return;
+            root.contentVisible = false;
+            root.textVisible = false;
+            root.progressVisible = false;
+            root.controlsVisible = false;
+            root.labelVisible = false;
+            contentRevealTimer.restart();
+            textRevealTimer.restart();
+            progressRevealTimer.restart();
+            controlsRevealTimer.restart();
+            labelRevealTimer.restart();
+            stateTimer.restart();
         }
         if (root.islandState === root.islandStateClosing) {
-            labelCloseTimer.restart()
-            controlsCloseTimer.restart()
-            progressCloseTimer.restart()
-            textCloseTimer.restart()
-            contentCloseTimer.restart()
+            root.lyricsOpen = false;
+            labelCloseTimer.restart();
+            controlsCloseTimer.restart();
+            progressCloseTimer.restart();
+            textCloseTimer.restart();
+            contentCloseTimer.restart();
         }
     }
 
-    Timer { id: seekReleaseTimer; interval: 900; repeat: false; onTriggered: root.seekLock = false }
+    Timer {
+        id: seekReleaseTimer
+        interval: 900
+        repeat: false
+        onTriggered: root.seekLock = false
+    }
 
-    Timer { id: contentRevealTimer;  interval: 300; repeat: false; onTriggered: root.contentVisible = true }
-    Timer { id: textRevealTimer;     interval: 400; repeat: false; onTriggered: root.textVisible = true }
-    Timer { id: progressRevealTimer; interval: 520; repeat: false; onTriggered: root.progressVisible = true }
-    Timer { id: controlsRevealTimer; interval: 600; repeat: false; onTriggered: root.controlsVisible = true }
-    Timer { id: labelRevealTimer;    interval: 700; repeat: false; onTriggered: root.labelVisible = true }
+    Timer {
+        id: contentRevealTimer
+        interval: 300
+        repeat: false
+        onTriggered: root.contentVisible = true
+    }
+    Timer {
+        id: textRevealTimer
+        interval: 400
+        repeat: false
+        onTriggered: root.textVisible = true
+    }
+    Timer {
+        id: progressRevealTimer
+        interval: 520
+        repeat: false
+        onTriggered: root.progressVisible = true
+    }
+    Timer {
+        id: controlsRevealTimer
+        interval: 600
+        repeat: false
+        onTriggered: root.controlsVisible = true
+    }
+    Timer {
+        id: labelRevealTimer
+        interval: 700
+        repeat: false
+        onTriggered: root.labelVisible = true
+    }
 
-    Timer { id: labelCloseTimer;     interval: 120; repeat: false; onTriggered: root.labelVisible = false }
-    Timer { id: controlsCloseTimer;  interval: 200; repeat: false; onTriggered: root.controlsVisible = false }
-    Timer { id: progressCloseTimer;  interval: 280; repeat: false; onTriggered: root.progressVisible = false }
-    Timer { id: textCloseTimer;      interval: 360; repeat: false; onTriggered: root.textVisible = false }
-    Timer { id: contentCloseTimer;   interval: 500; repeat: false; onTriggered: { root.contentVisible = false; root.closingFinished() } }
+    Timer {
+        id: labelCloseTimer
+        interval: 120
+        repeat: false
+        onTriggered: root.labelVisible = false
+    }
+    Timer {
+        id: controlsCloseTimer
+        interval: 200
+        repeat: false
+        onTriggered: root.controlsVisible = false
+    }
+    Timer {
+        id: progressCloseTimer
+        interval: 280
+        repeat: false
+        onTriggered: root.progressVisible = false
+    }
+    Timer {
+        id: textCloseTimer
+        interval: 360
+        repeat: false
+        onTriggered: root.textVisible = false
+    }
+    Timer {
+        id: contentCloseTimer
+        interval: 500
+        repeat: false
+        onTriggered: {
+            root.contentVisible = false;
+            root.closingFinished();
+        }
+    }
 
     // ============================================================
     // PLAYER STATE POLLING (shuffle / loop / source)
@@ -114,68 +309,82 @@ Item {
         running: root.contentVisible
         triggeredOnStart: true
         onTriggered: {
-            shuffleProc.running = true
-            loopProc.running = true
+            shuffleProc.running = true;
+            loopProc.running = true;
         }
     }
 
     Process {
         id: shuffleProc
         command: ["playerctl", "--player=spotify", "shuffle"]
-        stdout: StdioCollector { onStreamFinished: root.shuffleOn = text.trim() === "On" }
+        stdout: StdioCollector {
+            onStreamFinished: root.shuffleOn = text.trim() === "On"
+        }
     }
     Process {
         id: loopProc
         command: ["playerctl", "--player=spotify", "loop"]
-        stdout: StdioCollector { onStreamFinished: root.loopMode = text.trim() || "None" }
+        stdout: StdioCollector {
+            onStreamFinished: root.loopMode = text.trim() || "None"
+        }
     }
     // One-shot commands (shuffle / loop); refresh state shortly after
-    Process { id: ctrlProc }
-    Timer { id: refreshTimer; interval: 250; onTriggered: { shuffleProc.running = true; loopProc.running = true } }
+    Process {
+        id: ctrlProc
+    }
+    Timer {
+        id: refreshTimer
+        interval: 250
+        onTriggered: {
+            shuffleProc.running = true;
+            loopProc.running = true;
+        }
+    }
 
     function ctrl(cmd) {
-        ctrlProc.command = cmd
-        ctrlProc.running = true
-        refreshTimer.restart()
+        ctrlProc.command = cmd;
+        ctrlProc.running = true;
+        refreshTimer.restart();
     }
 
     function cycleLoop() {
-        const next = root.loopMode === "None" ? "Playlist"
-                   : root.loopMode === "Playlist" ? "Track" : "None"
-        ctrl(["playerctl", "--player=spotify", "loop", next])
+        const next = root.loopMode === "None" ? "Playlist" : root.loopMode === "Playlist" ? "Track" : "None";
+        ctrl(["playerctl", "--player=spotify", "loop", next]);
     }
 
     // ============================================================
     // DERIVED DATA
     // ============================================================
     property string artist: {
-        let parts = track.split(" - ")
-        return parts.length > 1 ? parts[0] : ""
+        let parts = track.split(" - ");
+        return parts.length > 1 ? parts[0] : "";
     }
     property string title: {
-        let parts = track.split(" - ")
-        return parts.length > 1 ? parts.slice(1).join(" - ") : track
+        let parts = track.split(" - ");
+        return parts.length > 1 ? parts.slice(1).join(" - ") : track;
     }
     property real progress: length > 0 ? position / length : 0
 
     function formatTime(sec) {
-        let s = Math.floor(sec % 60)
-        let m = Math.floor(sec / 60)
-        return m + ":" + (s < 10 ? "0" + s : s)
+        let s = Math.floor(sec % 60);
+        let m = Math.floor(sec / 60);
+        return m + ":" + (s < 10 ? "0" + s : s);
     }
 
-    function glyph(code) { return String.fromCodePoint(code) }
+    function glyph(code) {
+        return String.fromCodePoint(code);
+    }
 
     // Linear-interpolate the bar's cava values up/down to n bars (0..1)
     function barValue(i, n) {
-        const v = root.cavaValues
+        const v = root.cavaValues;
         if (!root.cavaPlaying || root.status !== "Playing" || !v || v.length === 0)
-            return 0
-        const p = n > 1 ? i * (v.length - 1) / (n - 1) : 0
-        const a = Math.floor(p)
-        const b = Math.min(a + 1, v.length - 1)
-        const f = p - a
-        return Math.max(0, Math.min(1, (v[a] * (1 - f) + v[b] * f) / 100))
+            return 0;
+        const p = n > 1 ? i * (v.length - 1) / (n - 1) : 0;
+        const a = Math.floor(p);
+        const b = Math.min(a + 1, v.length - 1);
+        const f = p - a;
+        return Math.max(0, Math.min(1, (v[a] * (1 - f) + v[b] * f) / 100));
     }
 
     // ============================================================
@@ -191,8 +400,18 @@ Item {
         scale: root.closeProgress
         opacity: root.closeProgress
         transformOrigin: Item.Top
-        Behavior on scale { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+        Behavior on scale {
+            NumberAnimation {
+                duration: 350
+                easing.type: Easing.OutCubic
+            }
+        }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 250
+                easing.type: Easing.OutCubic
+            }
+        }
 
         // ---- Album art ----
         Item {
@@ -225,8 +444,18 @@ Item {
 
                 opacity: root.contentVisible ? 1 : 0
                 scale: root.contentVisible ? 1 : 0.96
-                Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-                Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 300
+                        easing.type: Easing.OutCubic
+                    }
+                }
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 420
+                        easing.type: Easing.OutCubic
+                    }
+                }
             }
         }
 
@@ -238,29 +467,80 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             spacing: root.infoSpacing
 
-        // Source pill
-        Rectangle {
-           readonly property int pad: 8
+            // Source pill + lyrics button
+            Item {
+                width: parent.width
+                height: Math.round(18 * root.controlScale)
 
-            visible: root.sourceName !== ""
-            x: -pad     
-            height: Math.round(18 * root.controlScale)
-            width: sourceText.implicitWidth + pad * 2
-            radius: height / 2
-            color: Qt.rgba(1, 1, 1, 0.08)
-            opacity: root.labelVisible ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 250 } }
+                Rectangle {
+                    readonly property int pad: 8
 
-        Text {
-            id: sourceText
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.left
-            anchors.leftMargin: parent.pad
-            text: root.sourceName
-            color: root.theme.fg
-            font { family: root.theme.font; pixelSize: Math.round(10 * root.controlScale); bold: true }
+                    visible: root.sourceName !== ""
+                    x: -pad
+                    height: parent.height
+                    width: sourceText.implicitWidth + pad * 2
+                    radius: height / 2
+                    color: Qt.rgba(1, 1, 1, 0.08)
+                    opacity: root.labelVisible ? 1 : 0
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 250
+                        }
+                    }
+
+                    Text {
+                        id: sourceText
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: parent.pad
+                        text: root.sourceName
+                        color: root.theme.fg
+                        font {
+                            family: root.theme.font
+                            pixelSize: Math.round(10 * root.controlScale)
+                            bold: true
+                        }
+                    }
+                }
+
+                // Lyrics toggle: dimmed and inactive when the song has no synced lyrics
+                Text {
+                    visible: root.lyricsEnabled
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "lyrics"
+                    font {
+                        family: "Material Symbols Outlined"
+                        pixelSize: Math.round(18 * root.controlScale)
+                    }
+                    color: root.lyricsOpen ? root.theme.accent : lyricsMouse.containsMouse ? root.theme.fg : (root.theme.textMuted || root.theme.inactive)
+                    opacity: root.labelVisible ? (root.hasLyrics ? 1 : 0.35) : 0
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 250
+                        }
+                    }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
+                        }
+                    }
+
+                    MouseArea {
+                        id: lyricsMouse
+                        anchors.fill: parent
+                        anchors.margins: -6
+                        hoverEnabled: true
+                        enabled: root.hasLyrics
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            root.lyricsOpen = !root.lyricsOpen;
+                            if (root.lyricsOpen)
+                                root.updateLyricIndex();
+                        }
+                    }
+                }
             }
-        }
 
             // Title
             Text {
@@ -268,9 +548,17 @@ Item {
                 text: root.title
                 elide: Text.ElideRight
                 color: root.theme.fg0 || root.theme.fg
-                font { family: root.theme.font; pixelSize: Math.round(15 * root.textScale); bold: true }
+                font {
+                    family: root.theme.font
+                    pixelSize: Math.round(15 * root.textScale)
+                    bold: true
+                }
                 opacity: root.textVisible ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 250 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 250
+                    }
+                }
             }
 
             // Artist
@@ -279,9 +567,17 @@ Item {
                 text: root.artist !== "" ? root.artist : "Unknown Artist"
                 elide: Text.ElideRight
                 color: root.theme.success || root.theme.accent
-                font { family: root.theme.font; pixelSize: Math.round(12 * root.textScale); weight: root.theme.fontWeight }
+                font {
+                    family: root.theme.font
+                    pixelSize: Math.round(12 * root.textScale)
+                    weight: root.theme.fontWeight
+                }
                 opacity: root.textVisible ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 250 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 250
+                    }
+                }
             }
 
             // Progress bar (thin, with a bigger hit area)
@@ -289,7 +585,11 @@ Item {
                 width: parent.width
                 height: Math.round(12 * root.controlScale)
                 opacity: root.progressVisible ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 220 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 220
+                    }
+                }
 
                 readonly property real shown: root.seeking || root.seekLock ? root.seekPreview : root.progress
 
@@ -300,7 +600,11 @@ Item {
                     height: root.progressHovered || root.progressDragging ? Math.round(6 * root.controlScale) : Math.round(4 * root.controlScale)
                     radius: height / 2
                     color: Qt.rgba(1, 1, 1, 0.10)
-                    Behavior on height { NumberAnimation { duration: 120 } }
+                    Behavior on height {
+                        NumberAnimation {
+                            duration: 120
+                        }
+                    }
 
                     Rectangle {
                         width: barTrack.width * parent.parent.shown
@@ -322,24 +626,26 @@ Item {
                     cursorShape: Qt.PointingHandCursor
 
                     onEntered: root.progressHovered = true
-                    onExited: if (!pressed) root.progressHovered = false
+                    onExited: if (!pressed)
+                        root.progressHovered = false
                     onPressed: mouse => {
-                        root.progressDragging = true
-                        root.seeking = true
-                        root.seekPreview = Math.max(0, Math.min(1, mouse.x / width))
+                        root.progressDragging = true;
+                        root.seeking = true;
+                        root.seekPreview = Math.max(0, Math.min(1, mouse.x / width));
                     }
                     onPositionChanged: mouse => {
-                        if (pressed) root.seekPreview = Math.max(0, Math.min(1, mouse.x / width))
+                        if (pressed)
+                            root.seekPreview = Math.max(0, Math.min(1, mouse.x / width));
                     }
                     onReleased: {
-                        const target = root.seekPreview * root.length
-                        root.seekLock = true
-                        root.spotifyControl.command = ["playerctl", "--player=spotify", "position", String(target)]
-                        root.spotifyControl.running = true
-                        seekReleaseTimer.restart()
-                        root.progressDragging = false
-                        root.progressHovered = containsMouse
-                        root.seeking = false
+                        const target = root.seekPreview * root.length;
+                        root.seekLock = true;
+                        root.spotifyControl.command = ["playerctl", "--player=spotify", "position", String(target)];
+                        root.spotifyControl.running = true;
+                        seekReleaseTimer.restart();
+                        root.progressDragging = false;
+                        root.progressHovered = containsMouse;
+                        root.seeking = false;
                     }
                 }
             }
@@ -349,19 +655,29 @@ Item {
                 width: parent.width
                 height: Math.round(14 * root.controlScale)
                 opacity: root.progressVisible ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 220 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 220
+                    }
+                }
 
                 Text {
                     anchors.left: parent.left
                     text: root.formatTime(root.seeking || root.seekLock ? root.seekPreview * root.length : root.position)
                     color: root.theme.textMuted || root.theme.inactive
-                    font { family: root.theme.font; pixelSize: Math.round(10 * root.controlScale) }
+                    font {
+                        family: root.theme.font
+                        pixelSize: Math.round(10 * root.controlScale)
+                    }
                 }
                 Text {
                     anchors.right: parent.right
                     text: root.formatTime(root.length)
                     color: root.theme.textMuted || root.theme.inactive
-                    font { family: root.theme.font; pixelSize: Math.round(10 * root.controlScale) }
+                    font {
+                        family: root.theme.font
+                        pixelSize: Math.round(10 * root.controlScale)
+                    }
                 }
             }
 
@@ -370,17 +686,24 @@ Item {
                 width: parent.width
                 height: Math.round(36 * root.controlScale)
                 opacity: root.controlsVisible ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 250 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 250
+                    }
+                }
 
                 // Shuffle
                 Item {
-                    Layout.preferredWidth: Math.round(28 * root.controlScale); Layout.preferredHeight: Math.round(28 * root.controlScale)
+                    Layout.preferredWidth: Math.round(28 * root.controlScale)
+                    Layout.preferredHeight: Math.round(28 * root.controlScale)
                     Text {
                         anchors.centerIn: parent
                         text: root.glyph(0xF049F)
-                        font { family: root.theme.font; pixelSize: Math.round(16 * root.controlScale) }
-                        color: root.shuffleOn ? root.theme.accent
-                             : shuffleMouse.containsMouse ? root.theme.fg : root.theme.textMuted
+                        font {
+                            family: root.theme.font
+                            pixelSize: Math.round(16 * root.controlScale)
+                        }
+                        color: root.shuffleOn ? root.theme.accent : shuffleMouse.containsMouse ? root.theme.fg : root.theme.textMuted
                     }
                     MouseArea {
                         id: shuffleMouse
@@ -391,18 +714,28 @@ Item {
                     }
                 }
 
-                Item { Layout.fillWidth: true }
+                Item {
+                    Layout.fillWidth: true
+                }
 
                 // Previous
                 Item {
-                    Layout.preferredWidth: Math.round(32 * root.controlScale); Layout.preferredHeight: Math.round(32 * root.controlScale)
+                    Layout.preferredWidth: Math.round(32 * root.controlScale)
+                    Layout.preferredHeight: Math.round(32 * root.controlScale)
                     Text {
                         anchors.centerIn: parent
                         text: root.glyph(0xF04AE)
-                        font { family: root.theme.font; pixelSize: Math.round(22 * root.controlScale) }
+                        font {
+                            family: root.theme.font
+                            pixelSize: Math.round(22 * root.controlScale)
+                        }
                         color: prevMouse.containsMouse ? root.theme.accent : root.theme.fg
                         scale: prevMouse.containsMouse ? 1.12 : 1
-                        Behavior on scale { NumberAnimation { duration: 120 } }
+                        Behavior on scale {
+                            NumberAnimation {
+                                duration: 120
+                            }
+                        }
                     }
                     MouseArea {
                         id: prevMouse
@@ -410,24 +743,32 @@ Item {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.spotifyControl.command = ["playerctl", "--player=spotify", "previous"]
-                            root.spotifyControl.running = true
+                            root.spotifyControl.command = ["playerctl", "--player=spotify", "previous"];
+                            root.spotifyControl.running = true;
                         }
                     }
                 }
 
                 // Play / pause
                 Rectangle {
-                    Layout.preferredWidth: Math.round(36 * root.controlScale); Layout.preferredHeight: Math.round(36 * root.controlScale)
+                    Layout.preferredWidth: Math.round(36 * root.controlScale)
+                    Layout.preferredHeight: Math.round(36 * root.controlScale)
                     radius: width / 2
                     color: root.theme.accent
                     scale: playMouse.containsMouse ? 1.08 : 1
-                    Behavior on scale { NumberAnimation { duration: 120 } }
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: 120
+                        }
+                    }
 
                     Text {
                         anchors.centerIn: parent
                         text: root.glyph(root.status === "Playing" ? 0xF03E4 : 0xF040A)
-                        font { family: root.theme.font; pixelSize: Math.round(20 * root.controlScale) }
+                        font {
+                            family: root.theme.font
+                            pixelSize: Math.round(20 * root.controlScale)
+                        }
                         color: root.theme.bg
                     }
                     MouseArea {
@@ -436,22 +777,30 @@ Item {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.spotifyControl.command = ["playerctl", "--player=spotify", "play-pause"]
-                            root.spotifyControl.running = true
+                            root.spotifyControl.command = ["playerctl", "--player=spotify", "play-pause"];
+                            root.spotifyControl.running = true;
                         }
                     }
                 }
 
                 // Next
                 Item {
-                    Layout.preferredWidth: Math.round(32 * root.controlScale); Layout.preferredHeight: Math.round(32 * root.controlScale)
+                    Layout.preferredWidth: Math.round(32 * root.controlScale)
+                    Layout.preferredHeight: Math.round(32 * root.controlScale)
                     Text {
                         anchors.centerIn: parent
                         text: root.glyph(0xF04AD)
-                        font { family: root.theme.font; pixelSize: Math.round(22 * root.controlScale) }
+                        font {
+                            family: root.theme.font
+                            pixelSize: Math.round(22 * root.controlScale)
+                        }
                         color: nextMouse.containsMouse ? root.theme.accent : root.theme.fg
                         scale: nextMouse.containsMouse ? 1.12 : 1
-                        Behavior on scale { NumberAnimation { duration: 120 } }
+                        Behavior on scale {
+                            NumberAnimation {
+                                duration: 120
+                            }
+                        }
                     }
                     MouseArea {
                         id: nextMouse
@@ -459,23 +808,28 @@ Item {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.spotifyControl.command = ["playerctl", "--player=spotify", "next"]
-                            root.spotifyControl.running = true
+                            root.spotifyControl.command = ["playerctl", "--player=spotify", "next"];
+                            root.spotifyControl.running = true;
                         }
                     }
                 }
 
-                Item { Layout.fillWidth: true }
+                Item {
+                    Layout.fillWidth: true
+                }
 
                 // Repeat (None -> Playlist -> Track)
                 Item {
-                    Layout.preferredWidth: Math.round(28 * root.controlScale); Layout.preferredHeight: Math.round(28 * root.controlScale)
+                    Layout.preferredWidth: Math.round(28 * root.controlScale)
+                    Layout.preferredHeight: Math.round(28 * root.controlScale)
                     Text {
                         anchors.centerIn: parent
                         text: root.glyph(root.loopMode === "Track" ? 0xF0458 : 0xF0456)
-                        font { family: root.theme.font; pixelSize: Math.round(16 * root.controlScale) }
-                        color: root.loopMode !== "None" ? root.theme.accent
-                             : repeatMouse.containsMouse ? root.theme.fg : root.theme.textMuted
+                        font {
+                            family: root.theme.font
+                            pixelSize: Math.round(16 * root.controlScale)
+                        }
+                        color: root.loopMode !== "None" ? root.theme.accent : repeatMouse.containsMouse ? root.theme.fg : root.theme.textMuted
                     }
                     MouseArea {
                         id: repeatMouse
@@ -490,11 +844,15 @@ Item {
             // Cava strip (driven by the bar's cava values)
             Item {
                 id: cavaStrip
-                width: Math.round(parent.width * 0.6)   // narrower, centred under the controls
+                width: Math.round(parent.width * 0.6) // narrower, centred under the controls
                 x: Math.round((parent.width - width) / 2)
-                height: Math.round(20 * root.controlScale)   // breathing room above the bars
+                height: Math.round(20 * root.controlScale) // breathing room above the bars
                 opacity: root.labelVisible ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 250 } }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 250
+                    }
+                }
 
                 readonly property int barH: Math.round(14 * root.controlScale)
                 readonly property int barW: 2
@@ -522,9 +880,89 @@ Item {
                                 radius: width / 2
                                 color: root.theme.accent
                                 opacity: 0.45 + parent.v * 0.55
-                                Behavior on height { NumberAnimation { duration: 70 } }
+                                Behavior on height {
+                                    NumberAnimation {
+                                        duration: 70
+                                    }
+                                }
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    // ============================================================
+    // LYRICS PANEL (below the player; the island grows to show it)
+    // ============================================================
+    Item {
+        id: lyricsView
+        x: 12
+        y: body.y + body.height + 12
+        width: parent.width - 24
+        height: root.lyricsHeight
+        clip: true
+        visible: opacity > 0
+        opacity: root.lyricsOpen && root.contentVisible ? 1 : 0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 250
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        ListView {
+            id: lyricsList
+            anchors.fill: parent
+            anchors.margins: 10
+            model: root.lyricLines
+            interactive: false
+            spacing: 8
+
+            // keep the current line in the middle, scrolling smoothly between lines
+            currentIndex: Math.max(0, root.lyricIndex)
+            highlight: Item {}
+            highlightRangeMode: ListView.StrictlyEnforceRange
+            preferredHighlightBegin: height / 2 - 12
+            preferredHighlightEnd: height / 2 + 12
+            highlightMoveDuration: 350
+            highlightMoveVelocity: -1
+
+            delegate: Text {
+                required property var modelData
+                required property int index
+                readonly property bool isCurrent: index === root.lyricIndex
+
+                width: ListView.view.width
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                text: modelData.text !== "" ? modelData.text : "♪"
+                color: isCurrent ? root.theme.accent : root.theme.fg
+                opacity: isCurrent ? 1 : Math.max(0.2, 0.6 - Math.abs(index - root.lyricIndex) * 0.12)
+                font {
+                    family: root.theme.font
+                    pixelSize: 14
+                    bold: isCurrent
+                }
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 200
+                    }
+                }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 200
+                    }
+                }
+
+                // click a line to jump the song there
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        root.spotifyControl.command = ["playerctl", "--player=spotify", "position", String(modelData.t)];
+                        root.spotifyControl.running = true;
                     }
                 }
             }
