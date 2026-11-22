@@ -965,17 +965,10 @@ PanelWindow {
                 }
             }
 
-            // Escape when focus is inside the scope (most modules)
+            // Escape when focus is inside the scope
             Keys.onEscapePressed: function (event) {
                 closeAll();
                 event.accepted = true;
-            }
-
-            // Escape when a module has lost focus internally (e.g. git panel after a commit)
-            Shortcut {
-                sequence: "Escape"
-                enabled: globalFocusScope.focus // only while something is open
-                onActivated: globalFocusScope.closeAll()
             }
         }
 
