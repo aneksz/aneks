@@ -104,7 +104,7 @@ Item {
 
     // same format for the first frame and every timer tick
     function dateString(d) {
-        return Qt.formatDate(d, "dddd").toUpperCase() + "  " + d.getDate() + " " + Qt.formatDate(d, "MMM").toUpperCase();
+        return Qt.formatDate(d, "dddd").toUpperCase() + "    " + d.getDate() + " " + Qt.formatDate(d, "MMM").toUpperCase();
     }
 
     readonly property var activePlayer: {
