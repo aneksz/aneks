@@ -104,7 +104,7 @@ Item {
 
     // same format for the first frame and every timer tick
     function dateString(d) {
-        return Qt.formatDate(d, "dddd").toUpperCase() + "    " + d.getDate() + " " + Qt.formatDate(d, "MMM").toUpperCase();
+        return Qt.formatDate(d, "dddd").toUpperCase() + "  " + d.getDate() + " " + Qt.formatDate(d, "MMM").toUpperCase();
     }
 
     readonly property var activePlayer: {
@@ -277,6 +277,29 @@ Item {
                 }
             }
 
+            Row {
+                Layout.alignment: Qt.AlignHCenter
+
+                Text {
+                    text: "hi, "
+                    color: root.fg1
+                    font {
+                        family: "SF Compact Rounded"
+                        pixelSize: 24
+                        bold: true
+                    }
+                }
+                Text {
+                    text: Quickshell.env("USER")
+                    color: root.mutedAccent
+                    font {
+                        family: "SF Compact Rounded"
+                        pixelSize: 24
+                        bold: true
+                    }
+                }
+            }
+
             // Fixed-size slot: the column never re-lays out while the field animates,
             // the field grows inside it, centred.
             Item {
@@ -327,6 +350,60 @@ Item {
                     Behavior on border.color {
                         ColorAnimation {
                             duration: 150
+                        }
+                    }
+
+                    // macOS-style shake on a wrong password: quick left-right wobble that dies down
+                    transform: Translate {
+                        id: shakeShift
+                    }
+
+                    SequentialAnimation {
+                        id: shake
+                        NumberAnimation {
+                            target: shakeShift
+                            property: "x"
+                            to: -14
+                            duration: 50
+                            easing.type: Easing.OutQuad
+                        }
+                        NumberAnimation {
+                            target: shakeShift
+                            property: "x"
+                            to: 12
+                            duration: 70
+                            easing.type: Easing.InOutQuad
+                        }
+                        NumberAnimation {
+                            target: shakeShift
+                            property: "x"
+                            to: -8
+                            duration: 60
+                            easing.type: Easing.InOutQuad
+                        }
+                        NumberAnimation {
+                            target: shakeShift
+                            property: "x"
+                            to: 5
+                            duration: 50
+                            easing.type: Easing.InOutQuad
+                        }
+                        NumberAnimation {
+                            target: shakeShift
+                            property: "x"
+                            to: 0
+                            duration: 40
+                            easing.type: Easing.InQuad
+                        }
+                    }
+
+                    Connections {
+                        target: root.context
+                        function onShowFailureChanged() {
+                            if (root.context.showFailure) {
+                                shakeShift.x = 0;
+                                shake.restart();
+                            }
                         }
                     }
 
@@ -410,7 +487,7 @@ Item {
                         id: hint
                         anchors.centerIn: parent
                         visible: inputField.showHint
-                        text: "Enter your password"
+                        text: "Wrong password, try again"
                         color: root.fg1
                         font {
                             family: root.font
