@@ -50,7 +50,7 @@ Item {
         busy = true;
         statusError = false;
         statusText = hasChanges ? "Committing and pushing…" : "Pushing…";
-        commitProc.command = ["bash", "-c", 'cd "$1" || exit 1\n' + 'if [ -n "$(git status --porcelain)" ]; then\n' + '  git add -A && git commit -q -m "$2" || exit 1\n' + 'fi\n' + 'git push 2>&1', "_", repoPath, messageInput.text.trim()];
+        commitProc.command = ["bash", "-c", 'cd "$1" || exit 1\n' + 'if [ -n "$(git status --porcelain)" ]; then\n' + '  git add -A && git commit -q -m "$2" || exit 1\n' + 'fi\n' + root.gitNet + 'net git push', "_", repoPath, messageInput.text.trim()];
         commitProc.running = true;
     }
 
@@ -62,6 +62,14 @@ Item {
         statusText = "Pulling…";
         pullProc.running = true;
     }
+
+    // Network git runs without a terminal: a password or passphrase prompt, or
+    // a slow GitHub, would otherwise wait forever and leave the panel on
+    // "Pushing…". Fail instead, and say why.
+    readonly property string gitNet: 'export GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=15"\n'
+        + 'net() { timeout 60 "$@" 2>&1; rc=$?\n'
+        + '  [ $rc -eq 124 ] && echo "Timed out after 60 s - try it in a terminal to see why"\n'
+        + '  return $rc; }\n'
 
     // Last non-empty line of command output, for the status line
     function lastLine(text) {
@@ -118,7 +126,7 @@ Item {
 
     Process {
         id: pullProc
-        command: ["git", "-C", root.repoPath, "pull", "--ff-only"]
+        command: ["bash", "-c", root.gitNet + 'net git -C "$1" pull --ff-only', "_", root.repoPath]
         stdout: StdioCollector {
             id: pullOut
         }
@@ -128,7 +136,7 @@ Item {
         onExited: function (exitCode) {
             root.busy = false;
             root.statusError = exitCode !== 0;
-            root.statusText = exitCode === 0 ? (root.lastLine(pullOut.text) || "Up to date") : (root.lastLine(pullErr.text) || "Pull failed");
+            root.statusText = exitCode === 0 ? (root.lastLine(pullOut.text) || "Up to date") : (root.lastLine(pullErr.text) || root.lastLine(pullOut.text) || "Pull failed");
             root.refresh();
         }
     }
