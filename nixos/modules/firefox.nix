@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   programs.firefox = {
@@ -37,9 +37,22 @@
     };
   };
 
-  systemd.user.services.firefox = {
-    serviceConfig = {
-      BindPaths = "/run/opengl-driver/lib/dri";
+  systemd.user.services = {
+    firefox = {
+      serviceConfig = {
+        BindPaths = "/run/opengl-driver/lib/dri";
+      };
+    };
+
+    # Keeps ~/.mozilla/native-messaging-hosts/pywalfox.json pointed at the
+    # active /nix/store path across system updates and garbage collection
+    pywalfox-install = {
+      description = "Register Pywalfox native messaging host";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.pywalfox-native}/bin/pywalfox install";
+      };
     };
   };
 
