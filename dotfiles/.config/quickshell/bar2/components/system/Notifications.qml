@@ -14,9 +14,9 @@ Item {
     property var theme
     property bool dndEnabled: false
     property var notifServer
-    property var notifications: []         
+    property var notifications: []
 
-    signal requestClose()
+    signal requestClose
 
     // ============================================================
     // CLOCK (for relative time)
@@ -32,31 +32,39 @@ Item {
     // ============================================================
 
     function timeAgo(ts) {
-        if (!ts) return "—"
+        if (!ts)
+            return "—";
 
-        const arrival = new Date(ts)
-        const now = listClock.date
+        const arrival = new Date(ts);
+        const now = listClock.date;
 
-        if (isNaN(arrival.getTime())) return "err"
+        if (isNaN(arrival.getTime()))
+            return "err";
 
-        const diff = Math.floor((now.getTime() - arrival.getTime()) / 1000)
+        const diff = Math.floor((now.getTime() - arrival.getTime()) / 1000);
 
-        if (diff < 60) return "now"
-        if (diff < 3600) return Math.floor(diff / 60) + "m"
-        if (diff < 86400) return Math.floor(diff / 3600) + "h"
-        return Math.floor(diff / 86400) + "d"
+        if (diff < 60)
+            return "now";
+        if (diff < 3600)
+            return Math.floor(diff / 60) + "m";
+        if (diff < 86400)
+            return Math.floor(diff / 3600) + "h";
+        return Math.floor(diff / 86400) + "d";
     }
 
     function keyFor(item) {
-    if (item.historyKey) return item.historyKey
-    if (item.key) return item.key
-    return String(item.id || (item.summary + item.body))
-}
+        if (item.historyKey)
+            return item.historyKey;
+        if (item.key)
+            return item.key;
+        return String(item.id || (item.summary + item.body));
+    }
 
-        function truncate(str, maxLen) {
-        if (!str) return ""
-        str = String(str).replace(/\s*\n+\s*/g, " ")   
-        return str.length > maxLen ? str.substring(0, maxLen).trim() + "…" : str
+    function truncate(str, maxLen) {
+        if (!str)
+            return "";
+        str = String(str).replace(/\s*\n+\s*/g, " ");
+        return str.length > maxLen ? str.substring(0, maxLen).trim() + "…" : str;
     }
 
     // ============================================================
@@ -67,54 +75,67 @@ Item {
     // are plain data and dismiss just removes them from disk.
     // ============================================================
 
-   readonly property var notificationList: {
-    function toMs(t) {
-        if (t instanceof Date) return t.getTime()
-        if (typeof t === "number") return t
-        const ms = new Date(t).getTime()
-        return isNaN(ms) ? 0 : ms
-    }
-
-    var liveByKey = {}
-    if (notifServer && notifServer.trackedNotifications) {
-        var liveValues = notifServer.trackedNotifications.values
-        for (var i = 0; i < liveValues.length; i++) {
-            var ln = liveValues[i]
-            if (!ln || ln.isSpotifyTransient) continue
-            liveByKey[keyFor(ln)] = ln
+    readonly property var notificationList: {
+        function toMs(t) {
+            if (t instanceof Date)
+                return t.getTime();
+            if (typeof t === "number")
+                return t;
+            const ms = new Date(t).getTime();
+            return isNaN(ms) ? 0 : ms;
         }
-    }
 
-    // Collect { item, ts } pairs so live objects sort by their history timestamp
-    var rows = []
-    var historyEntries = NotificationHistory.entries
-    for (var j = 0; j < historyEntries.length; j++) {
-        var entry = historyEntries[j]
-        var item = liveByKey[entry.key]
-        if (item) {
-            delete liveByKey[entry.key]
-        } else {
-            item = {
-                key: entry.key,
-                summary: entry.summary,
-                body: entry.body,
-                timestamp: entry.timestamp,
-                isHistorical: true
+        var liveByKey = {};
+        if (notifServer && notifServer.trackedNotifications) {
+            var liveValues = notifServer.trackedNotifications.values;
+            for (var i = 0; i < liveValues.length; i++) {
+                var ln = liveValues[i];
+                if (!ln || ln.isSpotifyTransient)
+                    continue;
+                liveByKey[keyFor(ln)] = ln;
             }
         }
-       rows.push({ item: item, ts: toMs(item.timestamp) || toMs(entry.timestamp) })
-    }
 
-    // Live notifications not yet in history: treat as brand new if no timestamp
-    for (var remainingKey in liveByKey) {
-        var live = liveByKey[remainingKey]
-        rows.push({ item: live, ts: toMs(live.timestamp) || Date.now() })
-    }
+        // Collect { item, ts } pairs so live objects sort by their history timestamp
+        var rows = [];
+        var historyEntries = NotificationHistory.entries;
+        for (var j = 0; j < historyEntries.length; j++) {
+            var entry = historyEntries[j];
+            var item = liveByKey[entry.key];
+            if (item) {
+                delete liveByKey[entry.key];
+            } else {
+                item = {
+                    key: entry.key,
+                    summary: entry.summary,
+                    body: entry.body,
+                    timestamp: entry.timestamp,
+                    isHistorical: true
+                };
+            }
+            rows.push({
+                item: item,
+                ts: toMs(item.timestamp) || toMs(entry.timestamp)
+            });
+        }
 
-    // Newest first
-    rows.sort(function(a, b) { return b.ts - a.ts })
-    return rows.map(function(r) { return r.item })
-}
+        // Live notifications not yet in history: treat as brand new if no timestamp
+        for (var remainingKey in liveByKey) {
+            var live = liveByKey[remainingKey];
+            rows.push({
+                item: live,
+                ts: toMs(live.timestamp) || Date.now()
+            });
+        }
+
+        // Newest first
+        rows.sort(function (a, b) {
+            return b.ts - a.ts;
+        });
+        return rows.map(function (r) {
+            return r.item;
+        });
+    }
 
     readonly property int notificationCount: notificationList.length
     readonly property bool emptyState: notificationCount === 0
@@ -127,48 +148,66 @@ Item {
     property var expandedGroups: ({})      // group title -> true when expanded
 
     function toggleGroup(key) {
-        const next = Object.assign({}, expandedGroups)
-        next[key] = !next[key]
-        expandedGroups = next              // reassign so the list rebuilds
+        const next = Object.assign({}, expandedGroups);
+        next[key] = !next[key];
+        expandedGroups = next;              // reassign so the list rebuilds
     }
 
     function dismissItem(item) {
-        if (item && item.dismiss) item.dismiss()
-        NotificationHistory.removeEntry(root.keyFor(item))
+        if (item && item.dismiss)
+            item.dismiss();
+        NotificationHistory.removeEntry(root.keyFor(item));
     }
 
     function dismissGroup(items) {
-        items.slice().forEach(function(it) { root.dismissItem(it) })
+        items.slice().forEach(function (it) {
+            root.dismissItem(it);
+        });
     }
 
     // Rows for the list: { type: "single" | "group" | "child", ... }
     readonly property var displayRows: {
-        var groups = []
-        var byTitle = {}
+        var groups = [];
+        var byTitle = {};
         for (var i = 0; i < notificationList.length; i++) {
-            var n = notificationList[i]
-            var title = n.summary || "Notification"
+            var n = notificationList[i];
+            var title = n.summary || "Notification";
             if (!byTitle[title]) {
-                byTitle[title] = { title: title, items: [] }
-                groups.push(byTitle[title])          // keeps newest-first order
+                byTitle[title] = {
+                    title: title,
+                    items: []
+                };
+                groups.push(byTitle[title]);          // keeps newest-first order
             }
-            byTitle[title].items.push(n)
+            byTitle[title].items.push(n);
         }
 
-        var rows = []
+        var rows = [];
         for (var g = 0; g < groups.length; g++) {
-            var grp = groups[g]
+            var grp = groups[g];
             if (grp.items.length === 1) {
-                rows.push({ type: "single", item: grp.items[0] })
-                continue
+                rows.push({
+                    type: "single",
+                    item: grp.items[0]
+                });
+                continue;
             }
-            var open = !!expandedGroups[grp.title]
-            rows.push({ type: "group", title: grp.title, items: grp.items, item: grp.items[0], expanded: open })
+            var open = !!expandedGroups[grp.title];
+            rows.push({
+                type: "group",
+                title: grp.title,
+                items: grp.items,
+                item: grp.items[0],
+                expanded: open
+            });
             if (open)
                 for (var c = 0; c < grp.items.length; c++)
-                    rows.push({ type: "child", item: grp.items[c] })
+                    rows.push({
+                        type: "child",
+                        item: grp.items[c]
+                    });
         }
-        return rows
+        return rows;
     }
 
     // ============================================================
@@ -176,7 +215,6 @@ Item {
     // ============================================================
 
     width: parent ? parent.width : 0
-    
 
     // ============================================================
     // MAIN CARD
@@ -224,7 +262,9 @@ Item {
                     }
                 }
 
-                Item { Layout.fillWidth: true }
+                Item {
+                    Layout.fillWidth: true
+                }
 
                 // Clear All
                 MouseArea {
@@ -255,11 +295,14 @@ Item {
 
                     onClicked: {
                         if (notifServer && notifServer.trackedNotifications) {
-                            const list = notifServer.trackedNotifications.values.slice()
-                            list.forEach(n => { if (n && n.dismiss) n.dismiss() })
+                            const list = notifServer.trackedNotifications.values.slice();
+                            list.forEach(n => {
+                                if (n && n.dismiss)
+                                    n.dismiss();
+                            });
                         }
-                        NotificationHistory.clearAll()
-                        root.expandedGroups = ({})
+                        NotificationHistory.clearAll();
+                        root.expandedGroups = ({});
                     }
                 }
             }
@@ -291,7 +334,11 @@ Item {
                     radius: 10
                     color: rowMouse.containsMouse ? theme.surfaceAlt : "transparent"
 
-                    Behavior on color { ColorAnimation { duration: 100 } }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 100
+                        }
+                    }
 
                     // Group: click toggles open/closed. Single/child: click dismisses.
                     MouseArea {
@@ -300,8 +347,10 @@ Item {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            if (rowRect.isGroup) root.toggleGroup(rowRect.modelData.title)
-                            else root.dismissItem(rowRect.item)
+                            if (rowRect.isGroup)
+                                root.toggleGroup(rowRect.modelData.title);
+                            else
+                                root.dismissItem(rowRect.item);
                         }
                     }
 
@@ -332,9 +381,7 @@ Item {
 
                                 Text {
                                     width: Math.min(implicitWidth, parent.width - (countBadge.visible ? countBadge.width + 6 : 0))
-                                    text: rowRect.isChild
-                                        ? truncate(rowRect.item.body || rowRect.item.summary || "", 40)
-                                        : truncate(rowRect.item.summary || "Notification", 28)
+                                    text: rowRect.isChild ? truncate(rowRect.item.body || rowRect.item.summary || "", 40) : truncate(rowRect.item.summary || "Notification", 28)
                                     color: theme.fg
                                     elide: Text.ElideRight
                                     font {
@@ -359,7 +406,11 @@ Item {
                                         anchors.centerIn: parent
                                         text: rowRect.isGroup ? rowRect.modelData.items.length : ""
                                         color: theme.accent
-                                        font { family: theme.font; pixelSize: 10; weight: Font.Bold }
+                                        font {
+                                            family: theme.font
+                                            pixelSize: 10
+                                            weight: Font.Bold
+                                        }
                                     }
                                 }
                             }
@@ -380,8 +431,8 @@ Item {
 
                         Text {
                             text: {
-                                const t = timeAgo(rowRect.item.timestamp)
-                                return t === "now" ? "now" : t + " ago"
+                                const t = timeAgo(rowRect.item.timestamp);
+                                return t === "now" ? "now" : t + " ago";
                             }
                             color: theme.fg1
                             font {
@@ -406,9 +457,17 @@ Item {
                                 anchors.centerIn: parent
                                 text: "close"
                                 color: clearGroupBtn.containsMouse ? theme.error : theme.fg1
-                                font { family: "Material Symbols Outlined"; pixelSize: 16 }
+                                font {
+                                    family: "Material Symbols Outlined"
+                                    pixelSize: 16
+                                }
                                 scale: clearGroupBtn.containsMouse ? 1.1 : 1.0
-                                Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                                Behavior on scale {
+                                    NumberAnimation {
+                                        duration: 120
+                                        easing.type: Easing.OutCubic
+                                    }
+                                }
                             }
                         }
 
@@ -417,9 +476,17 @@ Item {
                             visible: rowRect.isGroup
                             text: "expand_more"
                             color: theme.fg1
-                            font { family: "Material Symbols Outlined"; pixelSize: 18 }
+                            font {
+                                family: "Material Symbols Outlined"
+                                pixelSize: 18
+                            }
                             rotation: rowRect.isGroup && rowRect.modelData.expanded ? 180 : 0
-                            Behavior on rotation { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                            Behavior on rotation {
+                                NumberAnimation {
+                                    duration: 150
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
                             Layout.alignment: Qt.AlignVCenter
                         }
                     }
@@ -432,7 +499,7 @@ Item {
 
             Item {
                 Layout.fillWidth: true
-                Layout.fillHeight: true 
+                Layout.fillHeight: true
                 visible: emptyState
 
                 Column {
@@ -452,17 +519,15 @@ Item {
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: "No notifications"
+                        text: "All caught up!"
                         color: theme.fg1
                         font {
                             family: theme.font
-                            pixelSize: 12
+                            pixelSize: 14
                         }
                     }
                 }
             }
-
-
         }
     }
 }
