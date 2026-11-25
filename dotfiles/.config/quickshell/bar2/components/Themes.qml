@@ -601,7 +601,7 @@ Item {
                                 opacity: 0.75
                                 font {
                                     family: "Material Symbols Outlined"
-                                    pixelSize: 16
+                                    pixelSize: 18
                                 }
                             }
                         }
