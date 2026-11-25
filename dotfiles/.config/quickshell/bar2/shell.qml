@@ -1414,6 +1414,11 @@ PanelWindow {
                     }
                     source: "components/Themes.qml"
 
+                    Keys.onEscapePressed: function (event) {
+                        globalFocusScope.closeAll();
+                        event.accepted = true;
+                    }
+
                     Binding {
                         target: themeSelectorLoader.item
                         property: "theme"
