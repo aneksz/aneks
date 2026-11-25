@@ -106,7 +106,18 @@ emit() {
         [ -z "$st" ] && st="UNKNOWN"
         [ -z "$sn" ] && sn="Unknown"
 
-        if [ -n "$next_level" ]; then
+        # The MX Master 2S's top bucket is 90%: after a full charge it reports
+        # "90%, BatteryStatus.FULL, next level 0%". FULL means the charger has
+        # finished, so show it as 100% rather than the bucket.
+        if [ "$st" = "FULL" ]; then
+            pct=100
+            next_level=""
+            tte="Fully charged"
+        fi
+
+        if [ "$st" = "FULL" ]; then
+            :
+        elif [ -n "$next_level" ]; then
             # Bucketed device (BATTERY_STATUS {1000}) - the value can sit unchanged
             # for weeks, so a drain-rate estimate can never resolve. Surface the
             # threshold Solaar itself already reports instead of guessing.
