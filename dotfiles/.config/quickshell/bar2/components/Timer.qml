@@ -40,6 +40,7 @@ Item {
     Row {
         id: content
         anchors.centerIn: parent
+        anchors.verticalCenterOffset: -2   // room for the progress line underneath
         spacing: 5
 
         Text {
@@ -78,7 +79,7 @@ Item {
 
     // ── Progress line ───────────────────────────────────────────
     Rectangle {
-        anchors { bottom: parent.bottom; bottomMargin: 2; horizontalCenter: parent.horizontalCenter }
+        anchors { bottom: parent.bottom; bottomMargin: 0; horizontalCenter: parent.horizontalCenter }
         width: parent.width - 20
         height: 2
         radius: 1
