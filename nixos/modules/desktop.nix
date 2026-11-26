@@ -118,6 +118,7 @@ systemd.services.greetd.serviceConfig = {
     gsettings-desktop-schemas
     gnome-themes-extra
     lm_sensors
+    sound-theme-freedesktop # "complete" sound when the bar timer finishes
     librsvg # rsvg-convert, renders the accent cursor (cursor-accent)
     xdg-utils
     xdg-user-dirs

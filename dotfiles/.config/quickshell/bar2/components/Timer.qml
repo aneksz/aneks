@@ -1,41 +1,32 @@
 // components/Timer.qml
+// Bar pill for the timer: icon, time left and a thin progress line.
+// Click opens the timer panel (or dismisses a finished timer), scroll adds or
+// removes a minute.
 import QtQuick
 
 Item {
     id: root
 
     // ── Size ────────────────────────────────────────────────────
-    width: 90
-    height: 30
-    implicitWidth: 70
+    implicitWidth: content.implicitWidth + 20
     implicitHeight: 30
+    width: implicitWidth
+    height: implicitHeight
 
     // ── Public API ──────────────────────────────────────────────
     property var theme
-
-    property bool running: false
-    property bool finished: false
-    property int remainingSeconds: 0
+    property var timer               // TimerService
     readonly property bool hovered: mouse.containsMouse
 
     signal clicked()
-    signal adjustRequested(int seconds)
-    signal dismissRequested()
 
     // ── Display state ───────────────────────────────────────────
-    readonly property bool warning: remainingSeconds > 0 && remainingSeconds <= 10
-    readonly property bool alert: finished || warning
-    readonly property string displayTime: formatTime(remainingSeconds)
+    readonly property bool finished: timer ? timer.finished : false
+    readonly property bool running: timer ? timer.running : false
+    readonly property bool alert: finished || (timer ? timer.warning : false)
+    readonly property color tint: alert ? theme.error : theme.accent
 
-    readonly property string icon: finished ? "󰂚"
-                                 : running  ? "󱎫"
-                                 :            "󱫞"
-
-    function formatTime(seconds) {
-        const m = Math.floor(seconds / 60)
-        const s = seconds % 60
-        return m.toString().padStart(2, "0") + ":" + s.toString().padStart(2, "0")
-    }
+    readonly property string icon: finished ? "alarm" : running ? "timer" : "timer_pause"
 
     // ── Background ──────────────────────────────────────────────
     Rectangle {
@@ -47,36 +38,59 @@ Item {
 
     // ── Content ─────────────────────────────────────────────────
     Row {
+        id: content
         anchors.centerIn: parent
         spacing: 5
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
             text: root.icon
-            color: root.alert ? root.theme.error : root.theme.accent
-            font {
-                family: root.theme.font
-                pixelSize: 16
-            }
+            color: root.tint
+            font { family: "Material Symbols Outlined"; pixelSize: 18 }
             scale: mouse.pressed ? 0.9 : mouse.containsMouse ? 1.1 : 1.0
-
             Behavior on scale { NumberAnimation { duration: 120 } }
             Behavior on color { ColorAnimation { duration: 120 } }
         }
 
         Text {
+            id: label
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: 1
-            text: root.finished ? "Done" : root.displayTime
-            color: root.alert ? root.theme.error : root.theme.fg1
+            text: root.finished ? "Done" : root.timer ? root.timer.format(root.timer.remaining) : ""
+            color: root.alert ? root.theme.error : root.running ? root.theme.fg1 : root.theme.inactive
             font {
                 family: root.theme.font
-                pixelSize: 16
+                pixelSize: 15
                 weight: root.theme.fontWeight
                 features: { "tnum": 1 }   // fixed-width digits, no jitter while counting
             }
-
             Behavior on color { ColorAnimation { duration: 120 } }
+
+            SequentialAnimation on opacity {
+                running: root.finished
+                loops: Animation.Infinite
+                alwaysRunToEnd: true
+                NumberAnimation { to: 0.4; duration: 700; easing.type: Easing.InOutSine }
+                NumberAnimation { to: 1.0; duration: 700; easing.type: Easing.InOutSine }
+            }
+        }
+    }
+
+    // ── Progress line ───────────────────────────────────────────
+    Rectangle {
+        anchors { bottom: parent.bottom; bottomMargin: 2; horizontalCenter: parent.horizontalCenter }
+        width: parent.width - 20
+        height: 2
+        radius: 1
+        visible: !root.finished
+        color: Qt.rgba(root.tint.r, root.tint.g, root.tint.b, 0.2)
+
+        Rectangle {
+            width: parent.width * (root.timer ? root.timer.progress : 0)
+            height: parent.height
+            radius: 1
+            color: root.tint
+            Behavior on width { NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
         }
     }
 
@@ -89,15 +103,14 @@ Item {
 
         onClicked: {
             if (root.finished)
-                root.dismissRequested()
+                root.timer.cancel();
             else
-                root.clicked()
+                root.clicked();
         }
 
         onWheel: event => {
-            if (root.finished)
-                return
-            root.adjustRequested(event.angleDelta.y > 0 ? 60 : -60)
+            if (root.timer && !root.finished)
+                root.timer.adjust(event.angleDelta.y > 0 ? 60 : -60);
         }
     }
 }

@@ -161,7 +161,7 @@ PanelWindow {
 
         anchors.fill: parent
 
-        enabled: root.hubVisible || root.launcherVisible || root.panelVisible || root.mediaVisible || root.themeVisible || root.calendarVisible || root.weatherVisible || root.wallpaperVisible || root.timerOsdVisible || root.networkVisible || root.timerControlOsdVisible || root.updatesVisible || root.volumeVisible || root.batteryVisible || root.clipboardVisible || root.torrentsVisible || root.gitVisible || root.monitorVisible || root.bluetoothVisible || root.powerVisible || root.trayMenuVisible
+        enabled: root.hubVisible || root.launcherVisible || root.panelVisible || root.mediaVisible || root.themeVisible || root.calendarVisible || root.weatherVisible || root.wallpaperVisible || root.timerOsdVisible || root.networkVisible || root.updatesVisible || root.volumeVisible || root.batteryVisible || root.clipboardVisible || root.torrentsVisible || root.gitVisible || root.monitorVisible || root.bluetoothVisible || root.powerVisible || root.trayMenuVisible
 
         z: -1
 
@@ -293,13 +293,9 @@ PanelWindow {
     property string currentWeatherIcon: "❔"
     property string currentTemperature: "--"
     property string weatherText: "--°C"
-    property bool timerActive: false
-    property bool timerRunning: false
-    property bool timerFinished: false
-    property int timerRemaining: 0
-    property int timerDuration: 0
-    property bool timerOsdVisible: false
-    property bool timerControlOsdVisible: false
+    // Timer: logic lives in components/TimerService.qml, the panel in TimerPanel.qml
+    readonly property bool timerActive: timerService.active
+    property bool timerOsdVisible: false   // the timer panel
     property bool updateAuthVisible: false
     property int archCount: 0
     property int aurCount: 0
@@ -660,81 +656,15 @@ PanelWindow {
     }
 
     // ============================================================
-    // TIMER ENGINE
+    // TIMER
     // ============================================================
 
-    Timer {
-        id: timerCountdown
-
-        interval: 1000
-        repeat: true
-        running: root.timerRunning
-
-        onTriggered: {
-            if (root.timerRemaining <= 0)
-                return;
-            root.timerRemaining--;
-
-            if (root.timerRemaining <= 0) {
-                root.timerRemaining = 0;
-                root.timerRunning = false;
-                root.timerFinished = true;
-                root.timerActive = false;
-                root.timerOsdVisible = false;
-            }
-        }
+    LocalComponents.TimerService {
+        id: timerService
     }
 
-    // ============================================================
-    // TIMER FUNCTIONS
-    // ============================================================
-
-    function startTimer(seconds) {
-        if (seconds > 0) {
-            root.timerDuration = seconds;
-            root.timerRemaining = seconds;
-            root.timerRunning = true;
-            root.timerFinished = false;
-            root.timerActive = true;
-        }
-    }
-    function pauseTimer() {
-        root.timerRunning = false;
-    }
-    function resumeTimer() {
-        if (root.timerRemaining > 0) {
-            root.timerFinished = false;
-            root.timerRunning = true;
-        }
-    }
-    function toggleTimer() {
-        if (!root.timerFinished) {
-            root.timerRunning ? pauseTimer() : resumeTimer();
-        }
-    }
-    function adjustTimer(seconds) {
-        if (root.timerActive && !root.timerFinished) {
-            root.timerRemaining = Math.max(0, root.timerRemaining + seconds);
-            root.timerDuration = Math.max(0, root.timerDuration + seconds);
-            if (root.timerRemaining <= 0) {
-                root.timerRemaining = 0;
-                root.timerRunning = false;
-                root.timerFinished = true;
-            }
-        }
-    }
-    function closeTimerControlOsd() {
-        root.timerControlOsdVisible = false;
-        root.islandState = root.islandStateClosing;
-        Qt.callLater(() => root.islandState = root.islandStateCollapsed);
-    }
-    function dismissTimer() {
-        root.timerRunning = false;
-        root.timerFinished = false;
-        root.timerActive = false;
+    function closeTimerPanel() {
         root.timerOsdVisible = false;
-        root.timerRemaining = 0;
-        root.timerDuration = 0;
         root.islandState = root.islandStateClosing;
         Qt.callLater(() => root.islandState = root.islandStateCollapsed);
     }
@@ -810,6 +740,19 @@ PanelWindow {
         target: "timer"
         function open() {
             root.timerOsdVisible = true;
+        }
+        function toggle() {
+            root.timerOsdVisible ? root.closeTimerPanel() : (root.timerOsdVisible = true);
+        }
+        // qs ipc call timer start 25   -> 25 minute timer
+        function start(minutes: int) {
+            timerService.start(minutes * 60);
+        }
+        function pause() {
+            timerService.toggle();
+        }
+        function cancel() {
+            timerService.cancel();
         }
     }
     // Bluetooth panel: opened from the hub's Bluetooth button (or a keybind)
@@ -1303,69 +1246,15 @@ PanelWindow {
                     }
                 }
                 // =======================================================
-                // Timer OSD Controller
+                // TIMER PANEL
                 // =======================================================
 
                 Loader {
-                    id: timerControlOsdLoader
-                    active: root.timerControlOsdVisible
-                    visible: root.timerControlOsdVisible && item
-                    anchors.centerIn: parent
-                    source: "components/TimerControlOSD.qml"
-
-                    width: item ? item.implicitWidth : 0
-                    height: item ? item.implicitHeight : 0
-
-                    z: 500
-
-                    Binding {
-                        target: timerControlOsdLoader.item
-                        property: "theme"
-                        value: root.theme
-                        when: timerControlOsdLoader.status === Loader.Ready
-                    }
-                    Binding {
-                        target: timerControlOsdLoader.item
-                        property: "remainingSeconds"
-                        value: root.timerRemaining
-                        when: timerControlOsdLoader.status === Loader.Ready
-                    }
-                    Binding {
-                        target: timerControlOsdLoader.item
-                        property: "running"
-                        value: root.timerRunning
-                        when: timerControlOsdLoader.status === Loader.Ready
-                    }
-
-                    Connections {
-                        target: timerControlOsdLoader.item
-                        ignoreUnknownSignals: true
-
-                        function onPauseRequested() {
-                            root.pauseTimer();
-                        }
-                        function onResumeRequested() {
-                            root.resumeTimer();
-                        }
-                        function onDismissRequested() {
-                            root.closeTimerControlOsd();
-                        }
-                        function onCancelRequested() {
-                            root.closeTimerControlOsd();
-                            root.dismissTimer();
-                        }
-                    }
-                }
-                // =====================================================
-                // TIMER OSD LOADER
-                // =====================================================
-
-                Loader {
-                    id: timerOsdLoader
+                    id: timerPanelLoader
                     active: root.timerOsdVisible
                     visible: root.timerOsdVisible && item
                     anchors.centerIn: parent
-                    source: "components/TimerOSD.qml"
+                    source: "components/TimerPanel.qml"
 
                     width: item ? item.implicitWidth : 0
                     height: item ? item.implicitHeight : 0
@@ -1373,21 +1262,23 @@ PanelWindow {
                     z: 500
 
                     Binding {
-                        target: timerOsdLoader.item
+                        target: timerPanelLoader.item
                         property: "theme"
                         value: root.theme
-                        when: timerOsdLoader.status === Loader.Ready
+                        when: timerPanelLoader.status === Loader.Ready
+                    }
+                    Binding {
+                        target: timerPanelLoader.item
+                        property: "timer"
+                        value: timerService
+                        when: timerPanelLoader.status === Loader.Ready
                     }
 
                     Connections {
-                        target: timerOsdLoader.item
+                        target: timerPanelLoader.item
                         ignoreUnknownSignals: true
-                        function onStartRequested(seconds) {
-                            root.startTimer(seconds);
-                            root.timerOsdVisible = false;
-                        }
-                        function onDismissRequested() {
-                            root.timerOsdVisible = false;
+                        function onCloseRequested() {
+                            root.closeTimerPanel();
                         }
                     }
                 }
@@ -1706,13 +1597,13 @@ PanelWindow {
                 // WIDTH
                 // =====================================================
 
-                width: root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitWidth : 300) : root.osdMode === "volume" ? 240 : root.osdMode === "caps" ? 210 : root.timerOsdVisible || root.timerControlOsdVisible ? 300 : root.hubVisible ? root.hubWidth : root.panelVisible ? 940 : root.launcherVisible ? 530 : root.mediaVisible ? 460 : root.weatherVisible ? 560 : root.calendarVisible ? 440 : root.themeVisible ? 640 : root.wallpaperVisible ? 968 : root.updateAuthVisible ? 540 : root.networkVisible ? 520 : root.updatesVisible ? 480 : root.volumeVisible ? 480 : root.batteryVisible ? 580 : root.clipboardVisible ? 700 : root.torrentsVisible ? 560 : root.gitVisible ? 560 : root.monitorVisible ? 480 : root.bluetoothVisible ? 440 : root.powerVisible ? 380 : root.trayMenuVisible ? 300 : (detector.activeHover || detector.timerHovered || detector.volumeHovered || detector.themeHovered || detector.calendarHovered || detector.networkHovered || detector.authHovered || root.spotifyTrack !== "") ? (topBarHeader.width + 32) : (topBarHeader.width + 20)
+                width: root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitWidth : 300) : root.osdMode === "volume" ? 240 : root.osdMode === "caps" ? 210 : root.timerOsdVisible ? 460 : root.hubVisible ? root.hubWidth : root.panelVisible ? 940 : root.launcherVisible ? 530 : root.mediaVisible ? 460 : root.weatherVisible ? 560 : root.calendarVisible ? 440 : root.themeVisible ? 640 : root.wallpaperVisible ? 968 : root.updateAuthVisible ? 540 : root.networkVisible ? 520 : root.updatesVisible ? 480 : root.volumeVisible ? 480 : root.batteryVisible ? 580 : root.clipboardVisible ? 700 : root.torrentsVisible ? 560 : root.gitVisible ? 560 : root.monitorVisible ? 480 : root.bluetoothVisible ? 440 : root.powerVisible ? 380 : root.trayMenuVisible ? 300 : (detector.activeHover || detector.timerHovered || detector.volumeHovered || detector.themeHovered || detector.calendarHovered || detector.networkHovered || detector.authHovered || root.spotifyTrack !== "") ? (topBarHeader.width + 32) : (topBarHeader.width + 20)
 
                 // =================================================
                 // HEIGHT
                 // =================================================
 
-                height: root.islandState === root.islandStateClosing ? 42 : root.osdMode === "volume" ? 40 : root.osdMode === "caps" ? 60 : root.timerOsdVisible || root.timerControlOsdVisible ? 70 : root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitHeight : 80) : root.hubVisible ? root.hubHeight : root.launcherVisible ? 530 : root.mediaVisible ? 235 + (embeddedMediaContent.item ? embeddedMediaContent.item.extraHeight : 0) : root.weatherVisible ? 540 : root.calendarVisible ? 500 : root.themeVisible ? 650 : root.wallpaperVisible ? 680 : root.updateAuthVisible ? 280 : root.networkVisible ? networkLoader.implicitHeight : root.updatesVisible ? 400 : root.batteryVisible ? 400 : root.clipboardVisible ? 520 : root.torrentsVisible ? 480 : root.gitVisible ? 590 : root.monitorVisible ? 500 : root.bluetoothVisible ? 460 : root.powerVisible ? 90 : root.trayMenuVisible ? trayMenu.implicitHeight + 28 : root.volumeVisible ? volumeLoader.requiredHeight : 42
+                height: root.islandState === root.islandStateClosing ? 42 : root.osdMode === "volume" ? 40 : root.osdMode === "caps" ? 60 : root.timerOsdVisible ? 250 : root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitHeight : 80) : root.hubVisible ? root.hubHeight : root.launcherVisible ? 530 : root.mediaVisible ? 235 + (embeddedMediaContent.item ? embeddedMediaContent.item.extraHeight : 0) : root.weatherVisible ? 540 : root.calendarVisible ? 500 : root.themeVisible ? 650 : root.wallpaperVisible ? 680 : root.updateAuthVisible ? 280 : root.networkVisible ? networkLoader.implicitHeight : root.updatesVisible ? 400 : root.batteryVisible ? 400 : root.clipboardVisible ? 520 : root.torrentsVisible ? 480 : root.gitVisible ? 590 : root.monitorVisible ? 500 : root.bluetoothVisible ? 460 : root.powerVisible ? 90 : root.trayMenuVisible ? trayMenu.implicitHeight + 28 : root.volumeVisible ? volumeLoader.requiredHeight : 42
 
                 radius: (root.launcherVisible || root.panelVisible || root.hubVisible) ? 16 : 21
 
@@ -2229,20 +2120,8 @@ PanelWindow {
                                     }
                                     Binding {
                                         target: timerLoader.item
-                                        property: "running"
-                                        value: root.timerRunning
-                                        when: timerLoader.status === Loader.Ready
-                                    }
-                                    Binding {
-                                        target: timerLoader.item
-                                        property: "finished"
-                                        value: root.timerFinished
-                                        when: timerLoader.status === Loader.Ready
-                                    }
-                                    Binding {
-                                        target: timerLoader.item
-                                        property: "remainingSeconds"
-                                        value: root.timerRemaining
+                                        property: "timer"
+                                        value: timerService
                                         when: timerLoader.status === Loader.Ready
                                     }
 
@@ -2261,7 +2140,7 @@ PanelWindow {
                                         ignoreUnknownSignals: true
 
                                         function onClicked() {
-                                            root.timerControlOsdVisible = true;
+                                            root.timerOsdVisible = true;
                                         }
                                     }
                                 }
