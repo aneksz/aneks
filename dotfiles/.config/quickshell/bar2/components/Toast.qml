@@ -225,7 +225,7 @@ Item {
 
                     // Catch theme updates and qbittorrent early so they never evaluate as image fallbacks
                     // Fixed syntax:
-                    if (isThemeUpdate() || isQbittorrent() || isCaffeine() || isNightLight() || isEmail() || isUpdateCenter()) return false
+                    if (isThemeUpdate() || isQbittorrent() || isCaffeine() || isNightLight() || isEmail() || isUpdateCenter() || isTimer()) return false
 
 
                     // Spotify with album art
@@ -248,6 +248,12 @@ Item {
                     const body = String(root.currentNotif.body || "").toLowerCase()
                     
                     return summary.includes("theme updated") || body.includes("theme updated")
+                }
+
+                // The bar's own timer (TimerService.qml sends these as app "Timer")
+                function isTimer() {
+                    if (!root.currentNotif) return false
+                    return String(root.currentNotif.appName || "").toLowerCase() === "timer"
                 }
 
                 function isUpdateCenter() {
@@ -341,7 +347,7 @@ function isOn() {
     ).toLowerCase()
 
     // Silence the image loader warning if it's a theme update or qbittorrent
-    if (iconContainer.isThemeUpdate() || iconContainer.isQbittorrent() || iconContainer.isCaffeine() || iconContainer.isNightLight() || iconContainer.isEmail())
+    if (iconContainer.isThemeUpdate() || iconContainer.isQbittorrent() || iconContainer.isCaffeine() || iconContainer.isNightLight() || iconContainer.isEmail() || iconContainer.isTimer())
     return ""
 
     if (app.includes("spotify") && root.spotifyArtUrl)
@@ -386,6 +392,7 @@ function isOn() {
     : iconContainer.isCaffeine() ? (iconContainer.isOn() ? "󰾪" : "󰅶")
     : iconContainer.isNightLight() ? (iconContainer.isOn() ? "󰖔" : "󰖨")
     : iconContainer.isEmail() ? "󰇮"
+    : iconContainer.isTimer() ? "󱎫"
     : "󰂚"
                             
                         color: root.theme.accent

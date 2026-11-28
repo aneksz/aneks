@@ -100,7 +100,7 @@ Item {
         pausedRemaining = 0;
         finished = true;
         active = true;
-        Quickshell.execDetached(["notify-send", "-a", "Timer", "-u", "critical", "-i", "alarm-clock",
+        Quickshell.execDetached(["notify-send", "-a", "Timer", "-u", "critical",
             "Time's up", formatLong(duration) + " timer finished"]);
         if (playSound)
             Quickshell.execDetached(["sh", "-c",
