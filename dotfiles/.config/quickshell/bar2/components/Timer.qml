@@ -18,7 +18,7 @@ Item {
     property var timer               // TimerService
     readonly property bool hovered: mouse.containsMouse
 
-    signal clicked()
+    signal clicked
 
     // ── Display state ───────────────────────────────────────────
     readonly property bool finished: timer ? timer.finished : false
@@ -33,7 +33,11 @@ Item {
         anchors.fill: parent
         radius: height / 2
         color: mouse.containsMouse ? root.theme.surfaceAlt : "transparent"
-        Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on color {
+            ColorAnimation {
+                duration: 120
+            }
+        }
     }
 
     // ── Content ─────────────────────────────────────────────────
@@ -44,34 +48,60 @@ Item {
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
+            anchors.verticalCenterOffset: 2
             text: root.icon
             color: root.tint
-            font { family: "Material Symbols Outlined"; pixelSize: 18 }
+            font {
+                family: "Material Symbols Outlined"
+                pixelSize: 18
+            }
             scale: mouse.pressed ? 0.9 : mouse.containsMouse ? 1.1 : 1.0
-            Behavior on scale { NumberAnimation { duration: 120 } }
-            Behavior on color { ColorAnimation { duration: 120 } }
+            Behavior on scale {
+                NumberAnimation {
+                    duration: 120
+                }
+            }
+            Behavior on color {
+                ColorAnimation {
+                    duration: 120
+                }
+            }
         }
 
         Text {
             id: label
             anchors.verticalCenter: parent.verticalCenter
-            anchors.verticalCenterOffset: 1
+            anchors.verticalCenterOffset: 2
             text: root.finished ? "Done" : root.timer ? root.timer.format(root.timer.remaining) : ""
             color: root.alert ? root.theme.error : root.running ? root.theme.fg1 : root.theme.inactive
             font {
                 family: root.theme.font
-                pixelSize: 15
+                pixelSize: font.pixelSize
                 weight: root.theme.fontWeight
-                features: { "tnum": 1 }   // fixed-width digits, no jitter while counting
+                features: {
+                    "tnum": 1
+                }   // fixed-width digits, no jitter while counting
             }
-            Behavior on color { ColorAnimation { duration: 120 } }
+            Behavior on color {
+                ColorAnimation {
+                    duration: 120
+                }
+            }
 
             SequentialAnimation on opacity {
                 running: root.finished
                 loops: Animation.Infinite
                 alwaysRunToEnd: true
-                NumberAnimation { to: 0.4; duration: 700; easing.type: Easing.InOutSine }
-                NumberAnimation { to: 1.0; duration: 700; easing.type: Easing.InOutSine }
+                NumberAnimation {
+                    to: 0.4
+                    duration: 700
+                    easing.type: Easing.InOutSine
+                }
+                NumberAnimation {
+                    to: 1.0
+                    duration: 700
+                    easing.type: Easing.InOutSine
+                }
             }
         }
     }
