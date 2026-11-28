@@ -1,5 +1,5 @@
 // components/Timer.qml
-// Bar pill for the timer: icon, time left and a thin progress line.
+// Bar pill for the timer: icon and time left.
 // Click opens the timer panel (or dismisses a finished timer), scroll adds or
 // removes a minute.
 import QtQuick
@@ -40,7 +40,6 @@ Item {
     Row {
         id: content
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: -2   // room for the progress line underneath
         spacing: 5
 
         Text {
@@ -74,24 +73,6 @@ Item {
                 NumberAnimation { to: 0.4; duration: 700; easing.type: Easing.InOutSine }
                 NumberAnimation { to: 1.0; duration: 700; easing.type: Easing.InOutSine }
             }
-        }
-    }
-
-    // ── Progress line ───────────────────────────────────────────
-    Rectangle {
-        anchors { bottom: parent.bottom; bottomMargin: 0; horizontalCenter: parent.horizontalCenter }
-        width: parent.width - 20
-        height: 2
-        radius: 1
-        visible: !root.finished
-        color: Qt.rgba(root.tint.r, root.tint.g, root.tint.b, 0.2)
-
-        Rectangle {
-            width: parent.width * (root.timer ? root.timer.progress : 0)
-            height: parent.height
-            radius: 1
-            color: root.tint
-            Behavior on width { NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
         }
     }
 

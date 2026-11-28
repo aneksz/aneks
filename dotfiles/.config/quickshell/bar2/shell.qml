@@ -664,6 +664,8 @@ PanelWindow {
     }
 
     function closeTimerPanel() {
+        detector.timerHovered = false;   // see the pill's onClicked
+        detector.activeHover = false;
         root.timerOsdVisible = false;
         root.islandState = root.islandStateClosing;
         Qt.callLater(() => root.islandState = root.islandStateCollapsed);
@@ -900,6 +902,8 @@ PanelWindow {
                 root.trayMenuVisible = false;
 
                 if (root.timerOsdVisible) {
+                    detector.timerHovered = false;
+                    detector.activeHover = false;
                     root.timerOsdVisible = false;
                     root.islandState = root.islandStateClosing;
 
@@ -1597,13 +1601,13 @@ PanelWindow {
                 // WIDTH
                 // =====================================================
 
-                width: root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitWidth : 300) : root.osdMode === "volume" ? 240 : root.osdMode === "caps" ? 210 : root.timerOsdVisible ? 460 : root.hubVisible ? root.hubWidth : root.panelVisible ? 940 : root.launcherVisible ? 530 : root.mediaVisible ? 460 : root.weatherVisible ? 560 : root.calendarVisible ? 440 : root.themeVisible ? 640 : root.wallpaperVisible ? 968 : root.updateAuthVisible ? 540 : root.networkVisible ? 520 : root.updatesVisible ? 480 : root.volumeVisible ? 480 : root.batteryVisible ? 580 : root.clipboardVisible ? 700 : root.torrentsVisible ? 560 : root.gitVisible ? 560 : root.monitorVisible ? 480 : root.bluetoothVisible ? 440 : root.powerVisible ? 380 : root.trayMenuVisible ? 300 : (detector.activeHover || detector.timerHovered || detector.volumeHovered || detector.themeHovered || detector.calendarHovered || detector.networkHovered || detector.authHovered || root.spotifyTrack !== "") ? (topBarHeader.width + 32) : (topBarHeader.width + 20)
+                width: root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitWidth : 300) : root.osdMode === "volume" ? 240 : root.osdMode === "caps" ? 210 : root.timerOsdVisible ? 380 : root.hubVisible ? root.hubWidth : root.panelVisible ? 940 : root.launcherVisible ? 530 : root.mediaVisible ? 460 : root.weatherVisible ? 560 : root.calendarVisible ? 440 : root.themeVisible ? 640 : root.wallpaperVisible ? 968 : root.updateAuthVisible ? 540 : root.networkVisible ? 520 : root.updatesVisible ? 480 : root.volumeVisible ? 480 : root.batteryVisible ? 580 : root.clipboardVisible ? 700 : root.torrentsVisible ? 560 : root.gitVisible ? 560 : root.monitorVisible ? 480 : root.bluetoothVisible ? 440 : root.powerVisible ? 380 : root.trayMenuVisible ? 300 : (detector.activeHover || detector.timerHovered || detector.volumeHovered || detector.themeHovered || detector.calendarHovered || detector.networkHovered || detector.authHovered || root.spotifyTrack !== "") ? (topBarHeader.width + 32) : (topBarHeader.width + 20)
 
                 // =================================================
                 // HEIGHT
                 // =================================================
 
-                height: root.islandState === root.islandStateClosing ? 42 : root.osdMode === "volume" ? 40 : root.osdMode === "caps" ? 60 : root.timerOsdVisible ? 250 : root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitHeight : 80) : root.hubVisible ? root.hubHeight : root.launcherVisible ? 530 : root.mediaVisible ? 235 + (embeddedMediaContent.item ? embeddedMediaContent.item.extraHeight : 0) : root.weatherVisible ? 540 : root.calendarVisible ? 500 : root.themeVisible ? 650 : root.wallpaperVisible ? 680 : root.updateAuthVisible ? 280 : root.networkVisible ? networkLoader.implicitHeight : root.updatesVisible ? 400 : root.batteryVisible ? 400 : root.clipboardVisible ? 520 : root.torrentsVisible ? 480 : root.gitVisible ? 590 : root.monitorVisible ? 500 : root.bluetoothVisible ? 460 : root.powerVisible ? 90 : root.trayMenuVisible ? trayMenu.implicitHeight + 28 : root.volumeVisible ? volumeLoader.requiredHeight : 42
+                height: root.islandState === root.islandStateClosing ? 42 : root.osdMode === "volume" ? 40 : root.osdMode === "caps" ? 60 : root.timerOsdVisible ? 380 : root.osdMode === "toast" ? (dynamicToastLoader.item ? dynamicToastLoader.item.implicitHeight : 80) : root.hubVisible ? root.hubHeight : root.launcherVisible ? 530 : root.mediaVisible ? 235 + (embeddedMediaContent.item ? embeddedMediaContent.item.extraHeight : 0) : root.weatherVisible ? 540 : root.calendarVisible ? 500 : root.themeVisible ? 650 : root.wallpaperVisible ? 680 : root.updateAuthVisible ? 280 : root.networkVisible ? networkLoader.implicitHeight : root.updatesVisible ? 400 : root.batteryVisible ? 400 : root.clipboardVisible ? 520 : root.torrentsVisible ? 480 : root.gitVisible ? 590 : root.monitorVisible ? 500 : root.bluetoothVisible ? 460 : root.powerVisible ? 90 : root.trayMenuVisible ? trayMenu.implicitHeight + 28 : root.volumeVisible ? volumeLoader.requiredHeight : 42
 
                 radius: (root.launcherVisible || root.panelVisible || root.hubVisible) ? 16 : 21
 
@@ -2140,6 +2144,12 @@ PanelWindow {
                                         ignoreUnknownSignals: true
 
                                         function onClicked() {
+                                            // The bar row hides while the panel is open, so the pill
+                                            // never sees the mouse leave: clear its hover state here,
+                                            // or the island stays hover-wide after the panel closes.
+                                            detector.timerHovered = false;
+                                            detector.activeHover = false;
+                                            hoverDebounceTimer.stop();
                                             root.timerOsdVisible = true;
                                         }
                                     }
