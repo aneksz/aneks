@@ -41,6 +41,7 @@
     git
     lazygit
     ookla-speedtest
+    psmisc
     ripgrep
     unzip
     wget

@@ -372,6 +372,8 @@ Item {
                 id: grid
                 anchors.fill: parent
                 clip: true
+                readonly property real moreAbove: atYBeginning ? 0 : Math.max(0, Math.min(1, (contentY - originY) / 60))
+                readonly property real moreBelow: atYEnd ? 0 : Math.max(0, Math.min(1, (contentHeight - height - (contentY - originY)) / 60))
                 layer.enabled: true
                 layer.effect: OpacityMask {
                     maskSource: gridFade
@@ -610,6 +612,7 @@ Item {
             }
 
             // Fade mask: transparent at an edge only when there's more to scroll that way
+            // Fade mask: transparent at an edge only when there's more to scroll that way
             Item {
                 id: gridFade
                 anchors.fill: grid
@@ -621,7 +624,7 @@ Item {
                     gradient: Gradient {
                         GradientStop {
                             position: 0.0
-                            color: grid.atYBeginning ? "white" : "transparent"
+                            color: Qt.rgba(1, 1, 1, 1 - grid.moreAbove)
                         }
                         GradientStop {
                             position: 0.08
@@ -633,7 +636,7 @@ Item {
                         }
                         GradientStop {
                             position: 1.0
-                            color: grid.atYEnd ? "white" : "transparent"
+                            color: Qt.rgba(1, 1, 1, 1 - grid.moreBelow)
                         }
                     }
                 }
